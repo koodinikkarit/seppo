@@ -1,5 +1,12 @@
 package main
 
-func main() {
+import (
+	"github.com/koodinikkarit/seppo/services"
+)
 
+func main() {
+	seppo.CreateSeppoServer()
+	for {
+
+	}
 }
