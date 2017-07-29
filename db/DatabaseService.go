@@ -1,4 +1,4 @@
-package seppo
+package SeppoDB
 
 import (
 	"fmt"
@@ -7,9 +7,10 @@ import (
 )
 
 type DatabaseService struct {
-	db                *gorm.DB
-	CreateSongChannel chan CreateSongInput
-	C                 chan int
+	db                     *gorm.DB
+	CreateSongChannel      chan CreateSongInput
+	createVariationChannel chan createVariationInternalInput
+	editVariationChannel   chan editVariationInternalInput
 }
 
 func (ds *DatabaseService) insertSong(name string, songID uint32) {
@@ -43,6 +44,33 @@ func (ds *DatabaseService) Start() {
 				fmt.Println("uusi ewsong")
 			}
 			fmt.Println("uusi laulu", createSongInput)
+		case createVariationInput := <-ds.createVariationChannel:
+			variation := &Variation{
+				Name: createVariationInput.input.Name,
+				Text: createVariationInput.input.Text,
+			}
+
+			ds.db.Create(&variation)
+
+			createVariationInput.returnChannel <- variation
+		case editVariationInput := <-ds.editVariationChannel:
+			var variation Variation
+			ds.GetDb().First(&variation, editVariationInput.input.VariationID)
+
+			if editVariationInput.input.Name != "" {
+				variation.Name = editVariationInput.input.Name
+			}
+
+			if editVariationInput.input.Text != "" {
+				variation.Text = editVariationInput.input.Text
+			}
+
+			if editVariationInput.input.SongID != 0 {
+				variation.SongID = editVariationInput.input.SongID
+			}
+
+			ds.db.Save(&variation)
+			editVariationInput.returnChannel <- &variation
 		}
 	}
 }

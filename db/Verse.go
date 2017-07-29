@@ -1,4 +1,4 @@
-package seppo
+package SeppoDB
 
 type Verse struct {
 	ID          uint32

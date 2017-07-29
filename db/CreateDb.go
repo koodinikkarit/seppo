@@ -1,4 +1,4 @@
-package seppo
+package SeppoDB
 
 import (
 	"fmt"
@@ -28,11 +28,13 @@ func CreateDb(
 	db.AutoMigrate(&Verse{})
 
 	createSongChannel := make(chan CreateSongInput)
-	c := make(chan int)
+	createVariationChannel := make(chan createVariationInternalInput)
+	editVariationChannel := make(chan editVariationInternalInput)
 
 	return &DatabaseService{
-		db:                db,
-		CreateSongChannel: createSongChannel,
-		C:                 c,
+		db:                     db,
+		CreateSongChannel:      createSongChannel,
+		createVariationChannel: createVariationChannel,
+		editVariationChannel:   editVariationChannel,
 	}
 }

@@ -1,4 +1,4 @@
-package seppo
+package SeppoDB
 
 type SongDatabaseVariation struct {
 	ID             uint32

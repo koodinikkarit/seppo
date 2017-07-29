@@ -1,4 +1,4 @@
-package seppo
+package SeppoDB
 
 type EwDatabaseLink struct {
 	ID               uint32
