@@ -5,26 +5,31 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/reflection"
 
-	SeppoService "github.com/koodinikkarit/seppo/seppo_service"
+	"github.com/koodinikkarit/seppo/seppo_service"
 
 	"github.com/koodinikkarit/seppo/db"
 )
 
 type SeppoServiceServer struct {
-	createSongChannel chan seppo.CreateSongInput
-	databaseService   *seppo.DatabaseService
+	databaseService *SeppoDB.DatabaseService
 }
 
-func CreateSeppoService(port string, databaseService *seppo.DatabaseService) {
+func CreateSeppoService(port string, databaseService *SeppoDB.DatabaseService) {
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		grpclog.Fatalf("failed to listen: %v", err)
 	}
 
-	s := grpc.NewServer()
+	creds, err := credentials.NewServerTLSFromFile("./ssl/server.crt", "./ssl/server.key")
+	if err != nil {
+		log.Fatalf("Failed to generate credentials %v", err)
+	}
+
+	s := grpc.NewServer(grpc.Creds(creds))
 	SeppoService.RegisterSeppoServer(s, &SeppoServiceServer{
 		databaseService: databaseService,
 	})
@@ -33,5 +38,4 @@ func CreateSeppoService(port string, databaseService *seppo.DatabaseService) {
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
-
 }
