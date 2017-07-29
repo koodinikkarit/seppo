@@ -10,6 +10,10 @@ It is generated from these files:
 	ew_song.proto
 	ew_verse.proto
 	seppo_service.proto
+	song.proto
+	song_database.proto
+	song_database_variations.proto
+	variation.proto
 
 It has these top-level messages:
 	EwDatabase
@@ -18,6 +22,29 @@ It has these top-level messages:
 	ListenForChangedEwSongRequest
 	EwSong
 	EwVerse
+	Song
+	SongDatabase
+	SongDatabaseEdge
+	SongDatabasesConnection
+	FetchSongDatabasesRequest
+	FetchSongDatabaseByIdRequest
+	FetchSongDatabaseByIdResponse
+	CreateSongDatabaseRequest
+	CreateSongDatabaseResponse
+	EditSongDatabaseRequest
+	EditSongDatabaseResponse
+	RemoveSongDatabaseRequest
+	RemoveSongDatabaseResponse
+	SongDatabaseVariation
+	Variation
+	CreateVariationRequest
+	CreateVariationResponse
+	EditVariationRequest
+	EditVariationResponse
+	FetchVariationByIdRequest
+	FetchVariationByIdResponse
+	SearchVariationsRequest
+	SearchVariationsResponse
 */
 package SeppoService
 
