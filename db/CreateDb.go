@@ -30,11 +30,21 @@ func CreateDb(
 	createSongChannel := make(chan CreateSongInput)
 	createVariationChannel := make(chan createVariationInternalInput)
 	editVariationChannel := make(chan editVariationInternalInput)
+	createSongDatabaseChannel := make(chan createSongDatabaseInternalInput)
+	editSongDatabaseChannel := make(chan editSongDatabaseInternalInput)
+	removeSongDatabaseChannel := make(chan removeSongDatabaseInternalInput)
+	createEwDatabaseChannel := make(chan createEwDatabaseInternalInput)
+	removeEwDatabaseChannel := make(chan removeEwDatabaseInternalInput)
 
 	return &DatabaseService{
-		db:                     db,
-		CreateSongChannel:      createSongChannel,
-		createVariationChannel: createVariationChannel,
-		editVariationChannel:   editVariationChannel,
+		db:                        db,
+		CreateSongChannel:         createSongChannel,
+		createVariationChannel:    createVariationChannel,
+		editVariationChannel:      editVariationChannel,
+		createSongDatabaseChannel: createSongDatabaseChannel,
+		editSongDatabaseChannel:   editSongDatabaseChannel,
+		removeSongDatabaseChannel: removeSongDatabaseChannel,
+		createEwDatabaseChannel:   createEwDatabaseChannel,
+		removeEwDatabaseChannel:   removeEwDatabaseChannel,
 	}
 }

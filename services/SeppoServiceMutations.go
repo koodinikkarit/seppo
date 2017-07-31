@@ -22,6 +22,38 @@ func (s *SeppoServiceServer) EditVariation(ctx context.Context, in *SeppoService
 	return res, nil
 }
 
+func (s *SeppoServiceServer) CreateSongDatabase(ctx context.Context, in *SeppoService.CreateSongDatabaseRequest) (*SeppoService.CreateSongDatabaseResponse, error) {
+	res := &SeppoService.CreateSongDatabaseResponse{}
+	songDatabase := s.databaseService.CreateSongDatabase(SeppoDB.NewCreateSongDatabaseInputFromServiceType(in))
+	res.SongDatabase = NewSongDatabaseToServiceType(songDatabase)
+	return res, nil
+}
+
+func (s *SeppoServiceServer) EditSongDatabase(ctx context.Context, in *SeppoService.EditSongDatabaseRequest) (*SeppoService.EditSongDatabaseResponse, error) {
+	res := &SeppoService.EditSongDatabaseResponse{}
+	res.SongDatabase = NewSongDatabaseToServiceType(s.databaseService.EditSongDatabase(SeppoDB.NewEditSongDatabaseInputFromServiceType(in)))
+	return res, nil
+}
+
+func (s *SeppoServiceServer) RemoveSongDatabase(ctx context.Context, in *SeppoService.RemoveSongDatabaseRequest) (*SeppoService.RemoveSongDatabaseResponse, error) {
+	res := &SeppoService.RemoveSongDatabaseResponse{}
+	s.databaseService.RemoveSongDatabase(in.SongDatabaseId)
+	return res, nil
+}
+
+func (s *SeppoServiceServer) CreateEwDatabase(ctx context.Context, in *SeppoService.CreateEwDatabaseRequest) (*SeppoService.CreateEwDatabaseResponse, error) {
+	res := &SeppoService.CreateEwDatabaseResponse{}
+	ewDatabase := s.databaseService.CreateEwDatabase(SeppoDB.NewCreateEwDatabaseFromServiceType(in))
+	res.EwDatabase = NewEwDatabaseToServiceType(ewDatabase)
+	return res, nil
+}
+
+func (s *SeppoServiceServer) RemoveEwDatabase(ctx context.Context, in *SeppoService.RemoveEwDatabaseRequest) (*SeppoService.RemoveEwDatabaseResponse, error) {
+	res := &SeppoService.RemoveEwDatabaseResponse{}
+	s.databaseService.RemoveEwDatabase(in.EwDatabaseId)
+	return res, nil
+}
+
 func (s *SeppoServiceServer) SyncEwDatabase(ctx context.Context, in *SeppoService.SyncEwDatabaseRequest) (*SeppoService.SyncEwDatabaseResponse, error) {
 	response := &SeppoService.SyncEwDatabaseResponse{}
 

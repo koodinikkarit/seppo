@@ -14,3 +14,17 @@ func NewVariationToServiceType(in *SeppoDB.Variation) *SeppoService.Variation {
 		Version: in.Version,
 	}
 }
+
+func NewSongDatabaseToServiceType(in *SeppoDB.SongDatabase) *SeppoService.SongDatabase {
+	return &SeppoService.SongDatabase{
+		Id:   in.ID,
+		Name: in.Name,
+	}
+}
+
+func NewEwDatabaseToServiceType(in *SeppoDB.EwDatabase) *SeppoService.EwDatabase {
+	return &SeppoService.EwDatabase{
+		Id:             in.ID,
+		SongDatabaseId: in.SongDatabaseID,
+	}
+}

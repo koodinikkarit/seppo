@@ -32,8 +32,17 @@ type SeppoClient interface {
 	FetchVariationById(ctx context.Context, in *FetchVariationByIdRequest, opts ...grpc.CallOption) (*FetchVariationByIdResponse, error)
 	SearchVariations(ctx context.Context, in *SearchVariationsRequest, opts ...grpc.CallOption) (*SearchVariationsResponse, error)
 	ListenForChangedEwSong(ctx context.Context, in *ListenForChangedEwSongRequest, opts ...grpc.CallOption) (Seppo_ListenForChangedEwSongClient, error)
+	FetchSongDatabases(ctx context.Context, in *FetchSongDatabasesRequest, opts ...grpc.CallOption) (*SongDatabasesConnection, error)
+	FetchSongDatabaseById(ctx context.Context, in *FetchSongDatabaseByIdRequest, opts ...grpc.CallOption) (*FetchSongDatabaseByIdResponse, error)
+	FetchEwDatabases(ctx context.Context, in *FetchEwDatabasesRequest, opts ...grpc.CallOption) (*EwDatabasesConnection, error)
+	FetchEwDatabaseById(ctx context.Context, in *FetchEwDatabaseByIdRequest, opts ...grpc.CallOption) (*FetchEwDatabaseByIdResponse, error)
 	CreateVariation(ctx context.Context, in *CreateVariationRequest, opts ...grpc.CallOption) (*CreateVariationResponse, error)
 	EditVariation(ctx context.Context, in *EditVariationRequest, opts ...grpc.CallOption) (*EditVariationResponse, error)
+	CreateSongDatabase(ctx context.Context, in *CreateSongDatabaseRequest, opts ...grpc.CallOption) (*CreateSongDatabaseResponse, error)
+	EditSongDatabase(ctx context.Context, in *EditSongDatabaseRequest, opts ...grpc.CallOption) (*EditSongDatabaseResponse, error)
+	RemoveSongDatabase(ctx context.Context, in *RemoveSongDatabaseRequest, opts ...grpc.CallOption) (*RemoveSongDatabaseResponse, error)
+	CreateEwDatabase(ctx context.Context, in *CreateEwDatabaseRequest, opts ...grpc.CallOption) (*CreateEwDatabaseResponse, error)
+	RemoveEwDatabase(ctx context.Context, in *RemoveEwDatabaseRequest, opts ...grpc.CallOption) (*RemoveEwDatabaseResponse, error)
 	SyncEwDatabase(ctx context.Context, in *SyncEwDatabaseRequest, opts ...grpc.CallOption) (*SyncEwDatabaseResponse, error)
 }
 
@@ -95,6 +104,42 @@ func (x *seppoListenForChangedEwSongClient) Recv() (*EwSong, error) {
 	return m, nil
 }
 
+func (c *seppoClient) FetchSongDatabases(ctx context.Context, in *FetchSongDatabasesRequest, opts ...grpc.CallOption) (*SongDatabasesConnection, error) {
+	out := new(SongDatabasesConnection)
+	err := grpc.Invoke(ctx, "/SeppoService.Seppo/fetchSongDatabases", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *seppoClient) FetchSongDatabaseById(ctx context.Context, in *FetchSongDatabaseByIdRequest, opts ...grpc.CallOption) (*FetchSongDatabaseByIdResponse, error) {
+	out := new(FetchSongDatabaseByIdResponse)
+	err := grpc.Invoke(ctx, "/SeppoService.Seppo/fetchSongDatabaseById", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *seppoClient) FetchEwDatabases(ctx context.Context, in *FetchEwDatabasesRequest, opts ...grpc.CallOption) (*EwDatabasesConnection, error) {
+	out := new(EwDatabasesConnection)
+	err := grpc.Invoke(ctx, "/SeppoService.Seppo/fetchEwDatabases", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *seppoClient) FetchEwDatabaseById(ctx context.Context, in *FetchEwDatabaseByIdRequest, opts ...grpc.CallOption) (*FetchEwDatabaseByIdResponse, error) {
+	out := new(FetchEwDatabaseByIdResponse)
+	err := grpc.Invoke(ctx, "/SeppoService.Seppo/fetchEwDatabaseById", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *seppoClient) CreateVariation(ctx context.Context, in *CreateVariationRequest, opts ...grpc.CallOption) (*CreateVariationResponse, error) {
 	out := new(CreateVariationResponse)
 	err := grpc.Invoke(ctx, "/SeppoService.Seppo/createVariation", in, out, c.cc, opts...)
@@ -107,6 +152,51 @@ func (c *seppoClient) CreateVariation(ctx context.Context, in *CreateVariationRe
 func (c *seppoClient) EditVariation(ctx context.Context, in *EditVariationRequest, opts ...grpc.CallOption) (*EditVariationResponse, error) {
 	out := new(EditVariationResponse)
 	err := grpc.Invoke(ctx, "/SeppoService.Seppo/editVariation", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *seppoClient) CreateSongDatabase(ctx context.Context, in *CreateSongDatabaseRequest, opts ...grpc.CallOption) (*CreateSongDatabaseResponse, error) {
+	out := new(CreateSongDatabaseResponse)
+	err := grpc.Invoke(ctx, "/SeppoService.Seppo/createSongDatabase", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *seppoClient) EditSongDatabase(ctx context.Context, in *EditSongDatabaseRequest, opts ...grpc.CallOption) (*EditSongDatabaseResponse, error) {
+	out := new(EditSongDatabaseResponse)
+	err := grpc.Invoke(ctx, "/SeppoService.Seppo/editSongDatabase", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *seppoClient) RemoveSongDatabase(ctx context.Context, in *RemoveSongDatabaseRequest, opts ...grpc.CallOption) (*RemoveSongDatabaseResponse, error) {
+	out := new(RemoveSongDatabaseResponse)
+	err := grpc.Invoke(ctx, "/SeppoService.Seppo/removeSongDatabase", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *seppoClient) CreateEwDatabase(ctx context.Context, in *CreateEwDatabaseRequest, opts ...grpc.CallOption) (*CreateEwDatabaseResponse, error) {
+	out := new(CreateEwDatabaseResponse)
+	err := grpc.Invoke(ctx, "/SeppoService.Seppo/createEwDatabase", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *seppoClient) RemoveEwDatabase(ctx context.Context, in *RemoveEwDatabaseRequest, opts ...grpc.CallOption) (*RemoveEwDatabaseResponse, error) {
+	out := new(RemoveEwDatabaseResponse)
+	err := grpc.Invoke(ctx, "/SeppoService.Seppo/removeEwDatabase", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -128,8 +218,17 @@ type SeppoServer interface {
 	FetchVariationById(context.Context, *FetchVariationByIdRequest) (*FetchVariationByIdResponse, error)
 	SearchVariations(context.Context, *SearchVariationsRequest) (*SearchVariationsResponse, error)
 	ListenForChangedEwSong(*ListenForChangedEwSongRequest, Seppo_ListenForChangedEwSongServer) error
+	FetchSongDatabases(context.Context, *FetchSongDatabasesRequest) (*SongDatabasesConnection, error)
+	FetchSongDatabaseById(context.Context, *FetchSongDatabaseByIdRequest) (*FetchSongDatabaseByIdResponse, error)
+	FetchEwDatabases(context.Context, *FetchEwDatabasesRequest) (*EwDatabasesConnection, error)
+	FetchEwDatabaseById(context.Context, *FetchEwDatabaseByIdRequest) (*FetchEwDatabaseByIdResponse, error)
 	CreateVariation(context.Context, *CreateVariationRequest) (*CreateVariationResponse, error)
 	EditVariation(context.Context, *EditVariationRequest) (*EditVariationResponse, error)
+	CreateSongDatabase(context.Context, *CreateSongDatabaseRequest) (*CreateSongDatabaseResponse, error)
+	EditSongDatabase(context.Context, *EditSongDatabaseRequest) (*EditSongDatabaseResponse, error)
+	RemoveSongDatabase(context.Context, *RemoveSongDatabaseRequest) (*RemoveSongDatabaseResponse, error)
+	CreateEwDatabase(context.Context, *CreateEwDatabaseRequest) (*CreateEwDatabaseResponse, error)
+	RemoveEwDatabase(context.Context, *RemoveEwDatabaseRequest) (*RemoveEwDatabaseResponse, error)
 	SyncEwDatabase(context.Context, *SyncEwDatabaseRequest) (*SyncEwDatabaseResponse, error)
 }
 
@@ -194,6 +293,78 @@ func (x *seppoListenForChangedEwSongServer) Send(m *EwSong) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Seppo_FetchSongDatabases_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FetchSongDatabasesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SeppoServer).FetchSongDatabases(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/SeppoService.Seppo/FetchSongDatabases",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SeppoServer).FetchSongDatabases(ctx, req.(*FetchSongDatabasesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Seppo_FetchSongDatabaseById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FetchSongDatabaseByIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SeppoServer).FetchSongDatabaseById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/SeppoService.Seppo/FetchSongDatabaseById",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SeppoServer).FetchSongDatabaseById(ctx, req.(*FetchSongDatabaseByIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Seppo_FetchEwDatabases_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FetchEwDatabasesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SeppoServer).FetchEwDatabases(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/SeppoService.Seppo/FetchEwDatabases",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SeppoServer).FetchEwDatabases(ctx, req.(*FetchEwDatabasesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Seppo_FetchEwDatabaseById_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FetchEwDatabaseByIdRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SeppoServer).FetchEwDatabaseById(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/SeppoService.Seppo/FetchEwDatabaseById",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SeppoServer).FetchEwDatabaseById(ctx, req.(*FetchEwDatabaseByIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Seppo_CreateVariation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CreateVariationRequest)
 	if err := dec(in); err != nil {
@@ -230,6 +401,96 @@ func _Seppo_EditVariation_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Seppo_CreateSongDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateSongDatabaseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SeppoServer).CreateSongDatabase(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/SeppoService.Seppo/CreateSongDatabase",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SeppoServer).CreateSongDatabase(ctx, req.(*CreateSongDatabaseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Seppo_EditSongDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EditSongDatabaseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SeppoServer).EditSongDatabase(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/SeppoService.Seppo/EditSongDatabase",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SeppoServer).EditSongDatabase(ctx, req.(*EditSongDatabaseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Seppo_RemoveSongDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveSongDatabaseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SeppoServer).RemoveSongDatabase(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/SeppoService.Seppo/RemoveSongDatabase",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SeppoServer).RemoveSongDatabase(ctx, req.(*RemoveSongDatabaseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Seppo_CreateEwDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateEwDatabaseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SeppoServer).CreateEwDatabase(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/SeppoService.Seppo/CreateEwDatabase",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SeppoServer).CreateEwDatabase(ctx, req.(*CreateEwDatabaseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Seppo_RemoveEwDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveEwDatabaseRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SeppoServer).RemoveEwDatabase(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/SeppoService.Seppo/RemoveEwDatabase",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SeppoServer).RemoveEwDatabase(ctx, req.(*RemoveEwDatabaseRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Seppo_SyncEwDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(SyncEwDatabaseRequest)
 	if err := dec(in); err != nil {
@@ -261,12 +522,48 @@ var _Seppo_serviceDesc = grpc.ServiceDesc{
 			Handler:    _Seppo_SearchVariations_Handler,
 		},
 		{
+			MethodName: "fetchSongDatabases",
+			Handler:    _Seppo_FetchSongDatabases_Handler,
+		},
+		{
+			MethodName: "fetchSongDatabaseById",
+			Handler:    _Seppo_FetchSongDatabaseById_Handler,
+		},
+		{
+			MethodName: "fetchEwDatabases",
+			Handler:    _Seppo_FetchEwDatabases_Handler,
+		},
+		{
+			MethodName: "fetchEwDatabaseById",
+			Handler:    _Seppo_FetchEwDatabaseById_Handler,
+		},
+		{
 			MethodName: "createVariation",
 			Handler:    _Seppo_CreateVariation_Handler,
 		},
 		{
 			MethodName: "editVariation",
 			Handler:    _Seppo_EditVariation_Handler,
+		},
+		{
+			MethodName: "createSongDatabase",
+			Handler:    _Seppo_CreateSongDatabase_Handler,
+		},
+		{
+			MethodName: "editSongDatabase",
+			Handler:    _Seppo_EditSongDatabase_Handler,
+		},
+		{
+			MethodName: "removeSongDatabase",
+			Handler:    _Seppo_RemoveSongDatabase_Handler,
+		},
+		{
+			MethodName: "createEwDatabase",
+			Handler:    _Seppo_CreateEwDatabase_Handler,
+		},
+		{
+			MethodName: "removeEwDatabase",
+			Handler:    _Seppo_RemoveEwDatabase_Handler,
 		},
 		{
 			MethodName: "syncEwDatabase",
@@ -286,24 +583,33 @@ var _Seppo_serviceDesc = grpc.ServiceDesc{
 func init() { proto.RegisterFile("seppo_service.proto", fileDescriptor3) }
 
 var fileDescriptor3 = []byte{
-	// 294 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x92, 0x41, 0x4b, 0xc3, 0x40,
-	0x10, 0x85, 0x2b, 0xa8, 0x87, 0xc5, 0xb6, 0x3a, 0x15, 0x0f, 0x39, 0xc6, 0x56, 0x05, 0x21, 0x88,
-	0xfe, 0x03, 0x6b, 0x0b, 0x82, 0x27, 0x03, 0x1e, 0x04, 0x89, 0xdb, 0x64, 0x4c, 0x17, 0x64, 0x37,
-	0xee, 0xac, 0x09, 0xfd, 0xa1, 0xfe, 0x1f, 0x69, 0x93, 0x8d, 0xd9, 0x58, 0x9a, 0xe3, 0xbe, 0xf7,
-	0xcd, 0x7b, 0xb3, 0x30, 0x6c, 0x44, 0x98, 0x65, 0x2a, 0x22, 0xd4, 0xb9, 0x88, 0x31, 0xc8, 0xb4,
-	0x32, 0x0a, 0x8e, 0xc2, 0xb5, 0x18, 0x96, 0x9a, 0x37, 0x22, 0x25, 0xd3, 0x28, 0xe1, 0x86, 0x2f,
-	0x38, 0x55, 0x88, 0x77, 0x82, 0x45, 0x5b, 0xea, 0x63, 0x11, 0xad, 0xd1, 0xea, 0x39, 0xc0, 0x22,
-	0xca, 0x51, 0xd7, 0xf6, 0x30, 0xe7, 0x5a, 0x70, 0x23, 0x94, 0x2c, 0x85, 0xdb, 0x9f, 0x7d, 0x76,
-	0xb0, 0x29, 0x02, 0xc1, 0xe0, 0x03, 0x4d, 0xbc, 0x7c, 0xb1, 0xc4, 0xfd, 0xea, 0x31, 0x81, 0xcb,
-	0xa0, 0xb9, 0x46, 0x30, 0xff, 0x47, 0x3c, 0xe3, 0xd7, 0x37, 0x92, 0xf1, 0xae, 0xba, 0x41, 0xca,
-	0x94, 0x24, 0xf4, 0x7b, 0x10, 0xb3, 0x63, 0x42, 0xae, 0x1b, 0x00, 0xc1, 0xc4, 0x9d, 0x0f, 0x5b,
-	0xbe, 0xad, 0xb9, 0xe8, 0xc2, 0xea, 0x92, 0x88, 0x9d, 0x7d, 0x0a, 0x32, 0x28, 0xe7, 0x4a, 0x4f,
-	0x97, 0x5c, 0xa6, 0x98, 0xcc, 0x8a, 0x50, 0xc9, 0x14, 0xae, 0xdd, 0x8c, 0xa7, 0xad, 0x94, 0x2d,
-	0x3c, 0x75, 0xe1, 0xd2, 0xf4, 0x7b, 0x37, 0x7b, 0xf0, 0xce, 0x86, 0xb1, 0x46, 0x6e, 0xb0, 0xae,
-	0x87, 0xb1, 0x0b, 0x4f, 0x5d, 0xdb, 0x46, 0x4e, 0x3a, 0xa8, 0xfa, 0x0b, 0xaf, 0xac, 0x8f, 0x89,
-	0x30, 0x7f, 0xf9, 0x7e, 0x6b, 0x99, 0xa6, 0x69, 0xd3, 0xcf, 0x77, 0x32, 0x75, 0xf6, 0x1b, 0x1b,
-	0xd0, 0x4a, 0xc6, 0xb3, 0xe2, 0xa1, 0x3a, 0x20, 0x68, 0x0d, 0x86, 0x8e, 0x6b, 0xd3, 0xc7, 0xbb,
-	0x21, 0x1b, 0xbf, 0x38, 0xdc, 0x9c, 0xd7, 0xdd, 0x6f, 0x00, 0x00, 0x00, 0xff, 0xff, 0x53, 0xdd,
-	0x1a, 0x14, 0xdb, 0x02, 0x00, 0x00,
+	// 444 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x95, 0xcb, 0xce, 0xd2, 0x40,
+	0x14, 0xc7, 0x71, 0xa1, 0x8b, 0xc9, 0x77, 0xc1, 0x41, 0x5d, 0xb0, 0xac, 0x80, 0x28, 0x09, 0x31,
+	0xfa, 0x06, 0x56, 0x48, 0x4c, 0x5c, 0xd1, 0xc4, 0x85, 0x89, 0xa9, 0x43, 0x7b, 0x80, 0x26, 0x38,
+	0x53, 0x67, 0xc6, 0x36, 0xbc, 0x80, 0xcf, 0xfd, 0xa5, 0xf7, 0xb9, 0x95, 0xb2, 0x64, 0xce, 0xaf,
+	0xe7, 0xd7, 0xff, 0x39, 0xd3, 0x80, 0x26, 0x02, 0xd2, 0x94, 0x85, 0x02, 0x78, 0x96, 0x44, 0xb0,
+	0x4e, 0x39, 0x93, 0x0c, 0xdf, 0x05, 0xc5, 0x61, 0x50, 0x9d, 0x4d, 0x27, 0x82, 0xd1, 0x63, 0x18,
+	0x13, 0x49, 0xf6, 0x44, 0xd4, 0xc8, 0xf4, 0x25, 0xe4, 0xe6, 0xd1, 0x3d, 0xe4, 0x61, 0x81, 0xd6,
+	0x3f, 0x1f, 0x20, 0x0f, 0x33, 0xe0, 0x6d, 0xf9, 0x31, 0x23, 0x3c, 0x21, 0x32, 0x61, 0xb4, 0x3a,
+	0xf8, 0xf4, 0xff, 0x0e, 0x3d, 0x2f, 0x45, 0x38, 0x41, 0xf8, 0x00, 0x32, 0x3a, 0xfd, 0x68, 0x88,
+	0x2f, 0x97, 0x6f, 0x31, 0x7e, 0xb7, 0x56, 0x5f, 0x63, 0xbd, 0xb5, 0x88, 0x1d, 0xfc, 0xfd, 0x07,
+	0x42, 0x4e, 0x97, 0xc3, 0xa0, 0x48, 0x19, 0x15, 0xe0, 0x8d, 0x70, 0x84, 0xc6, 0x02, 0x08, 0x57,
+	0x00, 0x81, 0xe7, 0xfa, 0xf3, 0x81, 0x51, 0x6f, 0x34, 0x8b, 0x21, 0xac, 0x95, 0x84, 0xe8, 0xcd,
+	0x39, 0x11, 0x12, 0xe8, 0x96, 0x71, 0xff, 0x44, 0xe8, 0x11, 0xe2, 0x4d, 0x1e, 0x30, 0x7a, 0xc4,
+	0x2b, 0xbd, 0xc7, 0x77, 0x27, 0xd5, 0x08, 0x5f, 0xe9, 0x70, 0x55, 0xf4, 0x46, 0x1f, 0x9f, 0xe1,
+	0x43, 0x3d, 0xb0, 0xe2, 0xe0, 0x6b, 0xbd, 0x05, 0xe1, 0x1c, 0x98, 0x46, 0x34, 0x8d, 0xcd, 0xc0,
+	0x2a, 0xe3, 0x33, 0x4a, 0x21, 0x2a, 0x12, 0x79, 0x23, 0xcc, 0xd1, 0x6b, 0xcb, 0x53, 0xee, 0xe6,
+	0xc3, 0x80, 0x4a, 0x5d, 0xcf, 0xea, 0x26, 0xb6, 0x1d, 0xde, 0x6f, 0x34, 0x2e, 0x9d, 0x9b, 0xbc,
+	0x4b, 0x36, 0x77, 0xb4, 0x50, 0xea, 0x8d, 0xe9, 0xad, 0x39, 0x30, 0x77, 0xaa, 0x33, 0x9a, 0x18,
+	0x86, 0x32, 0xd3, 0xf2, 0xaa, 0x44, 0x4d, 0xf4, 0xfe, 0x06, 0x52, 0xc9, 0xf3, 0x18, 0x71, 0x20,
+	0x12, 0xda, 0xab, 0x82, 0x67, 0xfa, 0xf3, 0xbe, 0x5e, 0xee, 0xd9, 0x92, 0x45, 0xb5, 0x86, 0x9f,
+	0xe8, 0x1e, 0xe2, 0x44, 0x76, 0xfd, 0x3d, 0x63, 0x0e, 0x6a, 0xb1, 0x6f, 0x56, 0x3a, 0xd3, 0xf6,
+	0x4e, 0x10, 0xae, 0xde, 0x5e, 0xdd, 0x98, 0x79, 0xd3, 0x7c, 0x8b, 0xe8, 0xf9, 0x34, 0x5d, 0xa0,
+	0xfa, 0x69, 0x16, 0x31, 0x34, 0xd1, 0xdc, 0x7e, 0x4b, 0x97, 0x66, 0x31, 0x84, 0xa9, 0x79, 0x38,
+	0xfc, 0x61, 0xd9, 0xd5, 0x3c, 0x3b, 0x8b, 0xe8, 0xc9, 0xe3, 0x02, 0xd5, 0x3c, 0xd5, 0xe8, 0xba,
+	0xab, 0x81, 0x9d, 0x3b, 0xed, 0xea, 0x3d, 0x79, 0x6c, 0x4c, 0x95, 0x54, 0x79, 0xfa, 0x25, 0x3b,
+	0xa3, 0xde, 0x23, 0xb1, 0xb1, 0x56, 0xf2, 0x0b, 0x3d, 0x88, 0x0b, 0x8d, 0x14, 0x85, 0x71, 0x7b,
+	0x02, 0xad, 0xda, 0x08, 0x66, 0xd7, 0xa1, 0xa6, 0xfd, 0xfe, 0x45, 0xf9, 0x7f, 0xf0, 0xf9, 0x29,
+	0x00, 0x00, 0xff, 0xff, 0xd7, 0x6f, 0x71, 0x60, 0x8c, 0x06, 0x00, 0x00,
 }

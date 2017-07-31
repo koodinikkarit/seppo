@@ -54,3 +54,77 @@ func (s *SeppoServiceServer) ListenForChangedEwSong(in *SeppoService.ListenForCh
 
 	return nil
 }
+
+func (s *SeppoServiceServer) FetchSongDatabases(ctx context.Context, in *SeppoService.FetchSongDatabasesRequest) (*SeppoService.SongDatabasesConnection, error) {
+	res := &SeppoService.SongDatabasesConnection{}
+
+	songDatabases := []SeppoDB.SongDatabase{}
+	s.databaseService.GetDb().Find(&songDatabases)
+
+	for _, songDatabase := range songDatabases {
+		res.Edges = append(res.Edges, &SeppoService.SongDatabaseEdge{
+			Node: NewSongDatabaseToServiceType(&songDatabase),
+		})
+	}
+
+	return res, nil
+}
+
+func (s *SeppoServiceServer) FetchSongDatabaseById(ctx context.Context, in *SeppoService.FetchSongDatabaseByIdRequest) (*SeppoService.FetchSongDatabaseByIdResponse, error) {
+	res := &SeppoService.FetchSongDatabaseByIdResponse{}
+
+	songDatabases := []SeppoDB.SongDatabase{}
+	s.databaseService.GetDb().Where("id in (?)", in.SongDatabasesIds).Find(&songDatabases)
+
+	for _, songDatabaseId := range in.SongDatabasesIds {
+		found := false
+		for _, songDatabase := range songDatabases {
+			if songDatabase.ID == songDatabaseId {
+				found = true
+				res.SongDatabases = append(res.SongDatabases, NewSongDatabaseToServiceType(&songDatabase))
+			}
+		}
+		if found == false {
+			res.SongDatabases = append(res.SongDatabases, &SeppoService.SongDatabase{
+				Id: 0,
+			})
+		}
+	}
+
+	return res, nil
+}
+
+func (s *SeppoServiceServer) FetchEwDatabases(ctx context.Context, in *SeppoService.FetchEwDatabasesRequest) (*SeppoService.EwDatabasesConnection, error) {
+	res := &SeppoService.EwDatabasesConnection{}
+
+	ewDatabases := []SeppoDB.EwDatabase{}
+	s.databaseService.GetDb().Find(&ewDatabases)
+
+	for _, ewDatabase := range ewDatabases {
+		res.EwDatabases = append(res.EwDatabases, NewEwDatabaseToServiceType(&ewDatabase))
+	}
+
+	return res, nil
+}
+
+func (s *SeppoServiceServer) FetchEwDatabaseById(ctx context.Context, in *SeppoService.FetchEwDatabaseByIdRequest) (*SeppoService.FetchEwDatabaseByIdResponse, error) {
+	res := &SeppoService.FetchEwDatabaseByIdResponse{}
+
+	ewDatabases := []SeppoDB.EwDatabase{}
+	s.databaseService.GetDb().Where("id in (?)", in.EwDatabaseIds).Find(&ewDatabases)
+	for _, ewDatabaseId := range in.EwDatabaseIds {
+		found := false
+		for _, ewDatabase := range ewDatabases {
+			if ewDatabaseId == ewDatabase.ID {
+				found = true
+				res.EwDatabases = append(res.EwDatabases, NewEwDatabaseToServiceType(&ewDatabase))
+			}
+		}
+		if found == false {
+			res.EwDatabases = append(res.EwDatabases, &SeppoService.EwDatabase{
+				Id: 0,
+			})
+		}
+	}
+	return res, nil
+}

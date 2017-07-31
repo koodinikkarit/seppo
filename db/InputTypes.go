@@ -24,11 +24,24 @@ type EditVariationInput struct {
 }
 
 type UpdateEwSongInput struct {
-	Title string
+	Title         string
 	Author        string
 	Copyright     string
 	Administrator string
 	Description   string
 	Tags          string
 	EwDatabaseId  uint32
+}
+
+type CreateSongDatabaseInput struct {
+	Name string
+}
+
+type EditSongDatabaseInput struct {
+	SongDatabaseId uint32
+	Name           string
+}
+
+type CreateEwDatabaseInput struct {
+	SongDatabaseId uint32
 }
