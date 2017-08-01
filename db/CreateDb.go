@@ -30,6 +30,7 @@ func CreateDb(
 	createSongChannel := make(chan CreateSongInput)
 	createVariationChannel := make(chan createVariationInternalInput)
 	editVariationChannel := make(chan editVariationInternalInput)
+	removeVariationChannel := make(chan removeVariationInternalInput)
 	createSongDatabaseChannel := make(chan createSongDatabaseInternalInput)
 	editSongDatabaseChannel := make(chan editSongDatabaseInternalInput)
 	removeSongDatabaseChannel := make(chan removeSongDatabaseInternalInput)
@@ -41,6 +42,7 @@ func CreateDb(
 		CreateSongChannel:         createSongChannel,
 		createVariationChannel:    createVariationChannel,
 		editVariationChannel:      editVariationChannel,
+		removeVariationChannel:    removeVariationChannel,
 		createSongDatabaseChannel: createSongDatabaseChannel,
 		editSongDatabaseChannel:   editSongDatabaseChannel,
 		removeSongDatabaseChannel: removeSongDatabaseChannel,

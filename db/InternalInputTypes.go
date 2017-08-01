@@ -10,6 +10,11 @@ type editVariationInternalInput struct {
 	returnChannel chan *Variation
 }
 
+type removeVariationInternalInput struct {
+	variationID   uint32
+	returnChannel chan bool
+}
+
 type createSongDatabaseInternalInput struct {
 	input         CreateSongDatabaseInput
 	returnChannel chan *SongDatabase

@@ -11,6 +11,7 @@ type DatabaseService struct {
 	CreateSongChannel         chan CreateSongInput
 	createVariationChannel    chan createVariationInternalInput
 	editVariationChannel      chan editVariationInternalInput
+	removeVariationChannel    chan removeVariationInternalInput
 	createSongDatabaseChannel chan createSongDatabaseInternalInput
 	editSongDatabaseChannel   chan editSongDatabaseInternalInput
 	removeSongDatabaseChannel chan removeSongDatabaseInternalInput
@@ -58,6 +59,12 @@ func (ds *DatabaseService) Start() {
 			ds.db.Create(&variation)
 
 			createVariationInput.returnChannel <- variation
+		case removeVariation := <-ds.removeVariationChannel:
+			var variation Variation
+			ds.db.First(&variation, removeVariation.variationID)
+
+			ds.db.Delete(&variation)
+			removeVariation.returnChannel <- true
 		case editVariationInput := <-ds.editVariationChannel:
 			var variation Variation
 			ds.GetDb().First(&variation, editVariationInput.input.VariationID)

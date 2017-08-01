@@ -22,6 +22,12 @@ func (s *SeppoServiceServer) EditVariation(ctx context.Context, in *SeppoService
 	return res, nil
 }
 
+func (s *SeppoServiceServer) RemoveVariation(ctx context.Context, in *SeppoService.RemoveVariationRequest) (*SeppoService.RemoveVariationResponse, error) {
+	res := &SeppoService.RemoveVariationResponse{}
+	s.databaseService.RemoveVariation(in.VariationId)
+	return res, nil
+}
+
 func (s *SeppoServiceServer) CreateSongDatabase(ctx context.Context, in *SeppoService.CreateSongDatabaseRequest) (*SeppoService.CreateSongDatabaseResponse, error) {
 	res := &SeppoService.CreateSongDatabaseResponse{}
 	songDatabase := s.databaseService.CreateSongDatabase(SeppoDB.NewCreateSongDatabaseInputFromServiceType(in))

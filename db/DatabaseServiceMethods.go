@@ -18,6 +18,15 @@ func (ds *DatabaseService) EditVariation(input EditVariationInput) *Variation {
 	return <-returnChannel
 }
 
+func (ds *DatabaseService) RemoveVariation(variationId uint32) bool {
+	returnChannel := make(chan bool)
+	ds.removeVariationChannel <- removeVariationInternalInput{
+		variationID:   variationId,
+		returnChannel: returnChannel,
+	}
+	return <-returnChannel
+}
+
 func (ds *DatabaseService) UpdateEwSong(input UpdateEwSongInput) *Variation {
 	return &Variation{}
 }

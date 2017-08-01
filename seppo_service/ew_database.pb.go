@@ -50,6 +50,8 @@ It has these top-level messages:
 	CreateVariationResponse
 	EditVariationRequest
 	EditVariationResponse
+	RemoveVariationRequest
+	RemoveVariationResponse
 	FetchVariationByIdRequest
 	FetchVariationByIdResponse
 	SearchVariationsRequest

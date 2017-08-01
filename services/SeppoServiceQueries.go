@@ -74,9 +74,9 @@ func (s *SeppoServiceServer) FetchSongDatabaseById(ctx context.Context, in *Sepp
 	res := &SeppoService.FetchSongDatabaseByIdResponse{}
 
 	songDatabases := []SeppoDB.SongDatabase{}
-	s.databaseService.GetDb().Where("id in (?)", in.SongDatabasesIds).Find(&songDatabases)
+	s.databaseService.GetDb().Where("id in (?)", in.SongDatabaseIds).Find(&songDatabases)
 
-	for _, songDatabaseId := range in.SongDatabasesIds {
+	for _, songDatabaseId := range in.SongDatabaseIds {
 		found := false
 		for _, songDatabase := range songDatabases {
 			if songDatabase.ID == songDatabaseId {
