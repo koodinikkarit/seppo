@@ -35,6 +35,11 @@ type createEwDatabaseInternalInput struct {
 	returnChnnel chan *EwDatabase
 }
 
+type editEwDatabaseInternalInput struct {
+	input         EditEwDatabaseInput
+	returnChannel chan *EwDatabase
+}
+
 type removeEwDatabaseInternalInput struct {
 	ewDatabaseID  uint32
 	returnChannel chan bool

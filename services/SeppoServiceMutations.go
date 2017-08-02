@@ -54,6 +54,13 @@ func (s *SeppoServiceServer) CreateEwDatabase(ctx context.Context, in *SeppoServ
 	return res, nil
 }
 
+func (s *SeppoServiceServer) EditEwDatabase(ctx context.Context, in *SeppoService.EditEwDatabaseRequest) (*SeppoService.EditEwDatabaseResponse, error) {
+	res := &SeppoService.EditEwDatabaseResponse{}
+	ewDatabase := s.databaseService.EditEwDatabase(SeppoDB.NewEditEwDatabaseFromServiceType(in))
+	res.EwDatabase = NewEwDatabaseToServiceType(ewDatabase)
+	return res, nil
+}
+
 func (s *SeppoServiceServer) RemoveEwDatabase(ctx context.Context, in *SeppoService.RemoveEwDatabaseRequest) (*SeppoService.RemoveEwDatabaseResponse, error) {
 	res := &SeppoService.RemoveEwDatabaseResponse{}
 	s.databaseService.RemoveEwDatabase(in.EwDatabaseId)

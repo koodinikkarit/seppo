@@ -16,6 +16,7 @@ type DatabaseService struct {
 	editSongDatabaseChannel                chan editSongDatabaseInternalInput
 	removeSongDatabaseChannel              chan removeSongDatabaseInternalInput
 	createEwDatabaseChannel                chan createEwDatabaseInternalInput
+	editEwDatabaseChannel                  chan editEwDatabaseInternalInput
 	removeEwDatabaseChannel                chan removeEwDatabaseInternalInput
 	addVariationToSongDatabaseChannel      chan addVariationToSongDatabaseInternalInput
 	removeVariationFromSongDatabaseChannel chan removeVariationFromSongDatabaseInternalInput
@@ -114,6 +115,17 @@ func (ds *DatabaseService) Start() {
 			}
 			ds.db.Create(&ewDatabase)
 			createEwDatabase.returnChnnel <- ewDatabase
+		case in := <-ds.editEwDatabaseChannel:
+			var ewDatabase EwDatabase
+			ds.db.First(&ewDatabase, in.input.EwDatabaseID)
+			if in.input.Name != "" {
+				ewDatabase.Name = in.input.Name
+			}
+			if in.input.SongDatabaseID > 0 {
+				ewDatabase.SongDatabaseID = in.input.SongDatabaseID
+			}
+			ds.db.Save(&ewDatabase)
+			in.returnChannel <- &ewDatabase
 		case removeEwDatabase := <-ds.removeEwDatabaseChannel:
 			var ewDatabase EwDatabase
 			ds.db.First(&ewDatabase, removeEwDatabase.ewDatabaseID)

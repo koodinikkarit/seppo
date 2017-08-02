@@ -68,6 +68,15 @@ func (ds *DatabaseService) CreateEwDatabase(createEwDatabaseInput CreateEwDataba
 	return <-returnChannel
 }
 
+func (ds *DatabaseService) EditEwDatabase(in EditEwDatabaseInput) *EwDatabase {
+	returnChannel := make(chan *EwDatabase)
+	ds.editEwDatabaseChannel <- editEwDatabaseInternalInput{
+		input:         in,
+		returnChannel: returnChannel,
+	}
+	return <-returnChannel
+}
+
 func (ds *DatabaseService) RemoveEwDatabase(ewDatabaseId uint32) bool {
 	returnChannel := make(chan bool)
 	ds.removeEwDatabaseChannel <- removeEwDatabaseInternalInput{
