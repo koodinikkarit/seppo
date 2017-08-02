@@ -62,7 +62,8 @@ func (ds *DatabaseService) RemoveSongDatabase(songDatabaseId uint32) bool {
 func (ds *DatabaseService) CreateEwDatabase(createEwDatabaseInput CreateEwDatabaseInput) *EwDatabase {
 	returnChannel := make(chan *EwDatabase)
 	ds.createEwDatabaseChannel <- createEwDatabaseInternalInput{
-		input: createEwDatabaseInput,
+		input:        createEwDatabaseInput,
+		returnChnnel: returnChannel,
 	}
 	return <-returnChannel
 }
@@ -72,6 +73,26 @@ func (ds *DatabaseService) RemoveEwDatabase(ewDatabaseId uint32) bool {
 	ds.removeEwDatabaseChannel <- removeEwDatabaseInternalInput{
 		ewDatabaseID:  ewDatabaseId,
 		returnChannel: returnChannel,
+	}
+	return <-returnChannel
+}
+
+func (ds *DatabaseService) AddVariationToSongDatabase(songDatabaseID uint32, variationID uint32) *SongDatabaseVariation {
+	returnChannel := make(chan *SongDatabaseVariation)
+	ds.addVariationToSongDatabaseChannel <- addVariationToSongDatabaseInternalInput{
+		songDatabaseID: songDatabaseID,
+		variationID:    variationID,
+		returnChannel:  returnChannel,
+	}
+	return <-returnChannel
+}
+
+func (ds *DatabaseService) RemoveVariationFromSongDatabase(songDatabaseID uint32, variationID uint32) bool {
+	returnChannel := make(chan bool)
+	ds.removeVariationFromSongDatabaseChannel <- removeVariationFromSongDatabaseInternalInput{
+		songDatabaseID: songDatabaseID,
+		variationID:    variationID,
+		returnChannel:  returnChannel,
 	}
 	return <-returnChannel
 }

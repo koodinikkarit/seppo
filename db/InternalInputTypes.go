@@ -39,3 +39,15 @@ type removeEwDatabaseInternalInput struct {
 	ewDatabaseID  uint32
 	returnChannel chan bool
 }
+
+type addVariationToSongDatabaseInternalInput struct {
+	songDatabaseID uint32
+	variationID    uint32
+	returnChannel  chan *SongDatabaseVariation
+}
+
+type removeVariationFromSongDatabaseInternalInput struct {
+	songDatabaseID uint32
+	variationID    uint32
+	returnChannel  chan bool
+}

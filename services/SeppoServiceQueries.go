@@ -36,7 +36,25 @@ func (s *SeppoServiceServer) SearchVariations(ctx context.Context, in *SeppoServ
 
 	variations := []SeppoDB.Variation{}
 
-	s.databaseService.GetDb().Find(&variations)
+	query := s.databaseService.GetDb().Debug()
+
+	if in.SongDatabaseFilterId > 0 {
+		var filterSongDatabaseVariationsIds []uint32
+		filterSongDatabaseVariations := []SeppoDB.SongDatabaseVariation{}
+		s.databaseService.GetDb().Where("song_database_id = ?", in.SongDatabaseFilterId).Select("variation_id").Find(&filterSongDatabaseVariations)
+		for _, v := range filterSongDatabaseVariations {
+			filterSongDatabaseVariationsIds = append(filterSongDatabaseVariationsIds, v.VariationID)
+		}
+		if filterSongDatabaseVariationsIds != nil {
+			query = query.Not("id", filterSongDatabaseVariationsIds)
+		}
+	}
+
+	if in.SearchWord != "" {
+		//query = query.Where("name = ")
+	}
+
+	query = query.Find(&variations)
 
 	for _, variation := range variations {
 		res.Variations = append(res.Variations, &SeppoService.Variation{
@@ -126,5 +144,36 @@ func (s *SeppoServiceServer) FetchEwDatabaseById(ctx context.Context, in *SeppoS
 			})
 		}
 	}
+	return res, nil
+}
+
+func (s *SeppoServiceServer) FetchVariationsBySongDatabaseId(ctx context.Context, in *SeppoService.FetchVariationsBySongDatabaseIdRequest) (*SeppoService.FetchVariationsBySongDatabaseIdResponse, error) {
+	res := &SeppoService.FetchVariationsBySongDatabaseIdResponse{}
+
+	fetchedSongDatabaseVariations := []SeppoDB.SongDatabaseVariation{}
+	s.databaseService.GetDb().Where("song_database_id in (?)", in.SongDatabaseIds).Find(&fetchedSongDatabaseVariations)
+
+	variationIds := []uint32{}
+	for _, v := range fetchedSongDatabaseVariations {
+		variationIds = append(variationIds, v.VariationID)
+	}
+	variations := []SeppoDB.Variation{}
+	s.databaseService.GetDb().Where("id in (?)", variationIds).Find(&variations)
+
+	for _, songDatabaseId := range in.SongDatabaseIds {
+		databaseVariations := SeppoService.SongDatabaseVariations{}
+		databaseVariations.SongDatabaseId = songDatabaseId
+		for _, songDatabaseVariation := range fetchedSongDatabaseVariations {
+			if songDatabaseId == songDatabaseVariation.SongDatabaseID {
+				for _, variation := range variations {
+					if songDatabaseVariation.VariationID == variation.ID {
+						databaseVariations.Variations = append(databaseVariations.Variations, NewVariationToServiceType(&variation))
+					}
+				}
+			}
+		}
+		res.SongDatabaseVariations = append(res.SongDatabaseVariations, &databaseVariations)
+	}
+
 	return res, nil
 }

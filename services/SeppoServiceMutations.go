@@ -60,6 +60,19 @@ func (s *SeppoServiceServer) RemoveEwDatabase(ctx context.Context, in *SeppoServ
 	return res, nil
 }
 
+func (s *SeppoServiceServer) AddVariationToSongDatabase(ctx context.Context, in *SeppoService.AddVariationToSongDatabaseRequest) (*SeppoService.AddVariationToSongDatabaseResponse, error) {
+	res := &SeppoService.AddVariationToSongDatabaseResponse{}
+	songDatabaseVariation := s.databaseService.AddVariationToSongDatabase(in.SongDatabaseId, in.VariationId)
+	res.SongDatabaseVariation = NewSongDatabaseVariationToServiceType(songDatabaseVariation)
+	return res, nil
+}
+
+func (s *SeppoServiceServer) RemoveVariationFromSongDatabase(ctx context.Context, in *SeppoService.RemoveVariationFromSongDatabaseRequest) (*SeppoService.RemoveVariationFromSongDatabaseResponse, error) {
+	res := &SeppoService.RemoveVariationFromSongDatabaseResponse{}
+	s.databaseService.RemoveVariationFromSongDatabase(in.SongDatabaseId, in.VariationId)
+	return res, nil
+}
+
 func (s *SeppoServiceServer) SyncEwDatabase(ctx context.Context, in *SeppoService.SyncEwDatabaseRequest) (*SeppoService.SyncEwDatabaseResponse, error) {
 	response := &SeppoService.SyncEwDatabaseResponse{}
 
