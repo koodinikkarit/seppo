@@ -43,5 +43,6 @@ type EditSongDatabaseInput struct {
 }
 
 type CreateEwDatabaseInput struct {
+	Name           string
 	SongDatabaseId uint32
 }

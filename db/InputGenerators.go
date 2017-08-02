@@ -44,11 +44,13 @@ func NewEwDatabaseFromServiceType(in *SeppoService.EwDatabase) EwDatabase {
 	return EwDatabase{
 		ID:             in.Id,
 		SongDatabaseID: in.SongDatabaseId,
+		Name:           in.Name,
 	}
 }
 
 func NewCreateEwDatabaseFromServiceType(in *SeppoService.CreateEwDatabaseRequest) CreateEwDatabaseInput {
 	return CreateEwDatabaseInput{
+		Name:           in.Name,
 		SongDatabaseId: in.SongDatabaseId,
 	}
 }
