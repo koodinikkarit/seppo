@@ -9,4 +9,5 @@ dbPasswd = Tietokanta salasana
 dbIp = Tietokanta ip
 dbPort = Tietokanta portti
 dbName = Tietokanta nimi
+seppoPort = Seppo servicen portti
 ```
