@@ -18,7 +18,7 @@ func CreateSeppoServer(config Config) {
 	if config.DBPasswd != "" {
 		dbPasswd = config.DBPasswd
 	}
-	if dbIP != "" {
+	if config.DBIP != "" {
 		dbIP = config.DBIP
 	}
 	if config.DBPort != "" {
