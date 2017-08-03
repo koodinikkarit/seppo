@@ -5,13 +5,38 @@ import (
 )
 
 func CreateSeppoServer(config Config) {
+	dbUser := "root"
+	dbPasswd := "qwerty"
+	dbIP := "localhost"
+	dbPort := "3306"
+	dbName := "seppo"
+	seppoPort := "3000"
+
+	if config.DBUser != "" {
+		dbUser = config.DBUser
+	}
+	if config.DBPasswd != "" {
+		dbPasswd = config.DBPasswd
+	}
+	if dbIP != "" {
+		dbIP = config.DBIP
+	}
+	if config.DBPort != "" {
+		dbPort = config.DBPort
+	}
+	if config.DBName != "" {
+		dbName = config.DBName
+	}
+	if config.SeppoPort != "" {
+		seppoPort = config.SeppoPort
+	}
 
 	databaseService := SeppoDB.CreateDb(
-		config.DBUser,
-		config.DBPasswd,
-		config.DBIP,
-		config.DBPort,
-		config.DBName)
+		dbUser,
+		dbPasswd,
+		dbIP,
+		dbPort,
+		dbName)
 	go databaseService.Start()
-	CreateSeppoService("3214", databaseService)
+	CreateSeppoService(seppoPort, databaseService)
 }

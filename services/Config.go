@@ -8,11 +8,12 @@ import (
 )
 
 type Config struct {
-	DBUser   string `yaml:"dbUser"`
-	DBPasswd string `yaml:"dbPasswd"`
-	DBIP     string `yaml:"dbIp"`
-	DBPort   string `yaml:"dbPort"`
-	DBName   string `yaml:"dbName"`
+	DBUser    string `yaml:"dbUser"`
+	DBPasswd  string `yaml:"dbPasswd"`
+	DBIP      string `yaml:"dbIp"`
+	DBPort    string `yaml:"dbPort"`
+	DBName    string `yaml:"dbName"`
+	SeppoPort string `yaml:"seppoPort"`
 }
 
 func (c *Config) GetConf() *Config {
