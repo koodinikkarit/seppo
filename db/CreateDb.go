@@ -3,24 +3,20 @@ package SeppoDB
 import (
 	"fmt"
 
-	mysql "github.com/go-sql-driver/mysql"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
 )
 
 func CreateDb(
 	dbUser string,
 	dbPass string,
-	dbIp string,
+	dbIP string,
 	dbPort string,
 	dbName string,
 ) *DatabaseService {
-	config, _ := mysql.ParseDSN("db")
-
-	fmt.Println("addr", config.Addr)
-
-	fmt.Println("CreateDb", dbUser, dbPass, dbIp, dbPort, dbName)
-	fmt.Println("Connection string ", dbUser+":"+dbPass+"@tcp("+dbIp+":"+dbPort+")/"+dbName)
-	db, err := gorm.Open("mysql", dbUser+":"+dbPass+"@tcp("+dbIp+":"+dbPort+")/"+dbName)
+	fmt.Println("CreateDb", dbUser, dbPass, dbIP, dbPort, dbName)
+	fmt.Println("Connection string ", dbUser+":"+dbPass+"@tcp("+dbIP+":"+dbPort+")/"+dbName)
+	db, err := gorm.Open("mysql", dbUser+":"+dbPass+"@tcp("+dbIP+":"+dbPort+")/"+dbName)
 	if err != nil {
 		fmt.Println("Creating database connection failed", err)
 	}
