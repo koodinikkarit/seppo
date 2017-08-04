@@ -1,6 +1,8 @@
 package seppo
 
 import (
+	"fmt"
+
 	"golang.org/x/net/context"
 
 	"github.com/koodinikkarit/seppo/db"
@@ -33,7 +35,7 @@ func (s *SeppoServiceServer) FetchVariationById(ctx context.Context, in *SeppoSe
 
 func (s *SeppoServiceServer) SearchVariations(ctx context.Context, in *SeppoService.SearchVariationsRequest) (*SeppoService.SearchVariationsResponse, error) {
 	res := &SeppoService.SearchVariationsResponse{}
-
+	fmt.Println("search Variations")
 	variations := []SeppoDB.Variation{}
 
 	query := s.databaseService.GetDb().Debug()
