@@ -15,7 +15,7 @@ func CreateDb(
 	dbName string,
 ) *DatabaseService {
 	fmt.Println("CreateDb", dbUser, dbPass, dbIp, dbPort, dbName)
-	db, err := gorm.Open("mysql", dbUser+":"+dbPass+"@tcp("+dbIp+":"+dbPort+")/"+dbName)
+	db, err := gorm.Open("mysql", dbUser+":"+dbPass+"@tcp("+dbIp+")/"+dbName)
 	if err != nil {
 		fmt.Println("Creating database connection failed", err)
 	}
