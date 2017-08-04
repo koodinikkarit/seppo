@@ -6,5 +6,5 @@ go:
 install:
   make install
 script:
-  make build
-  docker-compose build seppo
+  - make build
+  - docker-compose build seppo
