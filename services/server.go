@@ -7,7 +7,7 @@ import (
 func CreateSeppoServer(config Config) {
 	dbUser := "root"
 	dbPasswd := "qwerty"
-	dbIP := "db"
+	dbIP := "seppo-mysql"
 	dbPort := "3306"
 	dbName := "seppo"
 	seppoPort := "3000"
