@@ -1,6 +1,8 @@
 package seppo
 
 import (
+	"fmt"
+
 	"github.com/koodinikkarit/seppo/db"
 )
 
@@ -38,5 +40,6 @@ func CreateSeppoServer(config Config) {
 		dbPort,
 		dbName)
 	go databaseService.Start()
+	fmt.Println("createsepposervice")
 	CreateSeppoService(seppoPort, databaseService)
 }
