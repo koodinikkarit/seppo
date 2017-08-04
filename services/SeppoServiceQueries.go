@@ -36,36 +36,36 @@ func (s *SeppoServiceServer) FetchVariationById(ctx context.Context, in *SeppoSe
 func (s *SeppoServiceServer) SearchVariations(ctx context.Context, in *SeppoService.SearchVariationsRequest) (*SeppoService.SearchVariationsResponse, error) {
 	res := &SeppoService.SearchVariationsResponse{}
 	fmt.Println("search Variations")
-	// variations := []SeppoDB.Variation{}
+	variations := []SeppoDB.Variation{}
 
-	// query := s.databaseService.GetDb().Debug()
+	query := s.databaseService.GetDb().Debug()
 
-	// if in.SongDatabaseFilterId > 0 {
-	// 	var filterSongDatabaseVariationsIds []uint32
-	// 	filterSongDatabaseVariations := []SeppoDB.SongDatabaseVariation{}
-	// 	s.databaseService.GetDb().Where("song_database_id = ?", in.SongDatabaseFilterId).Select("variation_id").Find(&filterSongDatabaseVariations)
-	// 	for _, v := range filterSongDatabaseVariations {
-	// 		filterSongDatabaseVariationsIds = append(filterSongDatabaseVariationsIds, v.VariationID)
-	// 	}
-	// 	if filterSongDatabaseVariationsIds != nil {
-	// 		query = query.Not("id", filterSongDatabaseVariationsIds)
-	// 	}
-	// }
+	if in.SongDatabaseFilterId > 0 {
+		var filterSongDatabaseVariationsIds []uint32
+		filterSongDatabaseVariations := []SeppoDB.SongDatabaseVariation{}
+		s.databaseService.GetDb().Where("song_database_id = ?", in.SongDatabaseFilterId).Select("variation_id").Find(&filterSongDatabaseVariations)
+		for _, v := range filterSongDatabaseVariations {
+			filterSongDatabaseVariationsIds = append(filterSongDatabaseVariationsIds, v.VariationID)
+		}
+		if filterSongDatabaseVariationsIds != nil {
+			query = query.Not("id", filterSongDatabaseVariationsIds)
+		}
+	}
 
-	// if in.SearchWord != "" {
-	// 	//query = query.Where("name = ")
-	// }
+	if in.SearchWord != "" {
+		//query = query.Where("name = ")
+	}
 
-	// query = query.Find(&variations)
+	query = query.Find(&variations)
 
-	// for _, variation := range variations {
-	// 	res.Variations = append(res.Variations, &SeppoService.Variation{
-	// 		Id:      variation.ID,
-	// 		Name:    variation.Name,
-	// 		SongId:  variation.SongID,
-	// 		Version: variation.Version,
-	// 	})
-	// }
+	for _, variation := range variations {
+		res.Variations = append(res.Variations, &SeppoService.Variation{
+			Id:      variation.ID,
+			Name:    variation.Name,
+			SongId:  variation.SongID,
+			Version: variation.Version,
+		})
+	}
 
 	return res, nil
 }
