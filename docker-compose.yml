@@ -1,10 +1,15 @@
 version: "3"
 services:
-  db:
+  seppo-mysql:
     image: mysql
     environment:
-      MYSQL_ROOT_PASSWORD: qwerty
+      - MYSQL_ROOT_PASSWORD=qwerty
+      - MYSQL_DATABASE=seppo
+    ports:
+      - 3306:3306
   seppo:
     build: .
     ports:
-      - "3214:3000"
+      - 3000:3000
+    depends_on:
+      - "seppo-mysql"
