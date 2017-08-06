@@ -7,4 +7,5 @@ install:
   make install
 script:
   - make build
-  - docker-compose build seppo
+  - docker build -t $DOCKER_ID_USER/seppo .
+  - docker push $DOCKER_ID_USER/seppo
