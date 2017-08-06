@@ -7,5 +7,6 @@ install:
   make install
 script:
   - make build
+  - docker login -u $DOCKER_ID_USER -p $DOCKER_USER_PASSWORD
   - docker build -t $DOCKER_ID_USER/seppo .
   - docker push $DOCKER_ID_USER/seppo
