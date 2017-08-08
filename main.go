@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-	config := seppo.LoadConfig("config.yml")
+	config := seppo.GetConfig()
 
 	seppo.CreateSeppoServer(config)
 	for {
