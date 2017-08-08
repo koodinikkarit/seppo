@@ -8,6 +8,11 @@ import (
 
 type DatabaseService struct {
 	db                                     *gorm.DB
+	dbUser                                 string
+	dbPass                                 string
+	dbIP                                   string
+	dbPort                                 string
+	dbName                                 string
 	CreateSongChannel                      chan CreateSongInput
 	createVariationChannel                 chan createVariationInternalInput
 	editVariationChannel                   chan editVariationInternalInput
@@ -27,6 +32,22 @@ func (ds *DatabaseService) insertSong(name string, songID uint32) {
 }
 
 func (ds *DatabaseService) GetDb() *gorm.DB {
+	if ds.db == nil {
+		fmt.Println("CreateDb", ds.dbUser, ds.dbPass, ds.dbIP, ds.dbPort, ds.dbName)
+		fmt.Println("Connection string ", ds.dbUser+":"+ds.dbPass+"@tcp("+ds.dbIP+":"+ds.dbPort+")/"+ds.dbName)
+		db, err := gorm.Open("mysql", ds.dbUser+":"+ds.dbPass+"@tcp("+ds.dbIP+":"+ds.dbPort+")/"+ds.dbName)
+		if err != nil {
+			fmt.Println("Creating database connection failed", err)
+		}
+		db.AutoMigrate(&EwDatabase{})
+		db.AutoMigrate(&EwDatabaseLink{})
+		db.AutoMigrate(&Song{})
+		db.AutoMigrate(&SongDatabase{})
+		db.AutoMigrate(&SongDatabaseVariation{})
+		db.AutoMigrate(&Variation{})
+		db.AutoMigrate(&Verse{})
+		ds.db = db
+	}
 	return ds.db
 }
 
@@ -39,7 +60,7 @@ func (ds *DatabaseService) Start() {
 				Version: 1,
 			}
 
-			ds.db.Create(&variation)
+			ds.GetDb().Create(&variation)
 
 			if createSongInput.EwDatabaseId != 0 {
 				ewDatabaseLink := &EwDatabaseLink{
@@ -48,7 +69,7 @@ func (ds *DatabaseService) Start() {
 					VariationID:      variation.ID,
 				}
 
-				ds.db.Create(&ewDatabaseLink)
+				ds.GetDb().Create(&ewDatabaseLink)
 
 				fmt.Println("uusi ewsong")
 			}
@@ -59,14 +80,14 @@ func (ds *DatabaseService) Start() {
 				Text: createVariationInput.input.Text,
 			}
 
-			ds.db.Create(&variation)
+			ds.GetDb().Create(&variation)
 
 			createVariationInput.returnChannel <- variation
 		case removeVariation := <-ds.removeVariationChannel:
 			var variation Variation
-			ds.db.First(&variation, removeVariation.variationID)
+			ds.GetDb().First(&variation, removeVariation.variationID)
 
-			ds.db.Delete(&variation)
+			ds.GetDb().Delete(&variation)
 			removeVariation.returnChannel <- true
 		case editVariationInput := <-ds.editVariationChannel:
 			var variation Variation
@@ -84,56 +105,56 @@ func (ds *DatabaseService) Start() {
 				variation.SongID = editVariationInput.input.SongID
 			}
 
-			ds.db.Save(&variation)
+			ds.GetDb().Save(&variation)
 			editVariationInput.returnChannel <- &variation
 		case createSongDatabase := <-ds.createSongDatabaseChannel:
 			songDatabase := &SongDatabase{
 				Name: createSongDatabase.input.Name,
 			}
-			ds.db.Create(&songDatabase)
+			ds.GetDb().Create(&songDatabase)
 			createSongDatabase.returnChannel <- songDatabase
 		case editSongDatabase := <-ds.editSongDatabaseChannel:
 			var songDatabase SongDatabase
-			ds.db.First(&songDatabase, editSongDatabase.input.SongDatabaseId)
+			ds.GetDb().First(&songDatabase, editSongDatabase.input.SongDatabaseId)
 
 			if editSongDatabase.input.Name != "" {
 				songDatabase.Name = editSongDatabase.input.Name
 			}
 
-			ds.db.Save(&songDatabase)
+			ds.GetDb().Save(&songDatabase)
 			editSongDatabase.returnChannel <- &songDatabase
 		case removeSongDatabase := <-ds.removeSongDatabaseChannel:
 			var songDatabase SongDatabase
-			ds.db.First(&songDatabase, removeSongDatabase.songDatabaseID)
+			ds.GetDb().First(&songDatabase, removeSongDatabase.songDatabaseID)
 
-			ds.db.Delete(&songDatabase)
+			ds.GetDb().Delete(&songDatabase)
 			removeSongDatabase.returnChannel <- true
 		case createEwDatabase := <-ds.createEwDatabaseChannel:
 			ewDatabase := &EwDatabase{
 				Name:           createEwDatabase.input.Name,
 				SongDatabaseID: createEwDatabase.input.SongDatabaseId,
 			}
-			ds.db.Create(&ewDatabase)
+			ds.GetDb().Create(&ewDatabase)
 			createEwDatabase.returnChnnel <- ewDatabase
 		case in := <-ds.editEwDatabaseChannel:
 			var ewDatabase EwDatabase
-			ds.db.First(&ewDatabase, in.input.EwDatabaseID)
+			ds.GetDb().First(&ewDatabase, in.input.EwDatabaseID)
 			if in.input.Name != "" {
 				ewDatabase.Name = in.input.Name
 			}
 			if in.input.SongDatabaseID > 0 {
 				ewDatabase.SongDatabaseID = in.input.SongDatabaseID
 			}
-			ds.db.Save(&ewDatabase)
+			ds.GetDb().Save(&ewDatabase)
 			in.returnChannel <- &ewDatabase
 		case removeEwDatabase := <-ds.removeEwDatabaseChannel:
 			var ewDatabase EwDatabase
-			ds.db.First(&ewDatabase, removeEwDatabase.ewDatabaseID)
-			ds.db.Delete(&ewDatabase)
+			ds.GetDb().First(&ewDatabase, removeEwDatabase.ewDatabaseID)
+			ds.GetDb().Delete(&ewDatabase)
 			removeEwDatabase.returnChannel <- true
 		case in := <-ds.addVariationToSongDatabaseChannel:
 			var songDatabaseVariation SongDatabaseVariation
-			ds.db.Where("song_database_id = ?", in.songDatabaseID).Where("variation_id = ?", in.variationID).First(&songDatabaseVariation)
+			ds.GetDb().Where("song_database_id = ?", in.songDatabaseID).Where("variation_id = ?", in.variationID).First(&songDatabaseVariation)
 			if songDatabaseVariation.ID == 0 {
 				songDatabaseVariation = SongDatabaseVariation{
 					SongDatabaseID: in.songDatabaseID,
@@ -141,13 +162,13 @@ func (ds *DatabaseService) Start() {
 				}
 			}
 
-			ds.db.Create(&songDatabaseVariation)
+			ds.GetDb().Create(&songDatabaseVariation)
 			in.returnChannel <- &songDatabaseVariation
 		case in := <-ds.removeVariationFromSongDatabaseChannel:
 			var songDatabaseVariation SongDatabaseVariation
 
-			ds.db.Where("song_database_id =  (?)", in.songDatabaseID).Where("variation_id = ?", in.variationID).Find(&songDatabaseVariation)
-			ds.db.Delete(&songDatabaseVariation)
+			ds.GetDb().Where("song_database_id =  (?)", in.songDatabaseID).Where("variation_id = ?", in.variationID).Find(&songDatabaseVariation)
+			ds.GetDb().Delete(&songDatabaseVariation)
 			in.returnChannel <- true
 		}
 	}

@@ -1,33 +1,16 @@
 package SeppoDB
 
 import (
-	"fmt"
-
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
 )
 
-func CreateDb(
+func NewDatabaseService(
 	dbUser string,
 	dbPass string,
 	dbIP string,
 	dbPort string,
 	dbName string,
 ) *DatabaseService {
-	fmt.Println("CreateDb", dbUser, dbPass, dbIP, dbPort, dbName)
-	fmt.Println("Connection string ", dbUser+":"+dbPass+"@tcp("+dbIP+":"+dbPort+")/"+dbName)
-	db, err := gorm.Open("mysql", dbUser+":"+dbPass+"@tcp("+dbIP+":"+dbPort+")/"+dbName)
-	if err != nil {
-		fmt.Println("Creating database connection failed", err)
-	}
-
-	db.AutoMigrate(&EwDatabase{})
-	db.AutoMigrate(&EwDatabaseLink{})
-	db.AutoMigrate(&Song{})
-	db.AutoMigrate(&SongDatabase{})
-	db.AutoMigrate(&SongDatabaseVariation{})
-	db.AutoMigrate(&Variation{})
-	db.AutoMigrate(&Verse{})
 
 	createSongChannel := make(chan CreateSongInput)
 	createVariationChannel := make(chan createVariationInternalInput)
@@ -43,7 +26,11 @@ func CreateDb(
 	removeVariationFromSongDatabaseChannel := make(chan removeVariationFromSongDatabaseInternalInput)
 
 	return &DatabaseService{
-		db:                                     db,
+		dbUser:                                 dbUser,
+		dbPass:                                 dbPass,
+		dbIP:                                   dbIP,
+		dbPort:                                 dbPort,
+		dbName:                                 dbName,
 		CreateSongChannel:                      createSongChannel,
 		createVariationChannel:                 createVariationChannel,
 		editVariationChannel:                   editVariationChannel,
