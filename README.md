@@ -1,13 +1,13 @@
 # Seppo
 [![Build Status](https://travis-ci.org/koodinikkarit/seppo.svg?branch=master)](https://travis-ci.org/koodinikkarit/seppo)
 
-### Config file
+### Environment variables
 
 ```
-dbUser = Tietokanta käyttäjänimi
-dbPasswd = Tietokanta salasana
-dbIp = Tietokanta ip
-dbPort = Tietokanta portti
-dbName = Tietokanta nimi
-seppoPort = Seppo servicen portti
+SEPPO_DB_USERNAME = Tietokanta käyttäjänimi
+SEPPO_DB_PASSWORD = Tietokanta salasana
+SEPPO_DB_IP = Tietokanta ip
+SEPPO_DB_PORT = Tietokanta portti
+SEPPO_DB_NAME = Tietokanta nimi
+SEPPO_PORT = Seppo servicen portti
 ```
