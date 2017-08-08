@@ -3,6 +3,7 @@ package seppo
 import (
 	"io/ioutil"
 	"log"
+	"os"
 
 	yaml "gopkg.in/yaml.v2"
 )
@@ -42,4 +43,15 @@ func LoadConfig(path string) Config {
 		log.Fatalf("Unmarshal: %v", err)
 	}
 	return c
+}
+
+func GetConfig() Config {
+	return Config{
+		DBUser:    os.Getenv("SEPPO_DB_USERNAME"),
+		DBPasswd:  os.Getenv("SEPPO_DB_PASSWORD"),
+		DBIP:      os.Getenv("SEPPO_DB_IP"),
+		DBPort:    os.Getenv("SEPPO_DB_PORT"),
+		DBName:    os.Getenv("SEPPO_DB_NAME"),
+		SeppoPort: os.Getenv("SEPPO_PORT"),
+	}
 }
