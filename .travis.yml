@@ -7,11 +7,11 @@ install:
   make install
 script:
   - make build
-  
+
 after_success:
   - docker login -u $DOCKER_ID_USER -p $DOCKER_USER_PASSWORD
   - docker build -t $DOCKER_ID_USER/seppo .
   - docker push $DOCKER_ID_USER/seppo
 
 notifications:
-  webhooks: $UPDATE_URL
+  webhooks: http://salainen_kontti_updater.ths.tunk.org/
