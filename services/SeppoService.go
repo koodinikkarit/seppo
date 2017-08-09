@@ -5,7 +5,6 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/reflection"
 
@@ -24,12 +23,12 @@ func CreateSeppoService(port string, databaseService *SeppoDB.DatabaseService) {
 		grpclog.Fatalf("failed to listen: %v", err)
 	}
 
-	creds, err := credentials.NewServerTLSFromFile("./ssl/server.crt", "./ssl/server.key")
-	if err != nil {
-		log.Fatalf("Failed to generate credentials %v", err)
-	}
+	// creds, err := credentials.NewServerTLSFromFile("./ssl/server.crt", "./ssl/server.key")
+	// if err != nil {
+	// 	log.Fatalf("Failed to generate credentials %v", err)
+	// }
 
-	s := grpc.NewServer(grpc.Creds(creds))
+	s := grpc.NewServer()
 	SeppoService.RegisterSeppoServer(s, &SeppoServiceServer{
 		databaseService: databaseService,
 	})
