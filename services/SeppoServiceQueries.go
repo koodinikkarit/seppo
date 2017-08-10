@@ -74,9 +74,15 @@ func (s *SeppoServiceServer) ListenForChangedEwSong(in *SeppoService.ListenForCh
 
 func (s *SeppoServiceServer) FetchSongDatabases(ctx context.Context, in *SeppoService.FetchSongDatabasesRequest) (*SeppoService.SongDatabasesConnection, error) {
 	res := &SeppoService.SongDatabasesConnection{}
-
 	songDatabases := []SeppoDB.SongDatabase{}
-	s.databaseService.GetDb().Find(&songDatabases)
+
+	query := s.databaseService.GetDb().Debug()
+
+	if in.SearchWord != "" {
+		query = query.Where("name LIKE ?", "%"+in.SearchWord+"%")
+	}
+
+	query = query.Find(&songDatabases)
 
 	for _, songDatabase := range songDatabases {
 		res.Edges = append(res.Edges, &SeppoService.SongDatabaseEdge{
