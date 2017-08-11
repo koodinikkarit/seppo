@@ -76,8 +76,9 @@ func (ds *DatabaseService) Start() {
 			fmt.Println("uusi laulu", createSongInput)
 		case createVariationInput := <-ds.createVariationChannel:
 			variation := &Variation{
-				Name: createVariationInput.input.Name,
-				Text: createVariationInput.input.Text,
+				Name:    createVariationInput.input.Name,
+				Text:    createVariationInput.input.Text,
+				Version: 1,
 			}
 
 			ds.GetDb().Create(&variation)
@@ -104,6 +105,8 @@ func (ds *DatabaseService) Start() {
 			if editVariationInput.input.SongID != 0 {
 				variation.SongID = editVariationInput.input.SongID
 			}
+
+			variation.Version++
 
 			ds.GetDb().Save(&variation)
 			editVariationInput.returnChannel <- &variation
