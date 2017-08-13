@@ -136,3 +136,13 @@ func (ds *DatabaseService) RemoveVariationFromSongDatabase(songDatabaseID uint32
 	}
 	return <-returnChannel
 }
+
+func (ds *DatabaseService) RemoveEwSong(songDatabaseID uint32, ewSongID uint32) bool {
+	returnChannel := make(chan bool)
+	ds.removeEwSongChannel <- removeEwSongInternalInput{
+		ewSongID:       ewSongID,
+		songDatabaseID: songDatabaseID,
+		returnChannel:  returnChannel,
+	}
+	return <-returnChannel
+}

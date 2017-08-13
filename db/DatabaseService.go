@@ -28,6 +28,7 @@ type DatabaseService struct {
 	removeEwDatabaseLinkChannel            chan removeEwDatabaseLinkInternalInput
 	addVariationToSongDatabaseChannel      chan addVariationToSongDatabaseInternalInput
 	removeVariationFromSongDatabaseChannel chan removeVariationFromSongDatabaseInternalInput
+	removeEwSongChannel                    chan removeEwSongInternalInput
 }
 
 func (ds *DatabaseService) insertSong(name string, songID uint32) {
@@ -51,7 +52,7 @@ func (ds *DatabaseService) GetDb() *gorm.DB {
 		db.AutoMigrate(&VariationEwSongData{})
 		ds.db = db
 	}
-	return ds.db
+	return ds.db.Debug()
 }
 
 func (ds *DatabaseService) Start() {
@@ -209,9 +210,19 @@ func (ds *DatabaseService) Start() {
 		case in := <-ds.removeVariationFromSongDatabaseChannel:
 			var ewDatabase EwDatabase
 			ds.GetDb().Where("song_database_id = ?", in.songDatabaseID).First(&ewDatabase)
-			ds.GetDb().Where("ew_database_id = ?", ewDatabase.ID).Where("variation_id = ?", in.variationID).Delete(&EwDatabaseLink{})
+			//ds.GetDb().Where("ew_database_id = ?", ewDatabase.ID).Where("variation_id = ?", in.variationID).Delete(&EwDatabaseLink{})
 			ds.GetDb().Where("song_database_id =  (?)", in.songDatabaseID).Where("variation_id = ?", in.variationID).Delete(SongDatabaseVariation{})
 			in.returnChannel <- true
+		case in := <-ds.removeEwSongChannel:
+			var ewDatabaseLink EwDatabaseLink
+			ds.GetDb().Where("ew_database_song_id = ?", in.ewSongID).First(&ewDatabaseLink)
+			if ewDatabaseLink.ID > 0 {
+				ds.GetDb().Delete(ewDatabaseLink)
+				ds.GetDb().Where("song_database_id =  (?)", in.songDatabaseID).Where("variation_id = ?", ewDatabaseLink.VariationID).Delete(SongDatabaseVariation{})
+				in.returnChannel <- true
+			} else {
+				in.returnChannel <- false
+			}
 		}
 	}
 }

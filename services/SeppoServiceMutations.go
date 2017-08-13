@@ -113,7 +113,7 @@ func (s *SeppoServiceServer) SyncEwDatabase(ctx context.Context, in *SeppoServic
 
 	ewDatabaseVariations := []SeppoDB.Variation{}
 
-	s.databaseService.GetDb().Debug().Table("song_database_variations").Joins("JOIN variations ON variations.id = song_database_variations.variation_id").Select("variations.id, variations.name, variations.text, variations.song_id, variations.version").Find(&ewDatabaseVariations)
+	s.databaseService.GetDb().Debug().Table("song_database_variations").Joins("JOIN variations ON variations.id = song_database_variations.variation_id").Where("song_database_variations.song_database_id = ?", ewDatabase.SongDatabaseID).Select("variations.id, variations.name, variations.text, variations.song_id, variations.version").Find(&ewDatabaseVariations)
 
 	var ewDatabaseLinks []SeppoDB.EwDatabaseLink
 	s.databaseService.GetDb().Debug().Where("ew_database_id = ?", in.EwDatabaseId).Find(&ewDatabaseLinks)
@@ -170,10 +170,12 @@ func (s *SeppoServiceServer) SyncEwDatabase(ctx context.Context, in *SeppoServic
 
 	for _, variation := range ewDatabaseVariations {
 		var foundEwDatabaseLink bool
+		var ewDatabaseLink2 SeppoDB.EwDatabaseLink
 		var foundEwSong bool
 		for _, ewDatabaseLink := range ewDatabaseLinks {
 			if variation.ID == ewDatabaseLink.VariationID {
 				foundEwDatabaseLink = true
+				ewDatabaseLink2 = ewDatabaseLink
 				for _, e := range in.EwSongs {
 					if ewDatabaseLink.EwDatabaseSongID == e.Id {
 						foundEwSong = true
@@ -191,7 +193,7 @@ func (s *SeppoServiceServer) SyncEwDatabase(ctx context.Context, in *SeppoServic
 			})
 		} else {
 			if foundEwSong == false {
-				s.databaseService.RemoveVariationFromSongDatabase(ewDatabase.SongDatabaseID, variation.ID)
+				s.databaseService.RemoveEwSong(ewDatabase.SongDatabaseID, ewDatabaseLink2.EwDatabaseSongID)
 			}
 		}
 	}

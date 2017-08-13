@@ -27,6 +27,7 @@ func NewDatabaseService(
 	removeEwDatabaseLinkChannel := make(chan removeEwDatabaseLinkInternalInput)
 	addVariationToSongDatabaseChannel := make(chan addVariationToSongDatabaseInternalInput)
 	removeVariationFromSongDatabaseChannel := make(chan removeVariationFromSongDatabaseInternalInput)
+	removeEwSongChannel := make(chan removeEwSongInternalInput)
 
 	return &DatabaseService{
 		dbUser:                                 dbUser,
@@ -49,5 +50,6 @@ func NewDatabaseService(
 		removeEwDatabaseLinkChannel:            removeEwDatabaseLinkChannel,
 		addVariationToSongDatabaseChannel:      addVariationToSongDatabaseChannel,
 		removeVariationFromSongDatabaseChannel: removeVariationFromSongDatabaseChannel,
+		removeEwSongChannel:                    removeEwSongChannel,
 	}
 }
