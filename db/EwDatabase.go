@@ -4,4 +4,6 @@ type EwDatabase struct {
 	ID             uint32
 	Name           string
 	SongDatabaseID uint32
+
+	SongDatabase SongDatabase
 }

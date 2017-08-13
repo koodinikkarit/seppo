@@ -22,6 +22,9 @@ func NewDatabaseService(
 	createEwDatabaseChannel := make(chan createEwDatabaseInternalInput)
 	editEwDatabaseChannel := make(chan editEwDatabaseInternalInput)
 	removeEwDatabaseChannel := make(chan removeEwDatabaseInternalInput)
+	createEwDatabaseLinkChannel := make(chan createEwDatabaseLinkInternalInput)
+	editEwDatabaseLinkChannel := make(chan editEwDatabaseLinkInternalInput)
+	removeEwDatabaseLinkChannel := make(chan removeEwDatabaseLinkInternalInput)
 	addVariationToSongDatabaseChannel := make(chan addVariationToSongDatabaseInternalInput)
 	removeVariationFromSongDatabaseChannel := make(chan removeVariationFromSongDatabaseInternalInput)
 
@@ -41,6 +44,9 @@ func NewDatabaseService(
 		createEwDatabaseChannel:                createEwDatabaseChannel,
 		editEwDatabaseChannel:                  editEwDatabaseChannel,
 		removeEwDatabaseChannel:                removeEwDatabaseChannel,
+		createEwDatabaseLinkChannel:            createEwDatabaseLinkChannel,
+		editEwDatabaseLinkChannel:              editEwDatabaseLinkChannel,
+		removeEwDatabaseLinkChannel:            removeEwDatabaseLinkChannel,
 		addVariationToSongDatabaseChannel:      addVariationToSongDatabaseChannel,
 		removeVariationFromSongDatabaseChannel: removeVariationFromSongDatabaseChannel,
 	}

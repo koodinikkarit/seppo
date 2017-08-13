@@ -1,8 +1,6 @@
 package seppo
 
 import (
-	"fmt"
-
 	"golang.org/x/net/context"
 
 	"github.com/koodinikkarit/seppo/db"
@@ -80,65 +78,126 @@ func (s *SeppoServiceServer) RemoveVariationFromSongDatabase(ctx context.Context
 	return res, nil
 }
 
-func (s *SeppoServiceServer) SyncEwDatabase(ctx context.Context, in *SeppoService.SyncEwDatabaseRequest) (*SeppoService.SyncEwDatabaseResponse, error) {
-	response := &SeppoService.SyncEwDatabaseResponse{}
+func (s *SeppoServiceServer) InsertEwSongIds(ctx context.Context, in *SeppoService.InsertEwSongIdsRequest) (*SeppoService.InsertEwSongIdsResponse, error) {
+	res := &SeppoService.InsertEwSongIdsResponse{}
 
-	var songIds []uint32
-	var ewDatabaseLinks []SeppoDB.EwDatabaseLink
-
-	for _, ewSong := range in.EwSongs {
-		songIds = append(songIds, ewSong.Id)
-	}
-
-	s.databaseService.GetDb().Debug().Where("ew_database_song_id in (?)", songIds).Where("ew_database_id = ?", in.EwDatabaseId).Find(&ewDatabaseLinks)
-
-	for _, ewSong := range in.EwSongs {
-		var found bool
-		for _, ewDatabaseLink := range ewDatabaseLinks {
-			if ewDatabaseLink.EwDatabaseSongID == ewSong.Id {
-				found = true
-			}
-		}
-
-		if found == false {
-			// s.databaseService.CreateSongChannel <- seppo.CreateSongInput{
-			// 	Name:         ewSong.Title,
-			// 	SongID:       ewSong.Id,
-			// 	EwDatabaseId: in.EwDatabaseId,
-			// }
-		}
-	}
-
-	var variationIdt []uint32
-
-	for _, ewDatabaseLink := range ewDatabaseLinks {
-		var found bool
-		for _, ewSong := range in.EwSongs {
-			if ewDatabaseLink.EwDatabaseSongID == ewSong.Id {
-				found = true
-			}
-		}
-
-		if found == false {
-			variationIdt = append(variationIdt, ewDatabaseLink.VariationID)
-		}
+	var variationIds []uint32
+	for _, variationIdEwSongId := range in.VariationIdEwSongIds {
+		variationIds = append(variationIds, variationIdEwSongId.VariationId)
 	}
 
 	variations := []SeppoDB.Variation{}
+	s.databaseService.GetDb().Where("id in (?)", variationIds).Find(&variations)
 
-	s.databaseService.GetDb().Where("id in (?)", variationIdt).Find(&variations)
-
-	for _, variation := range variations {
-		response.EwSongs = append(response.EwSongs, &SeppoService.EwSong{
-			Id:    variation.ID,
-			Title: variation.Name,
-			Text:  variation.Text,
-		})
+	for _, variationIdEwSongId := range in.VariationIdEwSongIds {
+		for _, variation := range variations {
+			if variationIdEwSongId.VariationId == variation.ID {
+				s.databaseService.CreateEwDatabaseLink(
+					in.EwDatabaseId,
+					variationIdEwSongId.EwSongId,
+					variation.ID,
+					variation.Version,
+				)
+			}
+		}
 	}
 
-	fmt.Println("SyncDatabase")
+	return res, nil
+}
 
-	//fmt.Println("channel ", s.createSongChannel)
+func (s *SeppoServiceServer) SyncEwDatabase(ctx context.Context, in *SeppoService.SyncEwDatabaseRequest) (*SeppoService.SyncEwDatabaseResponse, error) {
+	response := &SeppoService.SyncEwDatabaseResponse{}
+
+	var ewDatabase SeppoDB.EwDatabase
+	s.databaseService.GetDb().First(&ewDatabase, in.EwDatabaseId)
+
+	ewDatabaseVariations := []SeppoDB.Variation{}
+
+	s.databaseService.GetDb().Debug().Table("song_database_variations").Joins("JOIN variations ON variations.id = song_database_variations.variation_id").Select("variations.id, variations.name, variations.text, variations.song_id, variations.version").Find(&ewDatabaseVariations)
+
+	var ewDatabaseLinks []SeppoDB.EwDatabaseLink
+	s.databaseService.GetDb().Debug().Where("ew_database_id = ?", in.EwDatabaseId).Find(&ewDatabaseLinks)
+
+	for _, ewSong := range in.EwSongs {
+		foundEwDatabaseLink := false
+		for _, ewdatabaseLink := range ewDatabaseLinks {
+			if ewSong.Id == ewdatabaseLink.EwDatabaseSongID {
+				foundEwDatabaseLink = true
+				foundVariation := false
+				for _, a := range ewDatabaseVariations {
+					if ewdatabaseLink.VariationID == a.ID {
+						foundVariation = true
+						if a.Name != ewSong.Title || a.Text != ewSong.Text {
+							if ewdatabaseLink.Version >= a.Version {
+								v := s.databaseService.EditVariation(SeppoDB.EditVariationInput{
+									VariationID: a.ID,
+									Name:        ewSong.Title,
+									Text:        ewSong.Text,
+								})
+
+								s.databaseService.EditEwDatabaseLink(ewdatabaseLink.ID, v.Version)
+							} else {
+								response.EwSongs = append(response.EwSongs, &SeppoService.EwSong{
+									Id:          ewSong.Id,
+									VariationId: a.ID,
+									Title:       a.Name,
+									Text:        a.Text,
+								})
+								s.databaseService.EditEwDatabaseLink(ewdatabaseLink.ID, a.Version)
+							}
+						}
+					}
+				}
+				if foundVariation == false {
+					response.RemoveEwSongIds = append(response.RemoveEwSongIds, ewSong.Id)
+				}
+			}
+		}
+		if foundEwDatabaseLink == false {
+			variation := s.databaseService.CreateVariation(SeppoDB.CreateVariationInput{
+				Name: ewSong.Title,
+				Text: ewSong.Text,
+			})
+			s.databaseService.CreateEwDatabaseLink(
+				in.EwDatabaseId,
+				ewSong.Id,
+				variation.ID,
+				variation.Version,
+			)
+			s.databaseService.AddVariationToSongDatabase(ewDatabase.SongDatabaseID, variation.ID)
+		}
+	}
+
+	for _, variation := range ewDatabaseVariations {
+		var foundEwDatabaseLink bool
+		var foundEwSong bool
+		var ewDatabaseLink2 SeppoDB.EwDatabaseLink
+		for _, ewDatabaseLink := range ewDatabaseLinks {
+			if variation.ID == ewDatabaseLink.VariationID {
+				foundEwDatabaseLink = true
+				ewDatabaseLink2 = ewDatabaseLink
+				for _, e := range in.EwSongs {
+					if ewDatabaseLink.EwDatabaseSongID == e.Id {
+						foundEwSong = true
+						break
+					}
+				}
+
+			}
+		}
+		if foundEwDatabaseLink == false {
+			response.EwSongs = append(response.EwSongs, &SeppoService.EwSong{
+				VariationId: variation.ID,
+				Title:       variation.Name,
+				Text:        variation.Text,
+			})
+		} else {
+			if foundEwSong == false {
+				s.databaseService.GetDb().Delete(&variation)
+				s.databaseService.GetDb().Delete(&ewDatabaseLink2)
+			}
+		}
+	}
 
 	return response, nil
 }

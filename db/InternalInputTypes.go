@@ -45,6 +45,25 @@ type removeEwDatabaseInternalInput struct {
 	returnChannel chan bool
 }
 
+type createEwDatabaseLinkInternalInput struct {
+	ewDatabaseID     uint32
+	ewDatabaseSongID uint32
+	variationID      uint32
+	version          uint64
+	returnChannel    chan *EwDatabaseLink
+}
+
+type editEwDatabaseLinkInternalInput struct {
+	ewDatabaseLinkID uint32
+	version          uint64
+	returnChannel    chan *EwDatabaseLink
+}
+
+type removeEwDatabaseLinkInternalInput struct {
+	ewDatabaseLinkID uint32
+	returnChnnel     chan bool
+}
+
 type addVariationToSongDatabaseInternalInput struct {
 	songDatabaseID uint32
 	variationID    uint32

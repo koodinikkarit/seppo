@@ -5,4 +5,8 @@ type EwDatabaseLink struct {
 	EwDatabaseID     uint32
 	EwDatabaseSongID uint32
 	VariationID      uint32
+	Version          uint64
+
+	EwDatabase EwDatabase
+	Variation  Variation
 }

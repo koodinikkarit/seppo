@@ -5,8 +5,6 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=qwerty
       - MYSQL_DATABASE=seppo
-    ports:
-      - 3306:3306
   seppo:
     build: .
     ports:

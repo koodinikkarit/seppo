@@ -23,6 +23,9 @@ type DatabaseService struct {
 	createEwDatabaseChannel                chan createEwDatabaseInternalInput
 	editEwDatabaseChannel                  chan editEwDatabaseInternalInput
 	removeEwDatabaseChannel                chan removeEwDatabaseInternalInput
+	createEwDatabaseLinkChannel            chan createEwDatabaseLinkInternalInput
+	editEwDatabaseLinkChannel              chan editEwDatabaseLinkInternalInput
+	removeEwDatabaseLinkChannel            chan removeEwDatabaseLinkInternalInput
 	addVariationToSongDatabaseChannel      chan addVariationToSongDatabaseInternalInput
 	removeVariationFromSongDatabaseChannel chan removeVariationFromSongDatabaseInternalInput
 }
@@ -45,7 +48,7 @@ func (ds *DatabaseService) GetDb() *gorm.DB {
 		db.AutoMigrate(&SongDatabase{})
 		db.AutoMigrate(&SongDatabaseVariation{})
 		db.AutoMigrate(&Variation{})
-		db.AutoMigrate(&Verse{})
+		db.AutoMigrate(&VariationEwSongData{})
 		ds.db = db
 	}
 	return ds.db
@@ -84,32 +87,42 @@ func (ds *DatabaseService) Start() {
 			ds.GetDb().Create(&variation)
 
 			createVariationInput.returnChannel <- variation
-		case removeVariation := <-ds.removeVariationChannel:
+		case in := <-ds.removeVariationChannel:
 			var variation Variation
-			ds.GetDb().First(&variation, removeVariation.variationID)
-
+			ds.GetDb().First(&variation, in.variationID)
 			ds.GetDb().Delete(&variation)
-			removeVariation.returnChannel <- true
-		case editVariationInput := <-ds.editVariationChannel:
+			ds.GetDb().Where("variation_id = ?", in.variationID).Delete(EwDatabaseLink{})
+			ds.GetDb().Where("variation_id", in.variationID).Delete(SongDatabaseVariation{})
+			ds.GetDb().Where("variation_id", in.variationID).Delete(VariationEwSongData{})
+
+			in.returnChannel <- true
+		case in := <-ds.editVariationChannel:
 			var variation Variation
-			ds.GetDb().First(&variation, editVariationInput.input.VariationID)
+			ds.GetDb().First(&variation, in.input.VariationID)
 
-			if editVariationInput.input.Name != "" {
-				variation.Name = editVariationInput.input.Name
+			changed := false
+
+			if in.input.Name != "" && in.input.Name != variation.Name {
+				changed = true
+				variation.Name = in.input.Name
 			}
 
-			if editVariationInput.input.Text != "" {
-				variation.Text = editVariationInput.input.Text
+			if in.input.Text != "" && in.input.Text != variation.Text {
+				changed = true
+				variation.Text = in.input.Text
 			}
 
-			if editVariationInput.input.SongID != 0 {
-				variation.SongID = editVariationInput.input.SongID
+			if in.input.SongID != 0 && in.input.SongID != variation.SongID {
+				changed = true
+				variation.SongID = in.input.SongID
 			}
 
-			variation.Version++
+			if changed == true {
+				variation.Version++
+			}
 
 			ds.GetDb().Save(&variation)
-			editVariationInput.returnChannel <- &variation
+			in.returnChannel <- &variation
 		case createSongDatabase := <-ds.createSongDatabaseChannel:
 			songDatabase := &SongDatabase{
 				Name: createSongDatabase.input.Name,
@@ -155,6 +168,32 @@ func (ds *DatabaseService) Start() {
 			ds.GetDb().First(&ewDatabase, removeEwDatabase.ewDatabaseID)
 			ds.GetDb().Delete(&ewDatabase)
 			removeEwDatabase.returnChannel <- true
+		case in := <-ds.createEwDatabaseLinkChannel:
+			ewDatabaseLink := &EwDatabaseLink{
+				EwDatabaseID:     in.ewDatabaseID,
+				EwDatabaseSongID: in.ewDatabaseSongID,
+				VariationID:      in.variationID,
+				Version:          in.version,
+			}
+			ds.GetDb().Create(&ewDatabaseLink)
+			in.returnChannel <- ewDatabaseLink
+		case in := <-ds.editEwDatabaseLinkChannel:
+			var ewDatabaseLink EwDatabaseLink
+			ds.GetDb().First(&ewDatabaseLink, in.ewDatabaseLinkID)
+			if ewDatabaseLink.Version > 0 {
+				ewDatabaseLink.Version = in.version
+			}
+			ds.GetDb().Save(&ewDatabaseLink)
+			in.returnChannel <- &ewDatabaseLink
+		case in := <-ds.removeEwDatabaseLinkChannel:
+			var ewDatabaseLink EwDatabaseLink
+			ds.GetDb().First(&ewDatabaseLink, in.ewDatabaseLinkID)
+			if ewDatabaseLink.ID > 0 {
+				ds.GetDb().Delete(&ewDatabaseLink)
+				in.returnChnnel <- true
+			} else {
+				in.returnChnnel <- false
+			}
 		case in := <-ds.addVariationToSongDatabaseChannel:
 			var songDatabaseVariation SongDatabaseVariation
 			ds.GetDb().Where("song_database_id = ?", in.songDatabaseID).Where("variation_id = ?", in.variationID).First(&songDatabaseVariation)
