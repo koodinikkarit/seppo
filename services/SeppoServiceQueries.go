@@ -50,7 +50,7 @@ func (s *SeppoServiceServer) SearchVariations(ctx context.Context, in *SeppoServ
 	}
 
 	if in.SearchWord != "" {
-		query = query.Where("name LIKE ?", "%"+in.SearchWord+"%")
+		query = query.Where("name LIKE ?", "%"+in.SearchWord+"%").Or("text LIKE ?", "%"+in.SearchWord+"%")
 	}
 
 	query = query.Find(&variations)
