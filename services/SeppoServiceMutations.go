@@ -171,11 +171,9 @@ func (s *SeppoServiceServer) SyncEwDatabase(ctx context.Context, in *SeppoServic
 	for _, variation := range ewDatabaseVariations {
 		var foundEwDatabaseLink bool
 		var foundEwSong bool
-		var ewDatabaseLink2 SeppoDB.EwDatabaseLink
 		for _, ewDatabaseLink := range ewDatabaseLinks {
 			if variation.ID == ewDatabaseLink.VariationID {
 				foundEwDatabaseLink = true
-				ewDatabaseLink2 = ewDatabaseLink
 				for _, e := range in.EwSongs {
 					if ewDatabaseLink.EwDatabaseSongID == e.Id {
 						foundEwSong = true
@@ -193,8 +191,7 @@ func (s *SeppoServiceServer) SyncEwDatabase(ctx context.Context, in *SeppoServic
 			})
 		} else {
 			if foundEwSong == false {
-				s.databaseService.GetDb().Delete(&variation)
-				s.databaseService.GetDb().Delete(&ewDatabaseLink2)
+				s.databaseService.RemoveVariationFromSongDatabase(ewDatabase.SongDatabaseID, variation.ID)
 			}
 		}
 	}

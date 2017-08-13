@@ -207,10 +207,10 @@ func (ds *DatabaseService) Start() {
 			ds.GetDb().Create(&songDatabaseVariation)
 			in.returnChannel <- &songDatabaseVariation
 		case in := <-ds.removeVariationFromSongDatabaseChannel:
-			var songDatabaseVariation SongDatabaseVariation
-
-			ds.GetDb().Where("song_database_id =  (?)", in.songDatabaseID).Where("variation_id = ?", in.variationID).Find(&songDatabaseVariation)
-			ds.GetDb().Delete(&songDatabaseVariation)
+			var ewDatabase EwDatabase
+			ds.GetDb().Where("song_database_id = ?", in.songDatabaseID).First(&ewDatabase)
+			ds.GetDb().Where("ew_database_id = ?", ewDatabase.ID).Where("variation_id = ?", in.variationID).Delete(&EwDatabaseLink{})
+			ds.GetDb().Where("song_database_id =  (?)", in.songDatabaseID).Where("variation_id = ?", in.variationID).Delete(SongDatabaseVariation{})
 			in.returnChannel <- true
 		}
 	}
