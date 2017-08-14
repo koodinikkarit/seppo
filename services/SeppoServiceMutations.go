@@ -150,6 +150,7 @@ func (s *SeppoServiceServer) SyncEwDatabase(ctx context.Context, in *SeppoServic
 				}
 				if foundVariation == false {
 					response.RemoveEwSongIds = append(response.RemoveEwSongIds, ewSong.Id)
+					s.databaseService.RemoveDatabaseLink(ewdatabaseLink.ID)
 				}
 			}
 		}
