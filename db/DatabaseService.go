@@ -92,7 +92,6 @@ func (ds *DatabaseService) Start() {
 			var variation Variation
 			ds.GetDb().First(&variation, in.variationID)
 			ds.GetDb().Delete(&variation)
-			ds.GetDb().Where("variation_id = ?", in.variationID).Delete(EwDatabaseLink{})
 			ds.GetDb().Where("variation_id", in.variationID).Delete(SongDatabaseVariation{})
 			ds.GetDb().Where("variation_id", in.variationID).Delete(VariationEwSongData{})
 
