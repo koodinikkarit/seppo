@@ -12,8 +12,9 @@ after_success:
   - docker login -u $DOCKER_ID_USER -p $DOCKER_USER_PASSWORD
   - export TAG=`if [ "$TRAVIS_TAG" != "" ]; then echo "latest"; else echo $TRAVIS_TAG ; fi`
   - docker build -t $DOCKER_ID_USER/seppo .
-  - docker push $DOCKER_ID_USER/seppo #:`if [ "$TRAVIS_TAG" != "" ]; then echo "latest"; else echo $TRAVIS_TAG ; fi`
+   #:`if [ "$TRAVIS_TAG" != "" ]; then echo "latest"; else echo $TRAVIS_TAG ; fi`
   - docker tag $DOCKER_ID_USER/seppo $DOCKER_ID_USER/seppo:$TAG
+  - docker push $DOCKER_ID_USER/seppo
 
 notifications:
   webhooks: http://salainen_kontti_updater.ths.tunk.org/
