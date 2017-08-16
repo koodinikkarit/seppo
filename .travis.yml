@@ -11,11 +11,9 @@ script:
 after_success:
   - docker login -u $DOCKER_ID_USER -p $DOCKER_USER_PASSWORD
   - export REPO=$DOCKER_ID_USER/seppo
-  - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
-  - docker build -f Dockerfile -t $REPO:$COMMIT .
-  - docker tag $REPO:$COMMIT $REPO:$TAG
-  - docker tag $REPO:$COMMIT $REPO:travis-$TRAVIS_BUILD_NUMBER
-  - docker push $REPO
+  - export TAG=`if [ "$TRAVIS_TAG" != "" ]; then echo "latest"; else echo $TRAVIS_TAG ; fi`
+  - docker build -t $REPO .
+  - docker push $REPO:$TAG
 
 notifications:
   webhooks: http://salainen_kontti_updater.ths.tunk.org/
