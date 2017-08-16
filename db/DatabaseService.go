@@ -43,13 +43,7 @@ func (ds *DatabaseService) GetDb() *gorm.DB {
 		if err != nil {
 			fmt.Println("Creating database connection failed", err)
 		}
-		db.AutoMigrate(&EwDatabase{})
-		db.AutoMigrate(&EwDatabaseLink{})
-		db.AutoMigrate(&Song{})
-		db.AutoMigrate(&SongDatabase{})
-		db.AutoMigrate(&SongDatabaseVariation{})
-		db.AutoMigrate(&Variation{})
-		db.AutoMigrate(&VariationEwSongData{})
+		Migrate(db)
 		ds.db = db
 	}
 	return ds.db.Debug()
@@ -78,22 +72,25 @@ func (ds *DatabaseService) Start() {
 				fmt.Println("uusi ewsong")
 			}
 			fmt.Println("uusi laulu", createSongInput)
-		case createVariationInput := <-ds.createVariationChannel:
+		case in := <-ds.createVariationChannel:
 			variation := &Variation{
-				Name:    createVariationInput.input.Name,
-				Text:    createVariationInput.input.Text,
+				Name:    in.input.Name,
 				Version: 1,
 			}
-
 			ds.GetDb().Create(&variation)
-
-			createVariationInput.returnChannel <- variation
+			variationText := &VariationText{
+				VariationID: variation.ID,
+				Text:        in.input.Text,
+			}
+			ds.GetDb().Create(&variationText)
+			in.returnChannel <- variation
 		case in := <-ds.removeVariationChannel:
 			var variation Variation
 			ds.GetDb().First(&variation, in.variationID)
 			ds.GetDb().Delete(&variation)
-			ds.GetDb().Where("variation_id", in.variationID).Delete(SongDatabaseVariation{})
-			ds.GetDb().Where("variation_id", in.variationID).Delete(VariationEwSongData{})
+			ds.GetDb().Where("variation_id = ?", in.variationID).Delete(SongDatabaseVariation{})
+			ds.GetDb().Where("variation_id = ?", in.variationID).Delete(VariationEwSongData{})
+			ds.GetDb().Where("variation_id = ?", in.variationID).Delete(VariationText{})
 
 			in.returnChannel <- true
 		case in := <-ds.editVariationChannel:
@@ -107,9 +104,16 @@ func (ds *DatabaseService) Start() {
 				variation.Name = in.input.Name
 			}
 
-			if in.input.Text != "" && in.input.Text != variation.Text {
-				changed = true
-				variation.Text = in.input.Text
+			if in.input.Text != "" {
+				var variationText VariationText
+				ds.GetDb().Where("variation_id = ?", in.input.VariationID).First(&variationText)
+				if variationText.ID > 0 {
+					if variationText.Text != in.input.Text {
+						changed = true
+						variationText.Text = in.input.Text
+						ds.GetDb().Save(&variationText)
+					}
+				}
 			}
 
 			if in.input.SongID != 0 && in.input.SongID != variation.SongID {

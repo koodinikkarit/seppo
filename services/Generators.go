@@ -10,8 +10,15 @@ func NewVariationToServiceType(in *SeppoDB.Variation) *SeppoService.Variation {
 		Id:      in.ID,
 		Name:    in.Name,
 		SongId:  in.SongID,
-		Text:    in.Text,
 		Version: in.Version,
+	}
+}
+
+func NewVariationTextToServiceType(in *SeppoDB.VariationText) *SeppoService.VariationText {
+	return &SeppoService.VariationText{
+		Id:          in.ID,
+		VariationId: in.VariationID,
+		Text:        in.Text,
 	}
 }
 

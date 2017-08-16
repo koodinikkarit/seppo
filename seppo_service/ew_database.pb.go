@@ -14,6 +14,7 @@ It is generated from these files:
 	song_database.proto
 	song_database_variation.proto
 	variation.proto
+	variation_text.proto
 
 It has these top-level messages:
 	EwDatabase
@@ -68,6 +69,9 @@ It has these top-level messages:
 	FetchVariationByIdResponse
 	SearchVariationsRequest
 	SearchVariationsResponse
+	VariationText
+	FetchVariationTextByVariationIdRequest
+	FetchVariationTextByVariationIdResponse
 */
 package SeppoService
 

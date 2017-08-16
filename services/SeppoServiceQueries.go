@@ -182,3 +182,29 @@ func (s *SeppoServiceServer) FetchVariationsBySongDatabaseId(ctx context.Context
 
 	return res, nil
 }
+
+func (s *SeppoServiceServer) FetchVariationTextByVariationId(ctx context.Context, in *SeppoService.FetchVariationTextByVariationIdRequest) (*SeppoService.FetchVariationTextByVariationIdResponse, error) {
+	res := &SeppoService.FetchVariationTextByVariationIdResponse{}
+
+	variationTexts := []SeppoDB.VariationText{}
+
+	s.databaseService.GetDb().Where("variation_id in (?)", in.VariationIds).Find(&variationTexts)
+
+	for _, variationId := range in.VariationIds {
+		found := false
+		for _, variationText := range variationTexts {
+			if variationText.VariationID == variationId {
+				found = true
+				res.VariationTexts = append(res.VariationTexts, NewVariationTextToServiceType(&variationText))
+			}
+		}
+
+		if found == false {
+			res.VariationTexts = append(res.VariationTexts, &SeppoService.VariationText{
+				Id: 0,
+			})
+		}
+	}
+
+	return res, nil
+}
