@@ -35,12 +35,14 @@ func (s *SeppoServiceServer) SearchVariations(ctx context.Context, in *SeppoServ
 	res := &SeppoService.SearchVariationsResponse{}
 	variations := []SeppoDB.Variation{}
 
-	query := s.databaseService.GetDb().Debug()
+	query := s.databaseService.GetDb().Table("variations")
 
 	if in.SongDatabaseFilterId > 0 {
 		var filterSongDatabaseVariationsIds []uint32
 		filterSongDatabaseVariations := []SeppoDB.SongDatabaseVariation{}
-		s.databaseService.GetDb().Where("song_database_id = ?", in.SongDatabaseFilterId).Select("variation_id").Find(&filterSongDatabaseVariations)
+		s.databaseService.GetDb().
+			Where("song_database_id = ?", in.SongDatabaseFilterId).
+			Select("variation_id").Find(&filterSongDatabaseVariations)
 		for _, v := range filterSongDatabaseVariations {
 			filterSongDatabaseVariationsIds = append(filterSongDatabaseVariationsIds, v.VariationID)
 		}
@@ -50,10 +52,12 @@ func (s *SeppoServiceServer) SearchVariations(ctx context.Context, in *SeppoServ
 	}
 
 	if in.SearchWord != "" {
-		query = query.Where("name LIKE ?", "%"+in.SearchWord+"%").Or("text LIKE ?", "%"+in.SearchWord+"%")
+		query = query.Joins("JOIN variation_texts ON variation_texts.variation_id = variations.id").
+			Where("variations.name LIKE ?", "%"+in.SearchWord+"%").
+			Or("variation_texts.text LIKE ?", "%"+in.SearchWord+"%")
 	}
 
-	query = query.Find(&variations)
+	query = query.Select("variations.id, variations.name, variations.song_id, variations.version").Find(&variations)
 
 	for _, variation := range variations {
 		res.Variations = append(res.Variations, &SeppoService.Variation{
