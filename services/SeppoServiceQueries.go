@@ -50,6 +50,7 @@ func (s *SeppoServiceServer) SearchVariations(ctx context.Context, in *SeppoServ
 			query = query.Not("id", filterSongDatabaseVariationsIds)
 		}
 	}
+	query.Count(&res.MaxVariations)
 
 	if in.SearchWord != "" {
 		query = query.Joins("JOIN variation_texts ON variation_texts.variation_id = variations.id").
