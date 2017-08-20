@@ -98,12 +98,11 @@ func (ds *DatabaseService) CreateEwDatabaseLink(ewDatabaseID uint32, ewDatabaseS
 	return <-returnChannel
 }
 
-func (ds *DatabaseService) EditEwDatabaseLink(ewDatabaseLinkID uint32, version uint64) *EwDatabaseLink {
+func (ds *DatabaseService) EditEwDatabaseLink(in EditEwDatabaseLinkInput) *EwDatabaseLink {
 	returnChannel := make(chan *EwDatabaseLink)
 	ds.editEwDatabaseLinkChannel <- editEwDatabaseLinkInternalInput{
-		ewDatabaseLinkID: ewDatabaseLinkID,
-		version:          version,
-		returnChannel:    returnChannel,
+		input:         in,
+		returnChannel: returnChannel,
 	}
 	return <-returnChannel
 }

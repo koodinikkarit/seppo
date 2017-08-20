@@ -54,9 +54,8 @@ type createEwDatabaseLinkInternalInput struct {
 }
 
 type editEwDatabaseLinkInternalInput struct {
-	ewDatabaseLinkID uint32
-	version          uint64
-	returnChannel    chan *EwDatabaseLink
+	input         EditEwDatabaseLinkInput
+	returnChannel chan *EwDatabaseLink
 }
 
 type removeEwDatabaseLinkInternalInput struct {
