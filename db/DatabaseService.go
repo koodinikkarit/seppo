@@ -73,16 +73,26 @@ func (ds *DatabaseService) Start() {
 			}
 			fmt.Println("uusi laulu", createSongInput)
 		case in := <-ds.createVariationChannel:
-			variation := &Variation{
-				Name:    in.input.Name,
-				Version: 1,
+			variation := &Variation{}
+			if in.input.Name != "" && in.input.Text != "" {
+				ds.GetDb().Table("variations").
+					Joins("JOIN variation_texts ON variation_texts.variation_id = variations.id").
+					Where("variations.name = ?", in.input.Name).
+					Where("variation_texts.text = ?", in.input.Text).
+					First(&variation)
 			}
-			ds.GetDb().Create(&variation)
-			variationText := &VariationText{
-				VariationID: variation.ID,
-				Text:        in.input.Text,
+			if variation.ID == 0 {
+				variation := &Variation{
+					Name:    in.input.Name,
+					Version: 1,
+				}
+				ds.GetDb().Create(&variation)
+				variationText := &VariationText{
+					VariationID: variation.ID,
+					Text:        in.input.Text,
+				}
+				ds.GetDb().Create(&variationText)
 			}
-			ds.GetDb().Create(&variationText)
 			in.returnChannel <- variation
 		case in := <-ds.removeVariationChannel:
 			var variation Variation
@@ -143,19 +153,27 @@ func (ds *DatabaseService) Start() {
 
 			ds.GetDb().Save(&songDatabase)
 			editSongDatabase.returnChannel <- &songDatabase
-		case removeSongDatabase := <-ds.removeSongDatabaseChannel:
+		case in := <-ds.removeSongDatabaseChannel:
 			var songDatabase SongDatabase
-			ds.GetDb().First(&songDatabase, removeSongDatabase.songDatabaseID)
+			success := false
+			ds.GetDb().First(&songDatabase, in.songDatabaseID)
+			if songDatabase.ID > 0 {
+				ds.GetDb().Where("song_database_id = ?", in.songDatabaseID).Delete(EwDatabase{})
+				ds.GetDb().Delete(&songDatabase)
+				success = true
+			}
+			in.returnChannel <- success
+		case in := <-ds.createEwDatabaseChannel:
 
-			ds.GetDb().Delete(&songDatabase)
-			removeSongDatabase.returnChannel <- true
-		case createEwDatabase := <-ds.createEwDatabaseChannel:
+			s, _ := GenerateRandomString(10)
+
 			ewDatabase := &EwDatabase{
-				Name:           createEwDatabase.input.Name,
-				SongDatabaseID: createEwDatabase.input.SongDatabaseId,
+				Name:           in.input.Name,
+				SongDatabaseID: in.input.SongDatabaseId,
+				Key:            s,
 			}
 			ds.GetDb().Create(&ewDatabase)
-			createEwDatabase.returnChnnel <- ewDatabase
+			in.returnChnnel <- ewDatabase
 		case in := <-ds.editEwDatabaseChannel:
 			var ewDatabase EwDatabase
 			ds.GetDb().First(&ewDatabase, in.input.EwDatabaseID)
@@ -183,11 +201,16 @@ func (ds *DatabaseService) Start() {
 			in.returnChannel <- ewDatabaseLink
 		case in := <-ds.editEwDatabaseLinkChannel:
 			var ewDatabaseLink EwDatabaseLink
-			ds.GetDb().First(&ewDatabaseLink, in.ewDatabaseLinkID)
-			if ewDatabaseLink.Version > 0 {
-				ewDatabaseLink.Version = in.version
+			ds.GetDb().First(&ewDatabaseLink, in.input.EwDatabaseLinkID)
+			if ewDatabaseLink.ID > 0 {
+				if ewDatabaseLink.Version > 0 {
+					ewDatabaseLink.Version = in.input.Version
+				}
+				if ewDatabaseLink.EwDatabaseSongID > 0 {
+					ewDatabaseLink.EwDatabaseSongID = in.input.EwDatabaseSongID
+				}
+				ds.GetDb().Save(&ewDatabaseLink)
 			}
-			ds.GetDb().Save(&ewDatabaseLink)
 			in.returnChannel <- &ewDatabaseLink
 		case in := <-ds.removeEwDatabaseLinkChannel:
 			var ewDatabaseLink EwDatabaseLink
@@ -206,9 +229,8 @@ func (ds *DatabaseService) Start() {
 					SongDatabaseID: in.songDatabaseID,
 					VariationID:    in.variationID,
 				}
+				ds.GetDb().Create(&songDatabaseVariation)
 			}
-
-			ds.GetDb().Create(&songDatabaseVariation)
 			in.returnChannel <- &songDatabaseVariation
 		case in := <-ds.removeVariationFromSongDatabaseChannel:
 			var ewDatabase EwDatabase
