@@ -48,7 +48,14 @@ type CreateEwDatabaseInput struct {
 }
 
 type EditEwDatabaseInput struct {
-	EwDatabaseID   uint32
-	Name           string
-	SongDatabaseID uint32
+	EwDatabaseID     uint32
+	Name             string
+	EwDatabaseSongID uint32
+	SongDatabaseID   uint32
+}
+
+type EditEwDatabaseLinkInput struct {
+	EwDatabaseLinkID uint32
+	EwDatabaseSongID uint32
+	Version          uint64
 }
