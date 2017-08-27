@@ -23,7 +23,7 @@ type Variation struct {
 func (m *Variation) Reset()                    { *m = Variation{} }
 func (m *Variation) String() string            { return proto.CompactTextString(m) }
 func (*Variation) ProtoMessage()               {}
-func (*Variation) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{0} }
+func (*Variation) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{0} }
 
 func (m *Variation) GetId() uint32 {
 	if m != nil {
@@ -61,7 +61,7 @@ type CreateVariationRequest struct {
 func (m *CreateVariationRequest) Reset()                    { *m = CreateVariationRequest{} }
 func (m *CreateVariationRequest) String() string            { return proto.CompactTextString(m) }
 func (*CreateVariationRequest) ProtoMessage()               {}
-func (*CreateVariationRequest) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{1} }
+func (*CreateVariationRequest) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{1} }
 
 func (m *CreateVariationRequest) GetName() string {
 	if m != nil {
@@ -84,7 +84,7 @@ type CreateVariationResponse struct {
 func (m *CreateVariationResponse) Reset()                    { *m = CreateVariationResponse{} }
 func (m *CreateVariationResponse) String() string            { return proto.CompactTextString(m) }
 func (*CreateVariationResponse) ProtoMessage()               {}
-func (*CreateVariationResponse) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{2} }
+func (*CreateVariationResponse) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{2} }
 
 func (m *CreateVariationResponse) GetVariation() *Variation {
 	if m != nil {
@@ -104,7 +104,7 @@ type EditVariationRequest struct {
 func (m *EditVariationRequest) Reset()                    { *m = EditVariationRequest{} }
 func (m *EditVariationRequest) String() string            { return proto.CompactTextString(m) }
 func (*EditVariationRequest) ProtoMessage()               {}
-func (*EditVariationRequest) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{3} }
+func (*EditVariationRequest) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{3} }
 
 func (m *EditVariationRequest) GetVariationId() uint32 {
 	if m != nil {
@@ -148,7 +148,7 @@ type EditVariationResponse struct {
 func (m *EditVariationResponse) Reset()                    { *m = EditVariationResponse{} }
 func (m *EditVariationResponse) String() string            { return proto.CompactTextString(m) }
 func (*EditVariationResponse) ProtoMessage()               {}
-func (*EditVariationResponse) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{4} }
+func (*EditVariationResponse) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{4} }
 
 func (m *EditVariationResponse) GetVariation() *Variation {
 	if m != nil {
@@ -164,7 +164,7 @@ type RemoveVariationRequest struct {
 func (m *RemoveVariationRequest) Reset()                    { *m = RemoveVariationRequest{} }
 func (m *RemoveVariationRequest) String() string            { return proto.CompactTextString(m) }
 func (*RemoveVariationRequest) ProtoMessage()               {}
-func (*RemoveVariationRequest) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{5} }
+func (*RemoveVariationRequest) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{5} }
 
 func (m *RemoveVariationRequest) GetVariationId() uint32 {
 	if m != nil {
@@ -179,7 +179,7 @@ type RemoveVariationResponse struct {
 func (m *RemoveVariationResponse) Reset()                    { *m = RemoveVariationResponse{} }
 func (m *RemoveVariationResponse) String() string            { return proto.CompactTextString(m) }
 func (*RemoveVariationResponse) ProtoMessage()               {}
-func (*RemoveVariationResponse) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{6} }
+func (*RemoveVariationResponse) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{6} }
 
 type FetchVariationByIdRequest struct {
 	VariationIds []uint32 `protobuf:"varint,1,rep,packed,name=variationIds" json:"variationIds,omitempty"`
@@ -188,7 +188,7 @@ type FetchVariationByIdRequest struct {
 func (m *FetchVariationByIdRequest) Reset()                    { *m = FetchVariationByIdRequest{} }
 func (m *FetchVariationByIdRequest) String() string            { return proto.CompactTextString(m) }
 func (*FetchVariationByIdRequest) ProtoMessage()               {}
-func (*FetchVariationByIdRequest) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{7} }
+func (*FetchVariationByIdRequest) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{7} }
 
 func (m *FetchVariationByIdRequest) GetVariationIds() []uint32 {
 	if m != nil {
@@ -204,7 +204,7 @@ type FetchVariationByIdResponse struct {
 func (m *FetchVariationByIdResponse) Reset()                    { *m = FetchVariationByIdResponse{} }
 func (m *FetchVariationByIdResponse) String() string            { return proto.CompactTextString(m) }
 func (*FetchVariationByIdResponse) ProtoMessage()               {}
-func (*FetchVariationByIdResponse) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{8} }
+func (*FetchVariationByIdResponse) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{8} }
 
 func (m *FetchVariationByIdResponse) GetVariations() []*Variation {
 	if m != nil {
@@ -222,7 +222,7 @@ type SearchVariationsRequest struct {
 func (m *SearchVariationsRequest) Reset()                    { *m = SearchVariationsRequest{} }
 func (m *SearchVariationsRequest) String() string            { return proto.CompactTextString(m) }
 func (*SearchVariationsRequest) ProtoMessage()               {}
-func (*SearchVariationsRequest) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{9} }
+func (*SearchVariationsRequest) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{9} }
 
 func (m *SearchVariationsRequest) GetSearchWord() string {
 	if m != nil {
@@ -253,7 +253,7 @@ type SearchVariationsResponse struct {
 func (m *SearchVariationsResponse) Reset()                    { *m = SearchVariationsResponse{} }
 func (m *SearchVariationsResponse) String() string            { return proto.CompactTextString(m) }
 func (*SearchVariationsResponse) ProtoMessage()               {}
-func (*SearchVariationsResponse) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{10} }
+func (*SearchVariationsResponse) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{10} }
 
 func (m *SearchVariationsResponse) GetVariations() []*Variation {
 	if m != nil {
@@ -283,9 +283,9 @@ func init() {
 	proto.RegisterType((*SearchVariationsResponse)(nil), "SeppoService.SearchVariationsResponse")
 }
 
-func init() { proto.RegisterFile("variation.proto", fileDescriptor7) }
+func init() { proto.RegisterFile("variation.proto", fileDescriptor9) }
 
-var fileDescriptor7 = []byte{
+var fileDescriptor9 = []byte{
 	// 389 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x53, 0x4d, 0x8b, 0xdb, 0x30,
 	0x10, 0x45, 0x89, 0x9b, 0x92, 0x49, 0x9c, 0x82, 0x48, 0x63, 0xa7, 0x87, 0x62, 0x44, 0x29, 0x3e,

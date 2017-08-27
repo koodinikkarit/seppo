@@ -273,3 +273,33 @@ func (s *SeppoServiceServer) SyncEwDatabase(ctx context.Context, in *SeppoServic
 
 	return response, nil
 }
+
+func (s SeppoServiceServer) CreateTag(ctx context.Context, in *SeppoService.CreateTagRequest) (*SeppoService.CreateTagResponse, error) {
+	res := &SeppoService.CreateTagResponse{}
+	return res, nil
+}
+
+func (s SeppoServiceServer) EditTag(ctx context.Context, in *SeppoService.EditTagRequest) (*SeppoService.EditTagResponse, error) {
+	res := &SeppoService.EditTagResponse{}
+	return res, nil
+}
+
+func (s SeppoServiceServer) RemoveTag(ctx context.Context, in *SeppoService.RemoveTagRequest) (*SeppoService.RemoveTagResponse, error) {
+	res := &SeppoService.RemoveTagResponse{}
+	return res, nil
+}
+
+func (s SeppoServiceServer) CreateLanguage(ctx context.Context, in *SeppoService.CreateLanguageRequest) (*SeppoService.CreateLanguageResponse, error) {
+	res := &SeppoService.CreateLanguageResponse{}
+	return res, nil
+}
+
+func (s SeppoServiceServer) EditLanguage(ctx context.Context, in *SeppoService.EditLanguageRequest) (*SeppoService.EditLanguageResponse, error) {
+	res := &SeppoService.EditLanguageResponse{}
+	return res, nil
+}
+
+func (s SeppoServiceServer) RemoveLanguage(ctx context.Context, in *SeppoService.RemoveLanguageRequest) (*SeppoService.RemoveLanguageResponse, error) {
+	res := &SeppoService.RemoveLanguageResponse{}
+	return res, nil
+}

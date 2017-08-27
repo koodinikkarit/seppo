@@ -213,3 +213,23 @@ func (s *SeppoServiceServer) FetchVariationTextByVariationId(ctx context.Context
 
 	return res, nil
 }
+
+func (s *SeppoServiceServer) SearchTags(ctx context.Context, in *SeppoService.SearchTagsRequest) (*SeppoService.TagsConnection, error) {
+	res := &SeppoService.TagsConnection{}
+	return res, nil
+}
+
+func (s *SeppoServiceServer) FetchTagById(ctx context.Context, in *SeppoService.FetchTagByIdRequest) (*SeppoService.FetchTagByIdResponse, error) {
+	res := &SeppoService.FetchTagByIdResponse{}
+	return res, nil
+}
+
+func (s *SeppoServiceServer) SearchLanguages(ctx context.Context, in *SeppoService.SearchLanguagesRequest) (*SeppoService.LanguagesConnection, error) {
+	res := &SeppoService.LanguagesConnection{}
+	return res, nil
+}
+
+func (s *SeppoServiceServer) FetchLanguageById(ctx context.Context, in *SeppoService.FetchLanguageByIdRequest) (*SeppoService.FetchLanguageByIdResponse, error) {
+	res := &SeppoService.FetchLanguageByIdResponse{}
+	return res, nil
+}
