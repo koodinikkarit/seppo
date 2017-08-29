@@ -59,3 +59,21 @@ type EditEwDatabaseLinkInput struct {
 	EwDatabaseSongID uint32
 	Version          uint64
 }
+
+type CreateTagInput struct {
+	Name string
+}
+
+type EditTagInput struct {
+	TagID uint32
+	Name  string
+}
+
+type CreateLanguageInput struct {
+	Name string
+}
+
+type EditLanguageInput struct {
+	LanguageID uint32
+	Name       string
+}

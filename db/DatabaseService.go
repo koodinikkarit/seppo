@@ -29,6 +29,12 @@ type DatabaseService struct {
 	addVariationToSongDatabaseChannel      chan addVariationToSongDatabaseInternalInput
 	removeVariationFromSongDatabaseChannel chan removeVariationFromSongDatabaseInternalInput
 	removeEwSongChannel                    chan removeEwSongInternalInput
+	createTagChannel                       chan createTagInternalInput
+	editTagChannel                         chan editTagInternalInput
+	removeTagChannel                       chan removeTagInternalInput
+	createLanguageChannel                  chan createLanguageInternalInput
+	editLanguageChannel                    chan editLanguageInternalInput
+	removeLanguageChannel                  chan removeLanguageInternalInput
 }
 
 func (ds *DatabaseService) insertSong(name string, songID uint32) {
@@ -244,6 +250,52 @@ func (ds *DatabaseService) Start() {
 			if ewDatabaseLink.ID > 0 {
 				ds.GetDb().Delete(ewDatabaseLink)
 				ds.GetDb().Where("song_database_id =  (?)", in.songDatabaseID).Where("variation_id = ?", ewDatabaseLink.VariationID).Delete(SongDatabaseVariation{})
+				in.returnChannel <- true
+			} else {
+				in.returnChannel <- false
+			}
+		case in := <-ds.createTagChannel:
+			tag := Tag{
+				Name: in.input.Name,
+			}
+			ds.GetDb().Create(tag)
+			in.returnChannel <- tag
+		case in := <-ds.editTagChannel:
+			var tag Tag
+			ds.GetDb().First(tag, in.input.TagID)
+			if tag.ID > 0 {
+				tag.Name = in.input.Name
+			}
+			ds.GetDb().Save(&tag)
+			in.returnChannel <- tag
+		case in := <-ds.removeTagChannel:
+			var tag Tag
+			ds.GetDb().First(tag, in.tagID)
+			if tag.ID > 0 {
+				ds.GetDb().Delete(&tag)
+				in.returnChannel <- true
+			} else {
+				in.returnChannel <- false
+			}
+		case in := <-ds.createLanguageChannel:
+			language := Language{
+				Name: in.input.Name,
+			}
+			ds.GetDb().Create(&language)
+			in.returnChannel <- language
+		case in := <-ds.editLanguageChannel:
+			var language Language
+			ds.GetDb().First(&language, in.input.LanguageID)
+			if language.ID > 0 {
+				language.Name = in.input.Name
+			}
+			ds.GetDb().Save(&language)
+			in.returnChannel <- language
+		case in := <-ds.removeLanguageChannel:
+			var language Language
+			ds.GetDb().First(&language, in.languageID)
+			if language.ID > 0 {
+				ds.GetDb().Delete(&language)
 				in.returnChannel <- true
 			} else {
 				in.returnChannel <- false

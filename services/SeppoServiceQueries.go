@@ -216,20 +216,82 @@ func (s *SeppoServiceServer) FetchVariationTextByVariationId(ctx context.Context
 
 func (s *SeppoServiceServer) SearchTags(ctx context.Context, in *SeppoService.SearchTagsRequest) (*SeppoService.TagsConnection, error) {
 	res := &SeppoService.TagsConnection{}
+
+	tags := []SeppoDB.Tag{}
+
+	q := s.databaseService.GetDb().Find(&tags)
+
+	q.Count(&res.MaxTags)
+
+	for i := 0; i < len(tags); i++ {
+		res.Tags = append(res.Tags, NewTagToServiceType(&tags[i]))
+	}
+
 	return res, nil
 }
 
 func (s *SeppoServiceServer) FetchTagById(ctx context.Context, in *SeppoService.FetchTagByIdRequest) (*SeppoService.FetchTagByIdResponse, error) {
 	res := &SeppoService.FetchTagByIdResponse{}
+
+	tags := []SeppoDB.Tag{}
+
+	s.databaseService.GetDb().Where("id in (?)", in.TagIds).Find(&tags)
+
+	for _, tagID := range in.TagIds {
+		found := false
+		for i := 0; i < len(tags); i++ {
+			if tagID == tags[i].ID {
+				found = true
+				res.Tags = append(res.Tags, NewTagToServiceType(&tags[i]))
+			}
+		}
+		if found == false {
+			res.Tags = append(res.Tags, &SeppoService.Tag{
+				Id: 0,
+			})
+		}
+	}
+
 	return res, nil
 }
 
 func (s *SeppoServiceServer) SearchLanguages(ctx context.Context, in *SeppoService.SearchLanguagesRequest) (*SeppoService.LanguagesConnection, error) {
 	res := &SeppoService.LanguagesConnection{}
+
+	languages := []SeppoDB.Language{}
+
+	q := s.databaseService.GetDb().Find(&languages)
+
+	q.Count(&res.MaxLanguages)
+
+	for i := 0; i < len(languages); i++ {
+		res.Languages = append(res.Languages, NewLanguageToServiceType(&languages[i]))
+	}
+
 	return res, nil
 }
 
 func (s *SeppoServiceServer) FetchLanguageById(ctx context.Context, in *SeppoService.FetchLanguageByIdRequest) (*SeppoService.FetchLanguageByIdResponse, error) {
 	res := &SeppoService.FetchLanguageByIdResponse{}
+
+	languages := []SeppoDB.Language{}
+
+	s.databaseService.GetDb().Where("id in (?)", in.LanguagesIds).Find(&languages)
+
+	for _, languageID := range in.LanguagesIds {
+		found := false
+		for i := 0; i < len(languages); i++ {
+			if languageID == languages[i].ID {
+				found = false
+				res.Languages = append(res.Languages, NewLanguageToServiceType(&languages[i]))
+			}
+		}
+		if found == false {
+			res.Languages = append(res.Languages, &SeppoService.Language{
+				Id: 0,
+			})
+		}
+	}
+
 	return res, nil
 }

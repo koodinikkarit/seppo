@@ -45,3 +45,17 @@ func NewSongDatabaseVariationToServiceType(in *SeppoDB.SongDatabaseVariation) *S
 		VariationId:    in.VariationID,
 	}
 }
+
+func NewTagToServiceType(in *SeppoDB.Tag) *SeppoService.Tag {
+	return &SeppoService.Tag{
+		Id:   in.ID,
+		Name: in.Name,
+	}
+}
+
+func NewLanguageToServiceType(in *SeppoDB.Language) *SeppoService.Language {
+	return &SeppoService.Language{
+		Id:   in.ID,
+		Name: in.Name,
+	}
+}

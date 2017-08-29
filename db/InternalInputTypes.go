@@ -80,3 +80,33 @@ type removeEwSongInternalInput struct {
 	songDatabaseID uint32
 	returnChannel  chan bool
 }
+
+type createTagInternalInput struct {
+	input         CreateTagInput
+	returnChannel chan Tag
+}
+
+type editTagInternalInput struct {
+	input         EditTagInput
+	returnChannel chan Tag
+}
+
+type removeTagInternalInput struct {
+	tagID         uint32
+	returnChannel chan bool
+}
+
+type createLanguageInternalInput struct {
+	input         CreateLanguageInput
+	returnChannel chan Language
+}
+
+type editLanguageInternalInput struct {
+	input         EditLanguageInput
+	returnChannel chan Language
+}
+
+type removeLanguageInternalInput struct {
+	languageID    uint32
+	returnChannel chan bool
+}

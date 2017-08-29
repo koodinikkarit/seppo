@@ -145,3 +145,57 @@ func (ds *DatabaseService) RemoveEwSong(songDatabaseID uint32, ewSongID uint32) 
 	}
 	return <-returnChannel
 }
+
+func (ds *DatabaseService) CreateTag(in CreateTagInput) Tag {
+	returnChannel := make(chan Tag)
+	ds.createTagChannel <- createTagInternalInput{
+		input:         in,
+		returnChannel: returnChannel,
+	}
+	return <-returnChannel
+}
+
+func (ds *DatabaseService) EditTag(in EditTagInput) Tag {
+	returnChannel := make(chan Tag)
+	ds.editTagChannel <- editTagInternalInput{
+		input:         in,
+		returnChannel: returnChannel,
+	}
+	return <-returnChannel
+}
+
+func (ds *DatabaseService) RemoveTag(tagID uint32) bool {
+	returnChannel := make(chan bool)
+	ds.removeTagChannel <- removeTagInternalInput{
+		tagID:         tagID,
+		returnChannel: returnChannel,
+	}
+	return <-returnChannel
+}
+
+func (ds *DatabaseService) CreateLanguage(in CreateLanguageInput) Language {
+	returnChannel := make(chan Language)
+	ds.createLanguageChannel <- createLanguageInternalInput{
+		input:         in,
+		returnChannel: returnChannel,
+	}
+	return <-returnChannel
+}
+
+func (ds *DatabaseService) EditLanguage(in EditLanguageInput) Language {
+	returnChannel := make(chan Language)
+	ds.editLanguageChannel <- editLanguageInternalInput{
+		input:         in,
+		returnChannel: returnChannel,
+	}
+	return <-returnChannel
+}
+
+func (ds *DatabaseService) RemoveLanguage(languageID uint32) bool {
+	returnChannel := make(chan bool)
+	ds.removeLanguageChannel <- removeLanguageInternalInput{
+		languageID:    languageID,
+		returnChannel: returnChannel,
+	}
+	return <-returnChannel
+}

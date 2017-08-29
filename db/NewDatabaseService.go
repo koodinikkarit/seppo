@@ -28,6 +28,12 @@ func NewDatabaseService(
 	addVariationToSongDatabaseChannel := make(chan addVariationToSongDatabaseInternalInput)
 	removeVariationFromSongDatabaseChannel := make(chan removeVariationFromSongDatabaseInternalInput)
 	removeEwSongChannel := make(chan removeEwSongInternalInput)
+	createTagChannel := make(chan createTagInternalInput)
+	editTagChannel := make(chan editTagInternalInput)
+	removeTagChannel := make(chan removeTagInternalInput)
+	createLanguageChannel := make(chan createLanguageInternalInput)
+	editLanguageChannel := make(chan editLanguageInternalInput)
+	removeLanguageChannel := make(chan removeLanguageInternalInput)
 
 	return &DatabaseService{
 		dbUser:                                 dbUser,
@@ -51,5 +57,11 @@ func NewDatabaseService(
 		addVariationToSongDatabaseChannel:      addVariationToSongDatabaseChannel,
 		removeVariationFromSongDatabaseChannel: removeVariationFromSongDatabaseChannel,
 		removeEwSongChannel:                    removeEwSongChannel,
+		createTagChannel:                       createTagChannel,
+		editTagChannel:                         editTagChannel,
+		removeTagChannel:                       removeTagChannel,
+		createLanguageChannel:                  createLanguageChannel,
+		editLanguageChannel:                    editLanguageChannel,
+		removeLanguageChannel:                  removeLanguageChannel,
 	}
 }

@@ -276,30 +276,50 @@ func (s *SeppoServiceServer) SyncEwDatabase(ctx context.Context, in *SeppoServic
 
 func (s SeppoServiceServer) CreateTag(ctx context.Context, in *SeppoService.CreateTagRequest) (*SeppoService.CreateTagResponse, error) {
 	res := &SeppoService.CreateTagResponse{}
+	tag := s.databaseService.CreateTag(SeppoDB.CreateTagInput{
+		Name: in.Name,
+	})
+	res.Tag = NewTagToServiceType(&tag)
 	return res, nil
 }
 
 func (s SeppoServiceServer) EditTag(ctx context.Context, in *SeppoService.EditTagRequest) (*SeppoService.EditTagResponse, error) {
 	res := &SeppoService.EditTagResponse{}
+	tag := s.databaseService.EditTag(SeppoDB.EditTagInput{
+		TagID: in.TagId,
+		Name:  in.Name,
+	})
+	res.Tag = NewTagToServiceType(&tag)
 	return res, nil
 }
 
 func (s SeppoServiceServer) RemoveTag(ctx context.Context, in *SeppoService.RemoveTagRequest) (*SeppoService.RemoveTagResponse, error) {
 	res := &SeppoService.RemoveTagResponse{}
+	res.Success = s.databaseService.RemoveTag(in.TagId)
 	return res, nil
 }
 
 func (s SeppoServiceServer) CreateLanguage(ctx context.Context, in *SeppoService.CreateLanguageRequest) (*SeppoService.CreateLanguageResponse, error) {
 	res := &SeppoService.CreateLanguageResponse{}
+	language := s.databaseService.CreateLanguage(SeppoDB.CreateLanguageInput{
+		Name: in.Name,
+	})
+	res.Language = NewLanguageToServiceType(&language)
 	return res, nil
 }
 
 func (s SeppoServiceServer) EditLanguage(ctx context.Context, in *SeppoService.EditLanguageRequest) (*SeppoService.EditLanguageResponse, error) {
 	res := &SeppoService.EditLanguageResponse{}
+	language := s.databaseService.EditLanguage(SeppoDB.EditLanguageInput{
+		LanguageID: in.LanguageId,
+		Name:       in.Name,
+	})
+	res.Language = NewLanguageToServiceType(&language)
 	return res, nil
 }
 
 func (s SeppoServiceServer) RemoveLanguage(ctx context.Context, in *SeppoService.RemoveLanguageRequest) (*SeppoService.RemoveLanguageResponse, error) {
 	res := &SeppoService.RemoveLanguageResponse{}
+	res.Success = s.databaseService.RemoveLanguage(in.LanguageId)
 	return res, nil
 }
