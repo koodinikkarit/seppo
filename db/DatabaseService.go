@@ -258,19 +258,19 @@ func (ds *DatabaseService) Start() {
 			tag := Tag{
 				Name: in.input.Name,
 			}
-			ds.GetDb().Create(tag)
-			in.returnChannel <- tag
+			ds.GetDb().Create(&tag)
+			in.returnChannel <- &tag
 		case in := <-ds.editTagChannel:
 			var tag Tag
-			ds.GetDb().First(tag, in.input.TagID)
+			ds.GetDb().First(&tag, in.input.TagID)
 			if tag.ID > 0 {
 				tag.Name = in.input.Name
 			}
 			ds.GetDb().Save(&tag)
-			in.returnChannel <- tag
+			in.returnChannel <- &tag
 		case in := <-ds.removeTagChannel:
 			var tag Tag
-			ds.GetDb().First(tag, in.tagID)
+			ds.GetDb().First(&tag, in.tagID)
 			if tag.ID > 0 {
 				ds.GetDb().Delete(&tag)
 				in.returnChannel <- true
@@ -282,7 +282,7 @@ func (ds *DatabaseService) Start() {
 				Name: in.input.Name,
 			}
 			ds.GetDb().Create(&language)
-			in.returnChannel <- language
+			in.returnChannel <- &language
 		case in := <-ds.editLanguageChannel:
 			var language Language
 			ds.GetDb().First(&language, in.input.LanguageID)
@@ -290,7 +290,7 @@ func (ds *DatabaseService) Start() {
 				language.Name = in.input.Name
 			}
 			ds.GetDb().Save(&language)
-			in.returnChannel <- language
+			in.returnChannel <- &language
 		case in := <-ds.removeLanguageChannel:
 			var language Language
 			ds.GetDb().First(&language, in.languageID)

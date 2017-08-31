@@ -83,12 +83,12 @@ type removeEwSongInternalInput struct {
 
 type createTagInternalInput struct {
 	input         CreateTagInput
-	returnChannel chan Tag
+	returnChannel chan *Tag
 }
 
 type editTagInternalInput struct {
 	input         EditTagInput
-	returnChannel chan Tag
+	returnChannel chan *Tag
 }
 
 type removeTagInternalInput struct {
@@ -98,12 +98,12 @@ type removeTagInternalInput struct {
 
 type createLanguageInternalInput struct {
 	input         CreateLanguageInput
-	returnChannel chan Language
+	returnChannel chan *Language
 }
 
 type editLanguageInternalInput struct {
 	input         EditLanguageInput
-	returnChannel chan Language
+	returnChannel chan *Language
 }
 
 type removeLanguageInternalInput struct {

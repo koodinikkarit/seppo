@@ -279,7 +279,7 @@ func (s SeppoServiceServer) CreateTag(ctx context.Context, in *SeppoService.Crea
 	tag := s.databaseService.CreateTag(SeppoDB.CreateTagInput{
 		Name: in.Name,
 	})
-	res.Tag = NewTagToServiceType(&tag)
+	res.Tag = NewTagToServiceType(tag)
 	return res, nil
 }
 
@@ -289,7 +289,7 @@ func (s SeppoServiceServer) EditTag(ctx context.Context, in *SeppoService.EditTa
 		TagID: in.TagId,
 		Name:  in.Name,
 	})
-	res.Tag = NewTagToServiceType(&tag)
+	res.Tag = NewTagToServiceType(tag)
 	return res, nil
 }
 
@@ -304,7 +304,7 @@ func (s SeppoServiceServer) CreateLanguage(ctx context.Context, in *SeppoService
 	language := s.databaseService.CreateLanguage(SeppoDB.CreateLanguageInput{
 		Name: in.Name,
 	})
-	res.Language = NewLanguageToServiceType(&language)
+	res.Language = NewLanguageToServiceType(language)
 	return res, nil
 }
 
@@ -314,7 +314,7 @@ func (s SeppoServiceServer) EditLanguage(ctx context.Context, in *SeppoService.E
 		LanguageID: in.LanguageId,
 		Name:       in.Name,
 	})
-	res.Language = NewLanguageToServiceType(&language)
+	res.Language = NewLanguageToServiceType(language)
 	return res, nil
 }
 

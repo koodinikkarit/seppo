@@ -276,13 +276,13 @@ func (s *SeppoServiceServer) FetchLanguageById(ctx context.Context, in *SeppoSer
 
 	languages := []SeppoDB.Language{}
 
-	s.databaseService.GetDb().Where("id in (?)", in.LanguagesIds).Find(&languages)
+	s.databaseService.GetDb().Where("id in (?)", in.LanguageIds).Find(&languages)
 
-	for _, languageID := range in.LanguagesIds {
+	for _, languageID := range in.LanguageIds {
 		found := false
 		for i := 0; i < len(languages); i++ {
 			if languageID == languages[i].ID {
-				found = false
+				found = true
 				res.Languages = append(res.Languages, NewLanguageToServiceType(&languages[i]))
 			}
 		}
