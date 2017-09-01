@@ -33,7 +33,7 @@ func (x RemoveVariationFromSongDatabaseResponse_State) String() string {
 	return proto.EnumName(RemoveVariationFromSongDatabaseResponse_State_name, int32(x))
 }
 func (RemoveVariationFromSongDatabaseResponse_State) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor7, []int{7, 0}
+	return fileDescriptor9, []int{7, 0}
 }
 
 type SongDatabaseVariation struct {
@@ -45,7 +45,7 @@ type SongDatabaseVariation struct {
 func (m *SongDatabaseVariation) Reset()                    { *m = SongDatabaseVariation{} }
 func (m *SongDatabaseVariation) String() string            { return proto.CompactTextString(m) }
 func (*SongDatabaseVariation) ProtoMessage()               {}
-func (*SongDatabaseVariation) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{0} }
+func (*SongDatabaseVariation) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{0} }
 
 func (m *SongDatabaseVariation) GetId() uint32 {
 	if m != nil {
@@ -76,7 +76,7 @@ type SongDatabaseVariations struct {
 func (m *SongDatabaseVariations) Reset()                    { *m = SongDatabaseVariations{} }
 func (m *SongDatabaseVariations) String() string            { return proto.CompactTextString(m) }
 func (*SongDatabaseVariations) ProtoMessage()               {}
-func (*SongDatabaseVariations) Descriptor() ([]byte, []int) { return fileDescriptor7, []int{1} }
+func (*SongDatabaseVariations) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{1} }
 
 func (m *SongDatabaseVariations) GetSongDatabaseId() uint32 {
 	if m != nil {
@@ -102,7 +102,7 @@ func (m *FetchVariationsBySongDatabaseIdRequest) Reset() {
 func (m *FetchVariationsBySongDatabaseIdRequest) String() string { return proto.CompactTextString(m) }
 func (*FetchVariationsBySongDatabaseIdRequest) ProtoMessage()    {}
 func (*FetchVariationsBySongDatabaseIdRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor7, []int{2}
+	return fileDescriptor9, []int{2}
 }
 
 func (m *FetchVariationsBySongDatabaseIdRequest) GetSongDatabaseIds() []uint32 {
@@ -122,7 +122,7 @@ func (m *FetchVariationsBySongDatabaseIdResponse) Reset() {
 func (m *FetchVariationsBySongDatabaseIdResponse) String() string { return proto.CompactTextString(m) }
 func (*FetchVariationsBySongDatabaseIdResponse) ProtoMessage()    {}
 func (*FetchVariationsBySongDatabaseIdResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor7, []int{3}
+	return fileDescriptor9, []int{3}
 }
 
 func (m *FetchVariationsBySongDatabaseIdResponse) GetSongDatabaseVariations() []*SongDatabaseVariations {
@@ -141,7 +141,7 @@ func (m *AddVariationToSongDatabaseRequest) Reset()         { *m = AddVariationT
 func (m *AddVariationToSongDatabaseRequest) String() string { return proto.CompactTextString(m) }
 func (*AddVariationToSongDatabaseRequest) ProtoMessage()    {}
 func (*AddVariationToSongDatabaseRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor7, []int{4}
+	return fileDescriptor9, []int{4}
 }
 
 func (m *AddVariationToSongDatabaseRequest) GetSongDatabaseId() uint32 {
@@ -166,7 +166,7 @@ func (m *AddVariationToSongDatabaseResponse) Reset()         { *m = AddVariation
 func (m *AddVariationToSongDatabaseResponse) String() string { return proto.CompactTextString(m) }
 func (*AddVariationToSongDatabaseResponse) ProtoMessage()    {}
 func (*AddVariationToSongDatabaseResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor7, []int{5}
+	return fileDescriptor9, []int{5}
 }
 
 func (m *AddVariationToSongDatabaseResponse) GetSongDatabaseVariation() *SongDatabaseVariation {
@@ -187,7 +187,7 @@ func (m *RemoveVariationFromSongDatabaseRequest) Reset() {
 func (m *RemoveVariationFromSongDatabaseRequest) String() string { return proto.CompactTextString(m) }
 func (*RemoveVariationFromSongDatabaseRequest) ProtoMessage()    {}
 func (*RemoveVariationFromSongDatabaseRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor7, []int{6}
+	return fileDescriptor9, []int{6}
 }
 
 func (m *RemoveVariationFromSongDatabaseRequest) GetSongDatabaseId() uint32 {
@@ -214,7 +214,7 @@ func (m *RemoveVariationFromSongDatabaseResponse) Reset() {
 func (m *RemoveVariationFromSongDatabaseResponse) String() string { return proto.CompactTextString(m) }
 func (*RemoveVariationFromSongDatabaseResponse) ProtoMessage()    {}
 func (*RemoveVariationFromSongDatabaseResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor7, []int{7}
+	return fileDescriptor9, []int{7}
 }
 
 func (m *RemoveVariationFromSongDatabaseResponse) GetState() RemoveVariationFromSongDatabaseResponse_State {
@@ -236,9 +236,9 @@ func init() {
 	proto.RegisterEnum("SeppoService.RemoveVariationFromSongDatabaseResponse_State", RemoveVariationFromSongDatabaseResponse_State_name, RemoveVariationFromSongDatabaseResponse_State_value)
 }
 
-func init() { proto.RegisterFile("song_database_variation.proto", fileDescriptor7) }
+func init() { proto.RegisterFile("song_database_variation.proto", fileDescriptor9) }
 
-var fileDescriptor7 = []byte{
+var fileDescriptor9 = []byte{
 	// 370 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x93, 0x3f, 0x4f, 0xc2, 0x40,
 	0x18, 0xc6, 0x6d, 0x09, 0x1a, 0xdf, 0xca, 0x9f, 0x5c, 0x02, 0x36, 0x26, 0x26, 0xf5, 0x30, 0xd0,

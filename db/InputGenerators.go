@@ -17,6 +17,7 @@ func NewEditVariationFromService(in *SeppoService.EditVariationRequest) EditVari
 		Name:        in.Name,
 		Text:        in.Text,
 		SongID:      in.SongId,
+		LanguageID:  in.LanguageId,
 	}
 }
 

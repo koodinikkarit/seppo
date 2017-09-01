@@ -110,3 +110,27 @@ type removeLanguageInternalInput struct {
 	languageID    uint32
 	returnChannel chan bool
 }
+
+type addTagToVariationInternalInput struct {
+	tagID         uint32
+	variationID   uint32
+	returnChannel chan *TagVariation
+}
+
+type removeTagFromVariationInternalInput struct {
+	tagID         uint32
+	variationID   uint32
+	returnChannel chan bool
+}
+
+type addTagToSongDatabaseInternalInput struct {
+	tagID          uint32
+	songDatabaseID uint32
+	returnChannel  chan *SongDatabaseTag
+}
+
+type removeTagFromSongDatabaseInternalInput struct {
+	tagID          uint32
+	songDatabaseID uint32
+	returnChannel  chan bool
+}

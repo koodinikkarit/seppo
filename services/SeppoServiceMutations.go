@@ -323,3 +323,83 @@ func (s SeppoServiceServer) RemoveLanguage(ctx context.Context, in *SeppoService
 	res.Success = s.databaseService.RemoveLanguage(in.LanguageId)
 	return res, nil
 }
+
+func (s SeppoServiceServer) AddTagToVariation(
+	ctx context.Context,
+	in *SeppoService.AddTagToVariationRequest,
+) (
+	*SeppoService.AddTagToVariationResponse,
+	error,
+) {
+	res := &SeppoService.AddTagToVariationResponse{}
+	tagVariation := s.databaseService.AddTagToVariation(
+		in.TagId,
+		in.VariationId,
+	)
+
+	if tagVariation.ID > 0 {
+		res.Success = true
+		res.TagVariation = NewTagVariationToServiceType(tagVariation)
+	} else {
+		res.Success = false
+	}
+
+	return res, nil
+}
+
+func (s SeppoServiceServer) RemoveTagFromVariation(
+	ctx context.Context,
+	in *SeppoService.RemoveTagFromVariationRequest,
+) (
+	*SeppoService.RemoveTagFromVariationResponse,
+	error,
+) {
+	res := &SeppoService.RemoveTagFromVariationResponse{}
+
+	res.Success = s.databaseService.RemoveTagFromVariation(
+		in.TagId,
+		in.VariationId,
+	)
+
+	return res, nil
+}
+
+func (s SeppoServiceServer) AddTagToSongDatabase(
+	ctx context.Context,
+	in *SeppoService.AddTagToSongDatabaseRequest,
+) (
+	*SeppoService.AddTagToSongDatabaseResponse,
+	error,
+) {
+	res := &SeppoService.AddTagToSongDatabaseResponse{}
+	songDatabaseTag := s.databaseService.AddTagToSongDatabase(
+		in.TagId,
+		in.SongDatabaseId,
+	)
+
+	if songDatabaseTag.ID > 0 {
+		res.Success = true
+		res.SongDatabaseTag = NewSongDatabaseTagToServiceType(songDatabaseTag)
+	} else {
+		res.Success = false
+	}
+
+	return res, nil
+}
+
+func (s SeppoServiceServer) RemoveTagFromSongDatabase(
+	ctx context.Context,
+	in *SeppoService.RemoveTagFromSongDatabaseRequest,
+) (
+	*SeppoService.RemoveTagFromSongDatabaseResponse,
+	error,
+) {
+	res := &SeppoService.RemoveTagFromSongDatabaseResponse{}
+
+	res.Success = s.databaseService.RemoveTagFromSongDatabase(
+		in.TagId,
+		in.SongDatabaseId,
+	)
+
+	return res, nil
+}

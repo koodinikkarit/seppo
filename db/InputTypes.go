@@ -21,6 +21,7 @@ type EditVariationInput struct {
 	Name        string
 	Text        string
 	SongID      uint32
+	LanguageID  uint32
 }
 
 type UpdateEwSongInput struct {

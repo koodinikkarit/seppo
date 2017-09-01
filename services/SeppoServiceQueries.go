@@ -81,10 +81,15 @@ func (s *SeppoServiceServer) FetchSongDatabases(ctx context.Context, in *SeppoSe
 	res := &SeppoService.SongDatabasesConnection{}
 	songDatabases := []SeppoDB.SongDatabase{}
 
-	query := s.databaseService.GetDb().Debug()
+	query := s.databaseService.GetDb().Table("song_databases")
+
+	if in.VariationId > 0 {
+		query = query.Joins("JOIN song_database_variations on song_databases.id = song_database_variations.song_database_id").
+			Where("song_database_variations.variation_id = ?", in.VariationId)
+	}
 
 	if in.SearchWord != "" {
-		query = query.Where("name LIKE ?", "%"+in.SearchWord+"%")
+		query = query.Where("song_databases.name LIKE ?", "%"+in.SearchWord+"%")
 	}
 
 	query = query.Find(&songDatabases)
@@ -292,6 +297,135 @@ func (s *SeppoServiceServer) FetchLanguageById(ctx context.Context, in *SeppoSer
 			})
 		}
 	}
+
+	return res, nil
+}
+
+func (s *SeppoServiceServer) FetchVariationTags(
+	ctx context.Context,
+	in *SeppoService.FetchVariationTagsRequest,
+) (
+	*SeppoService.FetchVariationTagsResponse,
+	error,
+) {
+	res := &SeppoService.FetchVariationTagsResponse{}
+
+	tags := []SeppoDB.Tag{}
+	tagVariations := []SeppoDB.TagVariation{}
+
+	s.databaseService.GetDb().
+		Where("variation_id in (?)", in.VariationIds).
+		Find(&tagVariations)
+
+	var tagIds []uint32
+	for i := 0; i < len(tagVariations); i++ {
+		tagIds = append(tagIds, tagVariations[i].TagID)
+	}
+
+	s.databaseService.GetDb().Where("id in (?)", tagIds).Find(&tags)
+
+	for _, variationId := range in.VariationIds {
+		variationTags := &SeppoService.VariationTags{
+			VariationId: variationId,
+		}
+		for i := 0; i < len(tagVariations); i++ {
+			if tagVariations[i].VariationID == variationId {
+				for j := 0; j < len(tags); j++ {
+					if tags[j].ID == tagVariations[i].TagID {
+						variationTags.Tags = append(variationTags.Tags, NewTagToServiceType(&tags[j]))
+						break
+					}
+				}
+			}
+		}
+		res.VariationTags = append(res.VariationTags, variationTags)
+	}
+
+	return res, nil
+}
+
+func (s *SeppoServiceServer) FetchTagVariations(
+	ctx context.Context,
+	in *SeppoService.FetchTagVariationsRequest,
+) (
+	*SeppoService.FetchTagVariationsResponse,
+	error,
+) {
+	res := &SeppoService.FetchTagVariationsResponse{}
+
+	tagVariations := []SeppoDB.TagVariation{}
+	variations := []SeppoDB.Variation{}
+
+	s.databaseService.GetDb().
+		Where("tag_id in (?)", in.TagIds).
+		Find(&tagVariations)
+
+	var variationIds []uint32
+	for i := 0; i < len(tagVariations); i++ {
+		variationIds = append(
+			variationIds,
+			tagVariations[i].VariationID,
+		)
+	}
+
+	s.databaseService.GetDb().
+		Where("id in (?)", variationIds).
+		Find(&variations)
+
+	for _, tagId := range in.TagIds {
+		tagVariations2 := &SeppoService.TagVariations{
+			TagId: tagId,
+		}
+		for i := 0; i < len(tagVariations); i++ {
+			if tagVariations[i].TagID == tagId {
+				for j := 0; j < len(variations); j++ {
+					if variations[j].ID == tagVariations[i].VariationID {
+						tagVariations2.Variations = append(tagVariations2.Variations, NewVariationToServiceType(&variations[j]))
+						break
+					}
+				}
+			}
+		}
+		res.TagVariations = append(res.TagVariations, tagVariations2)
+	}
+
+	return res, nil
+}
+
+func (s *SeppoServiceServer) FetchTagSongDatabases(ctx context.Context, in *SeppoService.FetchTagSongDatabasesRequest) (*SeppoService.FetchTagSongDatabasesResponse, error) {
+	res := &SeppoService.FetchTagSongDatabasesResponse{}
+
+	//songDatabases := []SeppoDB.SongDatabase{}
+
+	// s.databaseService.GetDb().Model(&SeppoDB.SongDatabaseTag{}).Where("song_database_tags.tag_id = ?", in.TagId).Related(&songDatabases)
+
+	// for i := 0; i < len(songDatabases); i++ {
+	// 	res.SongDatabases = append(res.SongDatabases, NewSongDatabaseToServiceType(&songDatabases[i]))
+	// }
+
+	return res, nil
+}
+
+func (s *SeppoServiceServer) FetchSongDatabaseTags(ctx context.Context, in *SeppoService.FetchSongDatabaseTagsRequest) (*SeppoService.FetchSongDatabaseTagsResponse, error) {
+	res := &SeppoService.FetchSongDatabaseTagsResponse{}
+
+	//tags := []SeppoDB.Tag{}
+
+	// s.databaseService.GetDb().Model(&SeppoDB.SongDatabaseTag{}).Where("song_database_tags.song_database_Id = ?", in.SongDatabaseId).Related(&tags)
+
+	// for i := 0; i < len(tags); i++ {
+	// 	res.Tags = append(res.Tags, NewTagToServiceType(&tags[i]))
+	// }
+
+	return res, nil
+}
+
+func (s *SeppoServiceServer) FetchLanguageVariations(ctxt context.Context, in *SeppoService.FetchLanguageVariationsRequest) (*SeppoService.FetchLanguageVariationsResponse, error) {
+	res := &SeppoService.FetchLanguageVariationsResponse{}
+
+	//variations := []SeppoDB.Variation{}
+
+	// s.databaseService.GetDb().Model(&SeppoDB.Language{}).Where("variations.language_id = ?", in.LanguageId).Related(&variations)
 
 	return res, nil
 }

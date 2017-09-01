@@ -7,10 +7,11 @@ import (
 
 func NewVariationToServiceType(in *SeppoDB.Variation) *SeppoService.Variation {
 	return &SeppoService.Variation{
-		Id:      in.ID,
-		Name:    in.Name,
-		SongId:  in.SongID,
-		Version: in.Version,
+		Id:         in.ID,
+		Name:       in.Name,
+		SongId:     in.SongID,
+		Version:    in.Version,
+		LanguageId: in.LanguageID,
 	}
 }
 
@@ -57,5 +58,21 @@ func NewLanguageToServiceType(in *SeppoDB.Language) *SeppoService.Language {
 	return &SeppoService.Language{
 		Id:   in.ID,
 		Name: in.Name,
+	}
+}
+
+func NewTagVariationToServiceType(in *SeppoDB.TagVariation) *SeppoService.TagVariation {
+	return &SeppoService.TagVariation{
+		Id:          in.ID,
+		TagId:       in.TagID,
+		VariationId: in.VariationID,
+	}
+}
+
+func NewSongDatabaseTagToServiceType(in *SeppoDB.SongDatabaseTag) *SeppoService.SongDatabaseTag {
+	return &SeppoService.SongDatabaseTag{
+		Id:             in.ID,
+		TagId:          in.TagID,
+		SongDatabaseId: in.SongDatabaseID,
 	}
 }

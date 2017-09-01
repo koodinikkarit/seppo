@@ -10,11 +10,14 @@ It is generated from these files:
 	ew_song.proto
 	ew_verse.proto
 	language.proto
+	language_variations.proto
 	seppo_service.proto
 	song.proto
 	song_database.proto
+	song_database_tag.proto
 	song_database_variation.proto
 	tag.proto
+	tag_variation.proto
 	variation.proto
 	variation_text.proto
 
@@ -53,6 +56,9 @@ It has these top-level messages:
 	EditLanguageResponse
 	RemoveLanguageRequest
 	RemoveLanguageResponse
+	LanguageVariations
+	FetchLanguageVariationsRequest
+	FetchLanguageVariationsResponse
 	Song
 	SongDatabase
 	SongDatabaseEdge
@@ -66,6 +72,17 @@ It has these top-level messages:
 	EditSongDatabaseResponse
 	RemoveSongDatabaseRequest
 	RemoveSongDatabaseResponse
+	SongDatabaseTag
+	TagSongDatabases
+	SongDatabaseTags
+	FetchTagSongDatabasesRequest
+	FetchTagSongDatabasesResponse
+	FetchSongDatabaseTagsRequest
+	FetchSongDatabaseTagsResponse
+	AddTagToSongDatabaseRequest
+	AddTagToSongDatabaseResponse
+	RemoveTagFromSongDatabaseRequest
+	RemoveTagFromSongDatabaseResponse
 	SongDatabaseVariation
 	SongDatabaseVariations
 	FetchVariationsBySongDatabaseIdRequest
@@ -85,6 +102,17 @@ It has these top-level messages:
 	EditTagResponse
 	RemoveTagRequest
 	RemoveTagResponse
+	TagVariation
+	VariationTags
+	TagVariations
+	FetchVariationTagsRequest
+	FetchVariationTagsResponse
+	FetchTagVariationsRequest
+	FetchTagVariationsResponse
+	AddTagToVariationRequest
+	AddTagToVariationResponse
+	RemoveTagFromVariationRequest
+	RemoveTagFromVariationResponse
 	Variation
 	CreateVariationRequest
 	CreateVariationResponse

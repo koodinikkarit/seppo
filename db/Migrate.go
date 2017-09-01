@@ -15,4 +15,7 @@ func Migrate(db *gorm.DB) {
 	db.AutoMigrate(&VariationText{})
 	db.AutoMigrate(&Tag{})
 	db.AutoMigrate(&Language{})
+	db.AutoMigrate(&SongDatabaseTag{})
+	db.AutoMigrate(&SongDatabaseVariation{})
+	db.AutoMigrate(&TagVariation{})
 }

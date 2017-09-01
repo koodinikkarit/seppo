@@ -199,3 +199,43 @@ func (ds *DatabaseService) RemoveLanguage(languageID uint32) bool {
 	}
 	return <-returnChannel
 }
+
+func (ds *DatabaseService) AddTagToVariation(tagID uint32, variationID uint32) *TagVariation {
+	returnChannel := make(chan *TagVariation)
+	ds.addTagToVariationChannel <- addTagToVariationInternalInput{
+		tagID:         tagID,
+		variationID:   variationID,
+		returnChannel: returnChannel,
+	}
+	return <-returnChannel
+}
+
+func (ds *DatabaseService) RemoveTagFromVariation(tagID uint32, variationID uint32) bool {
+	returnChannel := make(chan bool)
+	ds.removeTagFromVariationChannel <- removeTagFromVariationInternalInput{
+		tagID:         tagID,
+		variationID:   variationID,
+		returnChannel: returnChannel,
+	}
+	return <-returnChannel
+}
+
+func (ds *DatabaseService) AddTagToSongDatabase(tagID uint32, songDatabaseID uint32) *SongDatabaseTag {
+	returnChannel := make(chan *SongDatabaseTag)
+	ds.addTagToSongDatabaseChannel <- addTagToSongDatabaseInternalInput{
+		tagID:          tagID,
+		songDatabaseID: songDatabaseID,
+		returnChannel:  returnChannel,
+	}
+	return <-returnChannel
+}
+
+func (ds *DatabaseService) RemoveTagFromSongDatabase(tagID uint32, songDatabaseID uint32) bool {
+	returnChannel := make(chan bool)
+	ds.removeTagFromSongDatabaseChannel <- removeTagFromSongDatabaseInternalInput{
+		tagID:          tagID,
+		songDatabaseID: songDatabaseID,
+		returnChannel:  returnChannel,
+	}
+	return <-returnChannel
+}

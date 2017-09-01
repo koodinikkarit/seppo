@@ -35,6 +35,10 @@ type DatabaseService struct {
 	createLanguageChannel                  chan createLanguageInternalInput
 	editLanguageChannel                    chan editLanguageInternalInput
 	removeLanguageChannel                  chan removeLanguageInternalInput
+	addTagToVariationChannel               chan addTagToVariationInternalInput
+	removeTagFromVariationChannel          chan removeTagFromVariationInternalInput
+	addTagToSongDatabaseChannel            chan addTagToSongDatabaseInternalInput
+	removeTagFromSongDatabaseChannel       chan removeTagFromSongDatabaseInternalInput
 }
 
 func (ds *DatabaseService) insertSong(name string, songID uint32) {
@@ -135,6 +139,11 @@ func (ds *DatabaseService) Start() {
 			if in.input.SongID != 0 && in.input.SongID != variation.SongID {
 				changed = true
 				variation.SongID = in.input.SongID
+			}
+
+			if in.input.LanguageID != 0 && in.input.LanguageID != variation.LanguageID {
+				changed = true
+				variation.LanguageID = in.input.LanguageID
 			}
 
 			if changed == true {
@@ -296,6 +305,55 @@ func (ds *DatabaseService) Start() {
 			ds.GetDb().First(&language, in.languageID)
 			if language.ID > 0 {
 				ds.GetDb().Delete(&language)
+				in.returnChannel <- true
+			} else {
+				in.returnChannel <- false
+			}
+		case in := <-ds.addTagToVariationChannel:
+			var tagVariation TagVariation
+			ds.GetDb().Where("tag_id = ?", in.tagID).
+				Where("variation_id = ?", in.variationID)
+
+			if tagVariation.ID == 0 {
+				tagVariation = TagVariation{
+					TagID:       in.tagID,
+					VariationID: in.variationID,
+				}
+				ds.GetDb().Create(&tagVariation)
+			}
+			in.returnChannel <- &tagVariation
+		case in := <-ds.removeTagFromVariationChannel:
+			var tagVariation TagVariation
+			ds.GetDb().Where("tag_id = ?", in.tagID).
+				Where("variation_id = ?", in.variationID).
+				Find(&tagVariation)
+
+			if tagVariation.ID > 0 {
+				ds.GetDb().Delete(&tagVariation)
+				in.returnChannel <- true
+			} else {
+				in.returnChannel <- false
+			}
+		case in := <-ds.addTagToSongDatabaseChannel:
+			var songDatabaseTag SongDatabaseTag
+			ds.GetDb().Where("tag_id = ?", in.tagID).
+				Where("song_database_id = ?", in.songDatabaseID).
+				Find(&songDatabaseTag)
+			if songDatabaseTag.ID == 0 {
+				songDatabaseTag := SongDatabaseTag{
+					TagID:          in.tagID,
+					SongDatabaseID: in.songDatabaseID,
+				}
+				ds.GetDb().Create(&songDatabaseTag)
+			}
+			in.returnChannel <- &songDatabaseTag
+		case in := <-ds.removeTagFromSongDatabaseChannel:
+			var songDatabaseTag SongDatabaseTag
+			ds.GetDb().Where("tag_id = ?", in.tagID).
+				Where("song_database_id = ?", in.songDatabaseID).
+				Find(&songDatabaseTag)
+			if songDatabaseTag.ID > 0 {
+				ds.GetDb().Delete(&songDatabaseTag)
 				in.returnChannel <- true
 			} else {
 				in.returnChannel <- false
