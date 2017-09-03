@@ -31,11 +31,31 @@ func (s *SeppoServiceServer) FetchVariationById(ctx context.Context, in *SeppoSe
 	return res, nil
 }
 
-func (s *SeppoServiceServer) SearchVariations(ctx context.Context, in *SeppoService.SearchVariationsRequest) (*SeppoService.SearchVariationsResponse, error) {
+func (s *SeppoServiceServer) SearchVariations(
+	ctx context.Context,
+	in *SeppoService.SearchVariationsRequest,
+) (
+	*SeppoService.SearchVariationsResponse,
+	error,
+) {
 	res := &SeppoService.SearchVariationsResponse{}
 	variations := []SeppoDB.Variation{}
 
 	query := s.databaseService.GetDb().Table("variations")
+
+	if in.TagId > 0 {
+		query = query.Joins("JOIN tag_variations on tag_variations.variation_id= variations.id").
+			Where("tag_variations.tag_id = ?", in.TagId)
+	}
+
+	if in.SongDatabaseId > 0 {
+		query = query.Joins("JOIN song_database_variations on song_database_variations.variation_id = variations.id").
+			Where("song_database_variations.song_database_id = ?", in.SongDatabaseId)
+	}
+
+	if in.LanguageId > 0 {
+		query = query.Where("variations.language_id = ?", in.LanguageId)
+	}
 
 	if in.SongDatabaseFilterId > 0 {
 		var filterSongDatabaseVariationsIds []uint32
