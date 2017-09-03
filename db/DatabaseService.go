@@ -111,6 +111,7 @@ func (ds *DatabaseService) Start() {
 			ds.GetDb().Where("variation_id = ?", in.variationID).Delete(SongDatabaseVariation{})
 			ds.GetDb().Where("variation_id = ?", in.variationID).Delete(VariationEwSongData{})
 			ds.GetDb().Where("variation_id = ?", in.variationID).Delete(VariationText{})
+			ds.GetDb().Where("variation_id = ?", in.variationID).Delete(TagVariation{})
 
 			in.returnChannel <- true
 		case in := <-ds.editVariationChannel:
