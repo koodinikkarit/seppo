@@ -244,9 +244,16 @@ func (s *SeppoServiceServer) SearchTags(ctx context.Context, in *SeppoService.Se
 
 	tags := []SeppoDB.Tag{}
 
-	q := s.databaseService.GetDb().Find(&tags)
+	query := s.databaseService.GetDb().Table("tags")
 
-	q.Count(&res.MaxTags)
+	if in.SongDatabaseId > 0 {
+		query = query.Joins("JOIN song_database_tags on song_database_tags.tag_id = tags.id").
+			Where("song_database_tags.song_database_id = ?", in.SongDatabaseId)
+	}
+
+	query.Find(&tags)
+
+	query.Count(&res.MaxTags)
 
 	for i := 0; i < len(tags); i++ {
 		res.Tags = append(res.Tags, NewTagToServiceType(&tags[i]))

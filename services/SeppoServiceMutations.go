@@ -36,6 +36,19 @@ func (s *SeppoServiceServer) CreateSongDatabase(ctx context.Context, in *SeppoSe
 func (s *SeppoServiceServer) EditSongDatabase(ctx context.Context, in *SeppoService.EditSongDatabaseRequest) (*SeppoService.EditSongDatabaseResponse, error) {
 	res := &SeppoService.EditSongDatabaseResponse{}
 	res.SongDatabase = NewSongDatabaseToServiceType(s.databaseService.EditSongDatabase(SeppoDB.NewEditSongDatabaseInputFromServiceType(in)))
+	for i := 0; i < len(in.AddTagIds); i++ {
+		s.databaseService.AddTagToSongDatabase(
+			in.AddTagIds[i],
+			in.SongDatabaseId,
+		)
+	}
+	for i := 0; i < len(in.RemoveTagIds); i++ {
+		s.databaseService.RemoveTagFromSongDatabase(
+			in.RemoveTagIds[i],
+			in.SongDatabaseId,
+		)
+	}
+
 	return res, nil
 }
 
