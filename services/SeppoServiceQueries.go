@@ -456,3 +456,9 @@ func (s *SeppoServiceServer) FetchLanguageVariations(ctxt context.Context, in *S
 
 	return res, nil
 }
+
+func (s *SeppoServiceServer) FetchTagsBySongDatabaseById(ctx context.Context, in *SeppoService.FetchTagsBySongDatabaseIdRequest) (*SeppoService.FetchTagsBySongDatabaseIdResponse, error) {
+	res := &SeppoService.FetchTagsBySongDatabaseIdResponse{}
+
+	return res, nil
+}

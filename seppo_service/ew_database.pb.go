@@ -66,6 +66,8 @@ It has these top-level messages:
 	FetchSongDatabasesRequest
 	FetchSongDatabaseByIdRequest
 	FetchSongDatabaseByIdResponse
+	FetchTagsBySongDatabaseIdRequest
+	FetchTagsBySongDatabaseIdResponse
 	CreateSongDatabaseRequest
 	CreateSongDatabaseResponse
 	EditSongDatabaseRequest

@@ -6,8 +6,9 @@ import (
 
 func NewCreateVariationFromServiceType(in *SeppoService.CreateVariationRequest) CreateVariationInput {
 	return CreateVariationInput{
-		Name: in.Name,
-		Text: in.Text,
+		Name:   in.Name,
+		Text:   in.Text,
+		Origin: in.Origin,
 	}
 }
 

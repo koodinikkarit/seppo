@@ -12,8 +12,9 @@ type CreateSongInput struct {
 }
 
 type CreateVariationInput struct {
-	Name string
-	Text string
+	Name   string
+	Text   string
+	Origin string
 }
 
 type EditVariationInput struct {

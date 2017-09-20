@@ -6,6 +6,7 @@ type Variation struct {
 	SongID     uint32
 	Version    uint64
 	LanguageID uint32
+	Origin     string
 
 	Song     Song
 	Language Language

@@ -94,6 +94,7 @@ func (ds *DatabaseService) Start() {
 			if variation.ID == 0 {
 				variation := &Variation{
 					Name:    in.input.Name,
+					Origin:  in.input.Origin,
 					Version: 1,
 				}
 				ds.GetDb().Create(&variation)
