@@ -9,6 +9,15 @@ import (
 
 func (s *SeppoServiceServer) CreateVariation(ctx context.Context, in *SeppoService.CreateVariationRequest) (*SeppoService.CreateVariationResponse, error) {
 	variation := s.databaseService.CreateVariation(SeppoDB.NewCreateVariationFromServiceType(in))
+
+	for i := 0; i < len(in.TagIds); i++ {
+		s.databaseService.AddTagToVariation(in.TagIds[i], variation.ID)
+	}
+
+	for i := 0; i < len(in.SongDatabaseIds); i++ {
+		s.databaseService.AddVariationToSongDatabase(in.SongDatabaseIds[i], variation.ID)
+	}
+
 	return &SeppoService.CreateVariationResponse{
 		Variation: NewVariationToServiceType(variation),
 	}, nil

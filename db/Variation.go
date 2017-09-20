@@ -1,6 +1,10 @@
 package SeppoDB
 
+import "github.com/jinzhu/gorm"
+
 type Variation struct {
+	gorm.Model
+
 	ID         uint32
 	Name       string
 	SongID     uint32
