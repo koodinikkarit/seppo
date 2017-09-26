@@ -12,7 +12,7 @@ func NewCreateVariationFromServiceType(in *SeppoService.CreateVariationRequest) 
 	}
 }
 
-func NewEditVariationFromService(in *SeppoService.EditVariationRequest) EditVariationInput {
+func NewEditVariationFromService(in *SeppoService.UpdateVariationRequest) EditVariationInput {
 	return EditVariationInput{
 		VariationID: in.VariationId,
 		Name:        in.Name,
@@ -35,7 +35,7 @@ func NewCreateSongDatabaseInputFromServiceType(in *SeppoService.CreateSongDataba
 	}
 }
 
-func NewEditSongDatabaseInputFromServiceType(in *SeppoService.EditSongDatabaseRequest) EditSongDatabaseInput {
+func NewEditSongDatabaseInputFromServiceType(in *SeppoService.UpdateSongDatabaseRequest) EditSongDatabaseInput {
 	return EditSongDatabaseInput{
 		SongDatabaseId: in.SongDatabaseId,
 		Name:           in.Name,
@@ -57,7 +57,7 @@ func NewCreateEwDatabaseFromServiceType(in *SeppoService.CreateEwDatabaseRequest
 	}
 }
 
-func NewEditEwDatabaseFromServiceType(in *SeppoService.EditEwDatabaseRequest) EditEwDatabaseInput {
+func NewEditEwDatabaseFromServiceType(in *SeppoService.UpdateEwDatabaseRequest) EditEwDatabaseInput {
 	return EditEwDatabaseInput{
 		EwDatabaseID:   in.EwDatabaseId,
 		Name:           in.Name,

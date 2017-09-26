@@ -23,9 +23,34 @@ func (s *SeppoServiceServer) CreateVariation(ctx context.Context, in *SeppoServi
 	}, nil
 }
 
-func (s *SeppoServiceServer) EditVariation(ctx context.Context, in *SeppoService.EditVariationRequest) (*SeppoService.EditVariationResponse, error) {
-	res := &SeppoService.EditVariationResponse{}
+func (s *SeppoServiceServer) UpdateVariation(ctx context.Context, in *SeppoService.UpdateVariationRequest) (*SeppoService.UpdateVariationResponse, error) {
+	res := &SeppoService.UpdateVariationResponse{}
 	res.Variation = NewVariationToServiceType(s.databaseService.EditVariation(SeppoDB.NewEditVariationFromService(in)))
+	for i := 0; i < len(in.AddTagIds); i++ {
+		s.databaseService.AddTagToVariation(
+			in.AddTagIds[i],
+			in.VariationId,
+		)
+	}
+	for i := 0; i < len(in.RemoveTagIds); i++ {
+		s.databaseService.RemoveTagFromVariation(
+			in.RemoveTagIds[i],
+			in.VariationId,
+		)
+	}
+	for i := 0; i < len(in.AddSongDatabaseIds); i++ {
+		s.databaseService.AddVariationToSongDatabase(
+			in.AddSongDatabaseIds[i],
+			in.VariationId,
+		)
+	}
+	for i := 0; i < len(in.RemoveSongDatabaseIds); i++ {
+		s.databaseService.RemoveVariationFromSongDatabase(
+			in.RemoveSongDatabaseIds[i],
+			in.VariationId,
+		)
+	}
+
 	return res, nil
 }
 
@@ -42,8 +67,8 @@ func (s *SeppoServiceServer) CreateSongDatabase(ctx context.Context, in *SeppoSe
 	return res, nil
 }
 
-func (s *SeppoServiceServer) EditSongDatabase(ctx context.Context, in *SeppoService.EditSongDatabaseRequest) (*SeppoService.EditSongDatabaseResponse, error) {
-	res := &SeppoService.EditSongDatabaseResponse{}
+func (s *SeppoServiceServer) UpdateSongDatabase(ctx context.Context, in *SeppoService.UpdateSongDatabaseRequest) (*SeppoService.UpdateSongDatabaseResponse, error) {
+	res := &SeppoService.UpdateSongDatabaseResponse{}
 	res.SongDatabase = NewSongDatabaseToServiceType(s.databaseService.EditSongDatabase(SeppoDB.NewEditSongDatabaseInputFromServiceType(in)))
 	for i := 0; i < len(in.AddTagIds); i++ {
 		s.databaseService.AddTagToSongDatabase(
@@ -74,8 +99,8 @@ func (s *SeppoServiceServer) CreateEwDatabase(ctx context.Context, in *SeppoServ
 	return res, nil
 }
 
-func (s *SeppoServiceServer) EditEwDatabase(ctx context.Context, in *SeppoService.EditEwDatabaseRequest) (*SeppoService.EditEwDatabaseResponse, error) {
-	res := &SeppoService.EditEwDatabaseResponse{}
+func (s *SeppoServiceServer) UpdateEwDatabase(ctx context.Context, in *SeppoService.UpdateEwDatabaseRequest) (*SeppoService.UpdateEwDatabaseResponse, error) {
+	res := &SeppoService.UpdateEwDatabaseResponse{}
 	ewDatabase := s.databaseService.EditEwDatabase(SeppoDB.NewEditEwDatabaseFromServiceType(in))
 	res.EwDatabase = NewEwDatabaseToServiceType(ewDatabase)
 	return res, nil
@@ -305,8 +330,8 @@ func (s SeppoServiceServer) CreateTag(ctx context.Context, in *SeppoService.Crea
 	return res, nil
 }
 
-func (s SeppoServiceServer) EditTag(ctx context.Context, in *SeppoService.EditTagRequest) (*SeppoService.EditTagResponse, error) {
-	res := &SeppoService.EditTagResponse{}
+func (s SeppoServiceServer) UpdateTag(ctx context.Context, in *SeppoService.UpdateTagRequest) (*SeppoService.UpdateTagResponse, error) {
+	res := &SeppoService.UpdateTagResponse{}
 	tag := s.databaseService.EditTag(SeppoDB.EditTagInput{
 		TagID: in.TagId,
 		Name:  in.Name,
@@ -330,8 +355,8 @@ func (s SeppoServiceServer) CreateLanguage(ctx context.Context, in *SeppoService
 	return res, nil
 }
 
-func (s SeppoServiceServer) EditLanguage(ctx context.Context, in *SeppoService.EditLanguageRequest) (*SeppoService.EditLanguageResponse, error) {
-	res := &SeppoService.EditLanguageResponse{}
+func (s SeppoServiceServer) UpdateLanguage(ctx context.Context, in *SeppoService.UpdateLanguageRequest) (*SeppoService.UpdateLanguageResponse, error) {
+	res := &SeppoService.UpdateLanguageResponse{}
 	language := s.databaseService.EditLanguage(SeppoDB.EditLanguageInput{
 		LanguageID: in.LanguageId,
 		Name:       in.Name,

@@ -44,7 +44,7 @@ func (s *SeppoServiceServer) SearchVariations(
 	query := s.databaseService.GetDb().Table("variations")
 
 	if in.TagId > 0 {
-		query = query.Joins("JOIN tag_variations on tag_variations.variation_id= variations.id").
+		query = query.Joins("JOIN tag_variations on tag_variations.variation_id = variations.id").
 			Where("tag_variations.tag_id = ?", in.TagId)
 	}
 
@@ -78,6 +78,14 @@ func (s *SeppoServiceServer) SearchVariations(
 			Or("variation_texts.text LIKE ?", "%"+in.SearchWord+"%")
 	}
 
+	if in.Offset > 0 {
+		query = query.Offset(in.Offset)
+	}
+
+	if in.Limit > 0 {
+		query = query.Limit(in.Limit)
+	}
+
 	query = query.Select("variations.id, variations.name, variations.song_id, variations.version").Find(&variations)
 
 	for _, variation := range variations {
@@ -104,9 +112,12 @@ func (s *SeppoServiceServer) FetchSongDatabases(ctx context.Context, in *SeppoSe
 	query := s.databaseService.GetDb().Table("song_databases")
 
 	if in.VariationId > 0 {
-		query = query.Joins("JOIN song_database_variations on song_databases.id = song_database_variations.song_database_id").
+		res.Id = in.VariationId
+		query = query.Joins("JOIN song_database_variations on song_database_variations.song_database_id = song_databases.id").
 			Where("song_database_variations.variation_id = ?", in.VariationId)
 	}
+
+	query.Count(&res.MaxSongDatabases)
 
 	if in.SearchWord != "" {
 		query = query.Where("song_databases.name LIKE ?", "%"+in.SearchWord+"%")
@@ -115,9 +126,7 @@ func (s *SeppoServiceServer) FetchSongDatabases(ctx context.Context, in *SeppoSe
 	query = query.Find(&songDatabases)
 
 	for _, songDatabase := range songDatabases {
-		res.Edges = append(res.Edges, &SeppoService.SongDatabaseEdge{
-			Node: NewSongDatabaseToServiceType(&songDatabase),
-		})
+		res.SongDatabases = append(res.SongDatabases, NewSongDatabaseToServiceType(&songDatabase))
 	}
 
 	return res, nil
@@ -247,13 +256,28 @@ func (s *SeppoServiceServer) SearchTags(ctx context.Context, in *SeppoService.Se
 	query := s.databaseService.GetDb().Table("tags")
 
 	if in.SongDatabaseId > 0 {
+		res.Id = in.SongDatabaseId
 		query = query.Joins("JOIN song_database_tags on song_database_tags.tag_id = tags.id").
 			Where("song_database_tags.song_database_id = ?", in.SongDatabaseId)
 	}
 
-	query.Find(&tags)
+	if in.VariationId > 0 {
+		res.Id = in.VariationId
+		query = query.Joins("JOIN tag_variations on tag_variations.tag_id = tags.id").
+			Where("tag_variations.variation_id = ?", in.VariationId)
+	}
 
 	query.Count(&res.MaxTags)
+
+	if in.Offset > 0 {
+		query = query.Offset(in.Offset)
+	}
+
+	if in.Limit > 0 {
+		query = query.Limit(in.Limit)
+	}
+
+	query.Find(&tags)
 
 	for i := 0; i < len(tags); i++ {
 		res.Tags = append(res.Tags, NewTagToServiceType(&tags[i]))
