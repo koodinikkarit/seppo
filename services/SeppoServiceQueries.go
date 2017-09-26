@@ -74,8 +74,7 @@ func (s *SeppoServiceServer) SearchVariations(
 
 	if in.SearchWord != "" {
 		query = query.Joins("JOIN variation_texts ON variation_texts.variation_id = variations.id").
-			Where("variations.name LIKE ?", "%"+in.SearchWord+"%").
-			Or("variation_texts.text LIKE ?", "%"+in.SearchWord+"%")
+			Where("variations.name LIKE ? or variation_texts.text LIKE ?", "%"+in.SearchWord+"%", "%"+in.SearchWord+"%")
 	}
 
 	if in.Offset > 0 {
