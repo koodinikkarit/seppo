@@ -21,7 +21,7 @@ type Tag struct {
 func (m *Tag) Reset()                    { *m = Tag{} }
 func (m *Tag) String() string            { return proto.CompactTextString(m) }
 func (*Tag) ProtoMessage()               {}
-func (*Tag) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{0} }
+func (*Tag) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{0} }
 
 func (m *Tag) GetId() uint32 {
 	if m != nil {
@@ -46,7 +46,7 @@ type TagsConnection struct {
 func (m *TagsConnection) Reset()                    { *m = TagsConnection{} }
 func (m *TagsConnection) String() string            { return proto.CompactTextString(m) }
 func (*TagsConnection) ProtoMessage()               {}
-func (*TagsConnection) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{1} }
+func (*TagsConnection) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{1} }
 
 func (m *TagsConnection) GetTags() []*Tag {
 	if m != nil {
@@ -79,7 +79,7 @@ type SearchTagsRequest struct {
 func (m *SearchTagsRequest) Reset()                    { *m = SearchTagsRequest{} }
 func (m *SearchTagsRequest) String() string            { return proto.CompactTextString(m) }
 func (*SearchTagsRequest) ProtoMessage()               {}
-func (*SearchTagsRequest) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{2} }
+func (*SearchTagsRequest) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{2} }
 
 func (m *SearchTagsRequest) GetSongDatabaseId() uint32 {
 	if m != nil {
@@ -116,7 +116,7 @@ type FetchTagByIdRequest struct {
 func (m *FetchTagByIdRequest) Reset()                    { *m = FetchTagByIdRequest{} }
 func (m *FetchTagByIdRequest) String() string            { return proto.CompactTextString(m) }
 func (*FetchTagByIdRequest) ProtoMessage()               {}
-func (*FetchTagByIdRequest) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{3} }
+func (*FetchTagByIdRequest) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{3} }
 
 func (m *FetchTagByIdRequest) GetTagIds() []uint32 {
 	if m != nil {
@@ -132,7 +132,7 @@ type FetchTagByIdResponse struct {
 func (m *FetchTagByIdResponse) Reset()                    { *m = FetchTagByIdResponse{} }
 func (m *FetchTagByIdResponse) String() string            { return proto.CompactTextString(m) }
 func (*FetchTagByIdResponse) ProtoMessage()               {}
-func (*FetchTagByIdResponse) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{4} }
+func (*FetchTagByIdResponse) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{4} }
 
 func (m *FetchTagByIdResponse) GetTags() []*Tag {
 	if m != nil {
@@ -148,7 +148,7 @@ type CreateTagRequest struct {
 func (m *CreateTagRequest) Reset()                    { *m = CreateTagRequest{} }
 func (m *CreateTagRequest) String() string            { return proto.CompactTextString(m) }
 func (*CreateTagRequest) ProtoMessage()               {}
-func (*CreateTagRequest) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{5} }
+func (*CreateTagRequest) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{5} }
 
 func (m *CreateTagRequest) GetName() string {
 	if m != nil {
@@ -164,7 +164,7 @@ type CreateTagResponse struct {
 func (m *CreateTagResponse) Reset()                    { *m = CreateTagResponse{} }
 func (m *CreateTagResponse) String() string            { return proto.CompactTextString(m) }
 func (*CreateTagResponse) ProtoMessage()               {}
-func (*CreateTagResponse) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{6} }
+func (*CreateTagResponse) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{6} }
 
 func (m *CreateTagResponse) GetTag() *Tag {
 	if m != nil {
@@ -181,7 +181,7 @@ type UpdateTagRequest struct {
 func (m *UpdateTagRequest) Reset()                    { *m = UpdateTagRequest{} }
 func (m *UpdateTagRequest) String() string            { return proto.CompactTextString(m) }
 func (*UpdateTagRequest) ProtoMessage()               {}
-func (*UpdateTagRequest) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{7} }
+func (*UpdateTagRequest) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{7} }
 
 func (m *UpdateTagRequest) GetTagId() uint32 {
 	if m != nil {
@@ -204,7 +204,7 @@ type UpdateTagResponse struct {
 func (m *UpdateTagResponse) Reset()                    { *m = UpdateTagResponse{} }
 func (m *UpdateTagResponse) String() string            { return proto.CompactTextString(m) }
 func (*UpdateTagResponse) ProtoMessage()               {}
-func (*UpdateTagResponse) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{8} }
+func (*UpdateTagResponse) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{8} }
 
 func (m *UpdateTagResponse) GetTag() *Tag {
 	if m != nil {
@@ -220,7 +220,7 @@ type RemoveTagRequest struct {
 func (m *RemoveTagRequest) Reset()                    { *m = RemoveTagRequest{} }
 func (m *RemoveTagRequest) String() string            { return proto.CompactTextString(m) }
 func (*RemoveTagRequest) ProtoMessage()               {}
-func (*RemoveTagRequest) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{9} }
+func (*RemoveTagRequest) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{9} }
 
 func (m *RemoveTagRequest) GetTagId() uint32 {
 	if m != nil {
@@ -236,7 +236,7 @@ type RemoveTagResponse struct {
 func (m *RemoveTagResponse) Reset()                    { *m = RemoveTagResponse{} }
 func (m *RemoveTagResponse) String() string            { return proto.CompactTextString(m) }
 func (*RemoveTagResponse) ProtoMessage()               {}
-func (*RemoveTagResponse) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{10} }
+func (*RemoveTagResponse) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{10} }
 
 func (m *RemoveTagResponse) GetSuccess() bool {
 	if m != nil {
@@ -259,9 +259,9 @@ func init() {
 	proto.RegisterType((*RemoveTagResponse)(nil), "SeppoService.RemoveTagResponse")
 }
 
-func init() { proto.RegisterFile("tag.proto", fileDescriptor10) }
+func init() { proto.RegisterFile("tag.proto", fileDescriptor11) }
 
-var fileDescriptor10 = []byte{
+var fileDescriptor11 = []byte{
 	// 363 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x92, 0xcf, 0x8e, 0xda, 0x30,
 	0x10, 0xc6, 0x15, 0xc2, 0x9f, 0x32, 0x14, 0x44, 0x5c, 0x84, 0x72, 0x8c, 0x5c, 0x15, 0xa5, 0x07,

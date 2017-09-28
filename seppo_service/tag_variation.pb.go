@@ -22,7 +22,7 @@ type TagVariation struct {
 func (m *TagVariation) Reset()                    { *m = TagVariation{} }
 func (m *TagVariation) String() string            { return proto.CompactTextString(m) }
 func (*TagVariation) ProtoMessage()               {}
-func (*TagVariation) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{0} }
+func (*TagVariation) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{0} }
 
 func (m *TagVariation) GetId() uint32 {
 	if m != nil {
@@ -53,7 +53,7 @@ type VariationTags struct {
 func (m *VariationTags) Reset()                    { *m = VariationTags{} }
 func (m *VariationTags) String() string            { return proto.CompactTextString(m) }
 func (*VariationTags) ProtoMessage()               {}
-func (*VariationTags) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{1} }
+func (*VariationTags) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{1} }
 
 func (m *VariationTags) GetVariationId() uint32 {
 	if m != nil {
@@ -77,7 +77,7 @@ type TagVariations struct {
 func (m *TagVariations) Reset()                    { *m = TagVariations{} }
 func (m *TagVariations) String() string            { return proto.CompactTextString(m) }
 func (*TagVariations) ProtoMessage()               {}
-func (*TagVariations) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{2} }
+func (*TagVariations) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{2} }
 
 func (m *TagVariations) GetTagId() uint32 {
 	if m != nil {
@@ -100,7 +100,7 @@ type FetchVariationTagsRequest struct {
 func (m *FetchVariationTagsRequest) Reset()                    { *m = FetchVariationTagsRequest{} }
 func (m *FetchVariationTagsRequest) String() string            { return proto.CompactTextString(m) }
 func (*FetchVariationTagsRequest) ProtoMessage()               {}
-func (*FetchVariationTagsRequest) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{3} }
+func (*FetchVariationTagsRequest) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{3} }
 
 func (m *FetchVariationTagsRequest) GetVariationIds() []uint32 {
 	if m != nil {
@@ -116,7 +116,7 @@ type FetchVariationTagsResponse struct {
 func (m *FetchVariationTagsResponse) Reset()                    { *m = FetchVariationTagsResponse{} }
 func (m *FetchVariationTagsResponse) String() string            { return proto.CompactTextString(m) }
 func (*FetchVariationTagsResponse) ProtoMessage()               {}
-func (*FetchVariationTagsResponse) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{4} }
+func (*FetchVariationTagsResponse) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{4} }
 
 func (m *FetchVariationTagsResponse) GetVariationTags() []*VariationTags {
 	if m != nil {
@@ -132,7 +132,7 @@ type FetchTagVariationsRequest struct {
 func (m *FetchTagVariationsRequest) Reset()                    { *m = FetchTagVariationsRequest{} }
 func (m *FetchTagVariationsRequest) String() string            { return proto.CompactTextString(m) }
 func (*FetchTagVariationsRequest) ProtoMessage()               {}
-func (*FetchTagVariationsRequest) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{5} }
+func (*FetchTagVariationsRequest) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{5} }
 
 func (m *FetchTagVariationsRequest) GetTagIds() []uint32 {
 	if m != nil {
@@ -148,7 +148,7 @@ type FetchTagVariationsResponse struct {
 func (m *FetchTagVariationsResponse) Reset()                    { *m = FetchTagVariationsResponse{} }
 func (m *FetchTagVariationsResponse) String() string            { return proto.CompactTextString(m) }
 func (*FetchTagVariationsResponse) ProtoMessage()               {}
-func (*FetchTagVariationsResponse) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{6} }
+func (*FetchTagVariationsResponse) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{6} }
 
 func (m *FetchTagVariationsResponse) GetTagVariations() []*TagVariations {
 	if m != nil {
@@ -165,7 +165,7 @@ type AddTagToVariationRequest struct {
 func (m *AddTagToVariationRequest) Reset()                    { *m = AddTagToVariationRequest{} }
 func (m *AddTagToVariationRequest) String() string            { return proto.CompactTextString(m) }
 func (*AddTagToVariationRequest) ProtoMessage()               {}
-func (*AddTagToVariationRequest) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{7} }
+func (*AddTagToVariationRequest) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{7} }
 
 func (m *AddTagToVariationRequest) GetTagId() uint32 {
 	if m != nil {
@@ -189,7 +189,7 @@ type AddTagToVariationResponse struct {
 func (m *AddTagToVariationResponse) Reset()                    { *m = AddTagToVariationResponse{} }
 func (m *AddTagToVariationResponse) String() string            { return proto.CompactTextString(m) }
 func (*AddTagToVariationResponse) ProtoMessage()               {}
-func (*AddTagToVariationResponse) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{8} }
+func (*AddTagToVariationResponse) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{8} }
 
 func (m *AddTagToVariationResponse) GetSuccess() bool {
 	if m != nil {
@@ -213,7 +213,7 @@ type RemoveTagFromVariationRequest struct {
 func (m *RemoveTagFromVariationRequest) Reset()                    { *m = RemoveTagFromVariationRequest{} }
 func (m *RemoveTagFromVariationRequest) String() string            { return proto.CompactTextString(m) }
 func (*RemoveTagFromVariationRequest) ProtoMessage()               {}
-func (*RemoveTagFromVariationRequest) Descriptor() ([]byte, []int) { return fileDescriptor11, []int{9} }
+func (*RemoveTagFromVariationRequest) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{9} }
 
 func (m *RemoveTagFromVariationRequest) GetTagId() uint32 {
 	if m != nil {
@@ -237,7 +237,7 @@ func (m *RemoveTagFromVariationResponse) Reset()         { *m = RemoveTagFromVar
 func (m *RemoveTagFromVariationResponse) String() string { return proto.CompactTextString(m) }
 func (*RemoveTagFromVariationResponse) ProtoMessage()    {}
 func (*RemoveTagFromVariationResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor11, []int{10}
+	return fileDescriptor12, []int{10}
 }
 
 func (m *RemoveTagFromVariationResponse) GetSuccess() bool {
@@ -261,9 +261,9 @@ func init() {
 	proto.RegisterType((*RemoveTagFromVariationResponse)(nil), "SeppoService.RemoveTagFromVariationResponse")
 }
 
-func init() { proto.RegisterFile("tag_variation.proto", fileDescriptor11) }
+func init() { proto.RegisterFile("tag_variation.proto", fileDescriptor12) }
 
-var fileDescriptor11 = []byte{
+var fileDescriptor12 = []byte{
 	// 371 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x93, 0xb1, 0x6f, 0xa3, 0x30,
 	0x14, 0x87, 0x05, 0xb9, 0xcb, 0xdd, 0x3d, 0xe0, 0x4e, 0xe7, 0x3b, 0xb5, 0x84, 0xaa, 0x15, 0xb2,

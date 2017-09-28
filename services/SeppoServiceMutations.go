@@ -450,3 +450,59 @@ func (s SeppoServiceServer) RemoveTagFromSongDatabase(
 
 	return res, nil
 }
+
+func (s SeppoServiceServer) CreateSchedule(
+	ctx context.Context,
+	in *SeppoService.CreateScheduleRequest,
+) (
+	*SeppoService.CreateScheduleResponse,
+	error,
+) {
+	res := &SeppoService.CreateScheduleResponse{}
+	res.Schedule = NewScheduleToServiceType(s.databaseService.CreateSchedule(SeppoDB.CreateScheduleInput{
+		Name: in.Name,
+	}))
+	return res, nil
+}
+
+func (s SeppoServiceServer) UpdateSchedule(
+	ctx context.Context,
+	in *SeppoService.UpdateScheduleRequest,
+) (
+	*SeppoService.UpdateScheduleResponse,
+	error,
+) {
+	res := &SeppoService.UpdateScheduleResponse{}
+	res.Schedule = NewScheduleToServiceType(s.databaseService.UpdateSchedule(SeppoDB.UpdateScheduleInput{
+		ScheduleID: in.ScheduleId,
+		Name:       in.Name,
+	}))
+
+	for i := 0; i < len(in.AddSongIds); i++ {
+		s.databaseService.GetDb().Create(&SeppoDB.ScheduleVariation{
+			ScheduleID:  in.ScheduleId,
+			VariationID: in.AddSongIds[i],
+		})
+	}
+
+	s.databaseService.GetDb().Delete(
+		&SeppoDB.ScheduleVariation{},
+		"variation_id in (?)",
+		in.RemoveSongIds,
+	)
+
+	return res, nil
+}
+
+func (s SeppoServiceServer) RemoveSchedule(
+	ctx context.Context,
+	in *SeppoService.RemoveScheduleRequest,
+) (
+	*SeppoService.RemoveScheduleResponse,
+	error,
+) {
+	res := &SeppoService.RemoveScheduleResponse{}
+	res.Success = s.databaseService.RemoveSchedule(in.ScheduleId)
+
+	return res, nil
+}

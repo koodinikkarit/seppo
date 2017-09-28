@@ -43,5 +43,8 @@ func NewDatabaseService(
 		removeTagFromVariationChannel:          make(chan removeTagFromVariationInternalInput),
 		addTagToSongDatabaseChannel:            make(chan addTagToSongDatabaseInternalInput),
 		removeTagFromSongDatabaseChannel:       make(chan removeTagFromSongDatabaseInternalInput),
+		createScheduleChannel:                  make(chan createScheduleInternalInput),
+		updateScheduleChannel:                  make(chan updateScheduleInternalInput),
+		removeScheduleChannel:                  make(chan removeScheduleInternalInput),
 	}
 }

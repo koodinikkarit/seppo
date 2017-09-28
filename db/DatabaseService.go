@@ -39,6 +39,9 @@ type DatabaseService struct {
 	removeTagFromVariationChannel          chan removeTagFromVariationInternalInput
 	addTagToSongDatabaseChannel            chan addTagToSongDatabaseInternalInput
 	removeTagFromSongDatabaseChannel       chan removeTagFromSongDatabaseInternalInput
+	createScheduleChannel                  chan createScheduleInternalInput
+	updateScheduleChannel                  chan updateScheduleInternalInput
+	removeScheduleChannel                  chan removeScheduleInternalInput
 }
 
 func (ds *DatabaseService) insertSong(name string, songID uint32) {
@@ -354,6 +357,29 @@ func (ds *DatabaseService) Start() {
 				Find(&songDatabaseTag)
 			if songDatabaseTag.ID > 0 {
 				ds.GetDb().Delete(&songDatabaseTag)
+				in.returnChannel <- true
+			} else {
+				in.returnChannel <- false
+			}
+		case in := <-ds.createScheduleChannel:
+			schedule := Schedule{
+				Name: in.input.Name,
+			}
+			ds.GetDb().Create(&schedule)
+			in.returnChannel <- &schedule
+		case in := <-ds.updateScheduleChannel:
+			var schedule Schedule
+			ds.GetDb().First(&schedule, in.input.ScheduleID)
+			if schedule.ID > 0 {
+				schedule.Name = in.input.Name
+				ds.GetDb().Save(&schedule)
+			}
+			in.returnChannel <- &schedule
+		case in := <-ds.removeScheduleChannel:
+			var schedule Schedule
+			ds.GetDb().First(&schedule, in.scheduleID)
+			if schedule.ID > 0 {
+				ds.GetDb().Delete(&schedule)
 				in.returnChannel <- true
 			} else {
 				in.returnChannel <- false

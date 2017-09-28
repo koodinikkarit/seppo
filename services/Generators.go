@@ -76,3 +76,10 @@ func NewSongDatabaseTagToServiceType(in *SeppoDB.SongDatabaseTag) *SeppoService.
 		SongDatabaseId: in.SongDatabaseID,
 	}
 }
+
+func NewScheduleToServiceType(in *SeppoDB.Schedule) *SeppoService.Schedule {
+	return &SeppoService.Schedule{
+		Id:   in.ID,
+		Name: in.Name,
+	}
+}

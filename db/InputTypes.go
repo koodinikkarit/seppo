@@ -79,3 +79,12 @@ type EditLanguageInput struct {
 	LanguageID uint32
 	Name       string
 }
+
+type CreateScheduleInput struct {
+	Name string
+}
+
+type UpdateScheduleInput struct {
+	ScheduleID uint32
+	Name       string
+}

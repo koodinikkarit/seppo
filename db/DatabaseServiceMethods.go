@@ -239,3 +239,30 @@ func (ds *DatabaseService) RemoveTagFromSongDatabase(tagID uint32, songDatabaseI
 	}
 	return <-returnChannel
 }
+
+func (ds *DatabaseService) CreateSchedule(in CreateScheduleInput) *Schedule {
+	returnChannel := make(chan *Schedule)
+	ds.createScheduleChannel <- createScheduleInternalInput{
+		input:         in,
+		returnChannel: returnChannel,
+	}
+	return <-returnChannel
+}
+
+func (ds *DatabaseService) UpdateSchedule(in UpdateScheduleInput) *Schedule {
+	returnChannel := make(chan *Schedule)
+	ds.updateScheduleChannel <- updateScheduleInternalInput{
+		input:         in,
+		returnChannel: returnChannel,
+	}
+	return <-returnChannel
+}
+
+func (ds *DatabaseService) RemoveSchedule(scheduleID uint32) bool {
+	returnChannel := make(chan bool)
+	ds.removeScheduleChannel <- removeScheduleInternalInput{
+		scheduleID:    scheduleID,
+		returnChannel: returnChannel,
+	}
+	return <-returnChannel
+}

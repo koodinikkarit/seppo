@@ -53,8 +53,17 @@ func (s *SeppoServiceServer) SearchVariations(
 			Where("song_database_variations.song_database_id = ?", in.SongDatabaseId)
 	}
 
+	if in.ScheduleId > 0 {
+		query = query.Joins("JOIN schedule_variations on schedule_variations.variation_id = variations.id").
+			Where("schedule_variations.schedule_id = ?", in.ScheduleId)
+	}
+
 	if in.LanguageId > 0 {
 		query = query.Where("variations.language_id = ?", in.LanguageId)
+	}
+
+	if len(in.SkipVariationIds) > 0 {
+		query = query.Not("id", in.SkipVariationIds)
 	}
 
 	if in.SongDatabaseFilterId > 0 {
@@ -70,6 +79,7 @@ func (s *SeppoServiceServer) SearchVariations(
 			query = query.Not("id", filterSongDatabaseVariationsIds)
 		}
 	}
+
 	query.Count(&res.MaxVariations)
 
 	if in.SearchWord != "" {
@@ -480,8 +490,75 @@ func (s *SeppoServiceServer) FetchLanguageVariations(ctxt context.Context, in *S
 	return res, nil
 }
 
-func (s *SeppoServiceServer) FetchTagsBySongDatabaseById(ctx context.Context, in *SeppoService.FetchTagsBySongDatabaseIdRequest) (*SeppoService.FetchTagsBySongDatabaseIdResponse, error) {
+func (s *SeppoServiceServer) FetchTagsBySongDatabaseById(
+	ctx context.Context,
+	in *SeppoService.FetchTagsBySongDatabaseIdRequest,
+) (
+	*SeppoService.FetchTagsBySongDatabaseIdResponse,
+	error,
+) {
 	res := &SeppoService.FetchTagsBySongDatabaseIdResponse{}
+
+	return res, nil
+}
+
+func (s *SeppoServiceServer) SearchSchedules(
+	ctx context.Context,
+	in *SeppoService.SearchSchedulesRequest,
+) (
+	*SeppoService.SearchSchedulesResponse,
+	error,
+) {
+	res := &SeppoService.SearchSchedulesResponse{}
+
+	schedules := []SeppoDB.Schedule{}
+
+	query := s.databaseService.GetDb().Table("schedules")
+
+	if in.Offset > 0 {
+		query = query.Offset(in.Offset)
+	}
+	if in.Limit > 0 {
+		query = query.Limit(in.Limit)
+	}
+
+	query.Count(&res.MaxSchedules)
+	query.Find(&schedules)
+
+	for i := 0; i < len(schedules); i++ {
+		res.Schedules = append(res.Schedules, NewScheduleToServiceType(&schedules[i]))
+	}
+
+	return res, nil
+}
+
+func (s *SeppoServiceServer) FetchScheduleById(
+	ctx context.Context,
+	in *SeppoService.FetchScheduleByIdRequest,
+) (
+	*SeppoService.FetchScheduleByIdResponse,
+	error,
+) {
+	res := &SeppoService.FetchScheduleByIdResponse{}
+
+	schedules := []SeppoDB.Schedule{}
+
+	s.databaseService.GetDb().Where("schedules.id in (?)", in.ScheduleIds).Find(&schedules)
+
+	for i := 0; i < len(in.ScheduleIds); i++ {
+		found := false
+		for j := 0; j < len(schedules); j++ {
+			if in.ScheduleIds[i] == schedules[j].ID {
+				found = true
+				res.Schedules = append(res.Schedules, NewScheduleToServiceType(&schedules[j]))
+			}
+		}
+		if found == false {
+			res.Schedules = append(res.Schedules, &SeppoService.Schedule{
+				Id: 0,
+			})
+		}
+	}
 
 	return res, nil
 }

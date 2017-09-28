@@ -134,3 +134,18 @@ type removeTagFromSongDatabaseInternalInput struct {
 	songDatabaseID uint32
 	returnChannel  chan bool
 }
+
+type createScheduleInternalInput struct {
+	input         CreateScheduleInput
+	returnChannel chan *Schedule
+}
+
+type updateScheduleInternalInput struct {
+	input         UpdateScheduleInput
+	returnChannel chan *Schedule
+}
+
+type removeScheduleInternalInput struct {
+	scheduleID    uint32
+	returnChannel chan bool
+}
