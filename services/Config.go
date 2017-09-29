@@ -9,12 +9,13 @@ import (
 )
 
 type Config struct {
-	DBUser    string `yaml:"dbUser"`
-	DBPasswd  string `yaml:"dbPasswd"`
-	DBIP      string `yaml:"dbIp"`
-	DBPort    string `yaml:"dbPort"`
-	DBName    string `yaml:"dbName"`
-	SeppoPort string `yaml:"seppoPort"`
+	DBUser     string `yaml:"dbUser"`
+	DBPasswd   string `yaml:"dbPasswd"`
+	DBIP       string `yaml:"dbIp"`
+	DBPort     string `yaml:"dbPort"`
+	DBName     string `yaml:"dbName"`
+	SeppoPort  string `yaml:"seppoPort"`
+	MatiasPort string
 }
 
 func (c *Config) GetConf() *Config {
@@ -47,11 +48,12 @@ func LoadConfig(path string) Config {
 
 func GetConfig() Config {
 	return Config{
-		DBUser:    os.Getenv("SEPPO_DB_USERNAME"),
-		DBPasswd:  os.Getenv("SEPPO_DB_PASSWORD"),
-		DBIP:      os.Getenv("SEPPO_DB_IP"),
-		DBPort:    os.Getenv("SEPPO_DB_PORT"),
-		DBName:    os.Getenv("SEPPO_DB_NAME"),
-		SeppoPort: os.Getenv("SEPPO_PORT"),
+		DBUser:     os.Getenv("SEPPO_DB_USERNAME"),
+		DBPasswd:   os.Getenv("SEPPO_DB_PASSWORD"),
+		DBIP:       os.Getenv("SEPPO_DB_IP"),
+		DBPort:     os.Getenv("SEPPO_DB_PORT"),
+		DBName:     os.Getenv("SEPPO_DB_NAME"),
+		SeppoPort:  os.Getenv("SEPPO_PORT"),
+		MatiasPort: os.Getenv("SEPPO_MATIAS_PORT"),
 	}
 }

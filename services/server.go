@@ -1,6 +1,8 @@
 package seppo
 
 import (
+	"sync"
+
 	"github.com/koodinikkarit/seppo/db"
 )
 
@@ -11,6 +13,18 @@ func CreateSeppoServer(config Config) {
 		config.DBIP,
 		config.DBPort,
 		config.DBName)
-	go databaseService.Start()
-	CreateSeppoService(config.SeppoPort, databaseService)
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	go func() {
+		go databaseService.Start()
+	}()
+	wg.Add(1)
+	go func() {
+		go CreateSeppoService(config.SeppoPort, databaseService)
+	}()
+	wg.Add(1)
+	go func() {
+		go NewMatiasService(config.MatiasPort, databaseService)
+	}()
+	wg.Wait()
 }
