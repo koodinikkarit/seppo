@@ -41,7 +41,7 @@ func (s *SeppoServiceServer) SearchVariations(
 	res := &SeppoService.SearchVariationsResponse{}
 	variations := []SeppoDB.Variation{}
 
-	query := s.databaseService.GetDb().Table("variations")
+	query := s.databaseService.GetDb().Table("variations").Order("name", true)
 
 	if in.TagId > 0 {
 		query = query.Joins("JOIN tag_variations on tag_variations.variation_id = variations.id").
