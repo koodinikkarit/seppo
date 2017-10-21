@@ -46,11 +46,11 @@ create table if not exists events(
 
 create table if not exists variations (
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	song_id INT8 UNSIGNED,
-	language_id INT8 UNSIGNED,
+	song_id INT8 UNSIGNED DEFAULT NULL,
+	language_id INT8 UNSIGNED DEFAULT NULL,
 	created_at DATETIME,
 	updated_at DATETIME NULL,
-	deleted_at DATETIME NULL,
+	deleted_at DATETIME DEFAULT NULL,
 	FOREIGN KEY(song_id) REFERENCES songs(id),
 	FOREIGN KEY(language_id) REFERENCES languages(id)
 );
@@ -94,7 +94,7 @@ create table if not exists variation_versions (
 	text TEXT,
 	version INT,
 	created_at DATETIME,
-	deleted_at DATETIME NULL,
+	disabled_at DATETIME NULL,
 	FOREIGN KEY(variation_id) REFERENCES variations(id)
 );
 
@@ -103,8 +103,8 @@ create table if not exists branches (
 	source_variation_version_id INT8 UNSIGNED NOT NULL,
 	destination_variation_version_id INT8 UNSIGNED NOT NULL,
 	created_at DATETIME,
-	FOREIGN KEY(source_variation_version_id) REFERENCES variations(id),
-	FOREIGN KEY(destination_variation_version_id) REFERENCES variations(id)
+	FOREIGN KEY(source_variation_version_id) REFERENCES variation_versions(id),
+	FOREIGN KEY(destination_variation_version_id) REFERENCES variation_versions(id)
 );
 
 create table if not exists merges (
@@ -113,9 +113,9 @@ create table if not exists merges (
 	variation_version2_id INT8 UNSIGNED NOT NULL,
 	destination_variation_version_id INT8 UNSIGNED NOT NULL,
 	created_at DATETIME,
-	FOREIGN KEY(variation_version1_id) REFERENCES variations(id),
-	FOREIGN KEY(variation_version2_id) REFERENCES variations(id),
-	FOREIGN KEY(destination_variation_version_id) REFERENCES variations(id)
+	FOREIGN KEY(variation_version1_id) REFERENCES variation_versions(id),
+	FOREIGN KEY(variation_version2_id) REFERENCES variation_versions(id),
+	FOREIGN KEY(destination_variation_version_id) REFERENCES variation_versions(id)
 );
 
 create table if not exists song_databases (
@@ -142,7 +142,6 @@ create table if not exists ew_database_links(
 	variation_version_id INT8 UNSIGNED NOT NULL,
 	version INT NOT NULL,
 	created_at DATETIME,
-	deleted_at DATETIME NULL,
 	FOREIGN KEY(ew_database_id) REFERENCES ew_databases(id),
 	FOREIGN KEY(variation_version_id) REFERENCES variation_versions(id)
 );
@@ -172,7 +171,6 @@ create table if not exists tag_variations(
 	tag_id INT8 UNSIGNED NOT NULL,
 	variation_version_id INT8 UNSIGNED NOT NULL,
 	created_at DATETIME,
-	deleted_at DATETIME NULL,
 	FOREIGN KEY(tag_id) REFERENCES tags(id),
 	FOREIGN KEY(variation_version_id) REFERENCES variation_versions(id)
 );
