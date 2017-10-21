@@ -11,6 +11,7 @@ It is generated from these files:
 	ew_verse.proto
 	language.proto
 	language_variations.proto
+	log.proto
 	schedule.proto
 	seppo_service.proto
 	song.proto
@@ -61,6 +62,9 @@ It has these top-level messages:
 	LanguageVariations
 	FetchLanguageVariationsRequest
 	FetchLanguageVariationsResponse
+	Log
+	SearchLogsRequest
+	SearchLogsResponse
 	Schedule
 	SearchSchedulesRequest
 	SearchSchedulesResponse

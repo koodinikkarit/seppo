@@ -21,7 +21,7 @@ type VariationSongDatabases struct {
 func (m *VariationSongDatabases) Reset()                    { *m = VariationSongDatabases{} }
 func (m *VariationSongDatabases) String() string            { return proto.CompactTextString(m) }
 func (*VariationSongDatabases) ProtoMessage()               {}
-func (*VariationSongDatabases) Descriptor() ([]byte, []int) { return fileDescriptor14, []int{0} }
+func (*VariationSongDatabases) Descriptor() ([]byte, []int) { return fileDescriptor15, []int{0} }
 
 func (m *VariationSongDatabases) GetVariationId() uint32 {
 	if m != nil {
@@ -45,7 +45,7 @@ func (m *FetchVariationSongDatabasesRequest) Reset()         { *m = FetchVariati
 func (m *FetchVariationSongDatabasesRequest) String() string { return proto.CompactTextString(m) }
 func (*FetchVariationSongDatabasesRequest) ProtoMessage()    {}
 func (*FetchVariationSongDatabasesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor14, []int{1}
+	return fileDescriptor15, []int{1}
 }
 
 func (m *FetchVariationSongDatabasesRequest) GetVariationIds() []uint32 {
@@ -63,7 +63,7 @@ func (m *FetchVariationSongDatabasesResponse) Reset()         { *m = FetchVariat
 func (m *FetchVariationSongDatabasesResponse) String() string { return proto.CompactTextString(m) }
 func (*FetchVariationSongDatabasesResponse) ProtoMessage()    {}
 func (*FetchVariationSongDatabasesResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor14, []int{2}
+	return fileDescriptor15, []int{2}
 }
 
 func (m *FetchVariationSongDatabasesResponse) GetVariationSongDatabases() []*VariationSongDatabases {
@@ -79,9 +79,9 @@ func init() {
 	proto.RegisterType((*FetchVariationSongDatabasesResponse)(nil), "SeppoService.FetchVariationSongDatabasesResponse")
 }
 
-func init() { proto.RegisterFile("variation_song_database.proto", fileDescriptor14) }
+func init() { proto.RegisterFile("variation_song_database.proto", fileDescriptor15) }
 
-var fileDescriptor14 = []byte{
+var fileDescriptor15 = []byte{
 	// 203 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0x2d, 0x4b, 0x2c, 0xca,
 	0x4c, 0x2c, 0xc9, 0xcc, 0xcf, 0x8b, 0x2f, 0xce, 0xcf, 0x4b, 0x8f, 0x4f, 0x49, 0x2c, 0x49, 0x4c,

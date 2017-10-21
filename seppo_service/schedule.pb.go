@@ -21,7 +21,7 @@ type Schedule struct {
 func (m *Schedule) Reset()                    { *m = Schedule{} }
 func (m *Schedule) String() string            { return proto.CompactTextString(m) }
 func (*Schedule) ProtoMessage()               {}
-func (*Schedule) Descriptor() ([]byte, []int) { return fileDescriptor5, []int{0} }
+func (*Schedule) Descriptor() ([]byte, []int) { return fileDescriptor6, []int{0} }
 
 func (m *Schedule) GetId() uint32 {
 	if m != nil {
@@ -45,7 +45,7 @@ type SearchSchedulesRequest struct {
 func (m *SearchSchedulesRequest) Reset()                    { *m = SearchSchedulesRequest{} }
 func (m *SearchSchedulesRequest) String() string            { return proto.CompactTextString(m) }
 func (*SearchSchedulesRequest) ProtoMessage()               {}
-func (*SearchSchedulesRequest) Descriptor() ([]byte, []int) { return fileDescriptor5, []int{1} }
+func (*SearchSchedulesRequest) Descriptor() ([]byte, []int) { return fileDescriptor6, []int{1} }
 
 func (m *SearchSchedulesRequest) GetOffset() uint32 {
 	if m != nil {
@@ -69,7 +69,7 @@ type SearchSchedulesResponse struct {
 func (m *SearchSchedulesResponse) Reset()                    { *m = SearchSchedulesResponse{} }
 func (m *SearchSchedulesResponse) String() string            { return proto.CompactTextString(m) }
 func (*SearchSchedulesResponse) ProtoMessage()               {}
-func (*SearchSchedulesResponse) Descriptor() ([]byte, []int) { return fileDescriptor5, []int{2} }
+func (*SearchSchedulesResponse) Descriptor() ([]byte, []int) { return fileDescriptor6, []int{2} }
 
 func (m *SearchSchedulesResponse) GetSchedules() []*Schedule {
 	if m != nil {
@@ -92,7 +92,7 @@ type FetchScheduleByIdRequest struct {
 func (m *FetchScheduleByIdRequest) Reset()                    { *m = FetchScheduleByIdRequest{} }
 func (m *FetchScheduleByIdRequest) String() string            { return proto.CompactTextString(m) }
 func (*FetchScheduleByIdRequest) ProtoMessage()               {}
-func (*FetchScheduleByIdRequest) Descriptor() ([]byte, []int) { return fileDescriptor5, []int{3} }
+func (*FetchScheduleByIdRequest) Descriptor() ([]byte, []int) { return fileDescriptor6, []int{3} }
 
 func (m *FetchScheduleByIdRequest) GetScheduleIds() []uint32 {
 	if m != nil {
@@ -108,7 +108,7 @@ type FetchScheduleByIdResponse struct {
 func (m *FetchScheduleByIdResponse) Reset()                    { *m = FetchScheduleByIdResponse{} }
 func (m *FetchScheduleByIdResponse) String() string            { return proto.CompactTextString(m) }
 func (*FetchScheduleByIdResponse) ProtoMessage()               {}
-func (*FetchScheduleByIdResponse) Descriptor() ([]byte, []int) { return fileDescriptor5, []int{4} }
+func (*FetchScheduleByIdResponse) Descriptor() ([]byte, []int) { return fileDescriptor6, []int{4} }
 
 func (m *FetchScheduleByIdResponse) GetSchedules() []*Schedule {
 	if m != nil {
@@ -124,7 +124,7 @@ type CreateScheduleRequest struct {
 func (m *CreateScheduleRequest) Reset()                    { *m = CreateScheduleRequest{} }
 func (m *CreateScheduleRequest) String() string            { return proto.CompactTextString(m) }
 func (*CreateScheduleRequest) ProtoMessage()               {}
-func (*CreateScheduleRequest) Descriptor() ([]byte, []int) { return fileDescriptor5, []int{5} }
+func (*CreateScheduleRequest) Descriptor() ([]byte, []int) { return fileDescriptor6, []int{5} }
 
 func (m *CreateScheduleRequest) GetName() string {
 	if m != nil {
@@ -140,7 +140,7 @@ type CreateScheduleResponse struct {
 func (m *CreateScheduleResponse) Reset()                    { *m = CreateScheduleResponse{} }
 func (m *CreateScheduleResponse) String() string            { return proto.CompactTextString(m) }
 func (*CreateScheduleResponse) ProtoMessage()               {}
-func (*CreateScheduleResponse) Descriptor() ([]byte, []int) { return fileDescriptor5, []int{6} }
+func (*CreateScheduleResponse) Descriptor() ([]byte, []int) { return fileDescriptor6, []int{6} }
 
 func (m *CreateScheduleResponse) GetSchedule() *Schedule {
 	if m != nil {
@@ -159,7 +159,7 @@ type UpdateScheduleRequest struct {
 func (m *UpdateScheduleRequest) Reset()                    { *m = UpdateScheduleRequest{} }
 func (m *UpdateScheduleRequest) String() string            { return proto.CompactTextString(m) }
 func (*UpdateScheduleRequest) ProtoMessage()               {}
-func (*UpdateScheduleRequest) Descriptor() ([]byte, []int) { return fileDescriptor5, []int{7} }
+func (*UpdateScheduleRequest) Descriptor() ([]byte, []int) { return fileDescriptor6, []int{7} }
 
 func (m *UpdateScheduleRequest) GetScheduleId() uint32 {
 	if m != nil {
@@ -197,7 +197,7 @@ type UpdateScheduleResponse struct {
 func (m *UpdateScheduleResponse) Reset()                    { *m = UpdateScheduleResponse{} }
 func (m *UpdateScheduleResponse) String() string            { return proto.CompactTextString(m) }
 func (*UpdateScheduleResponse) ProtoMessage()               {}
-func (*UpdateScheduleResponse) Descriptor() ([]byte, []int) { return fileDescriptor5, []int{8} }
+func (*UpdateScheduleResponse) Descriptor() ([]byte, []int) { return fileDescriptor6, []int{8} }
 
 func (m *UpdateScheduleResponse) GetSchedule() *Schedule {
 	if m != nil {
@@ -220,7 +220,7 @@ type RemoveScheduleRequest struct {
 func (m *RemoveScheduleRequest) Reset()                    { *m = RemoveScheduleRequest{} }
 func (m *RemoveScheduleRequest) String() string            { return proto.CompactTextString(m) }
 func (*RemoveScheduleRequest) ProtoMessage()               {}
-func (*RemoveScheduleRequest) Descriptor() ([]byte, []int) { return fileDescriptor5, []int{9} }
+func (*RemoveScheduleRequest) Descriptor() ([]byte, []int) { return fileDescriptor6, []int{9} }
 
 func (m *RemoveScheduleRequest) GetScheduleId() uint32 {
 	if m != nil {
@@ -236,7 +236,7 @@ type RemoveScheduleResponse struct {
 func (m *RemoveScheduleResponse) Reset()                    { *m = RemoveScheduleResponse{} }
 func (m *RemoveScheduleResponse) String() string            { return proto.CompactTextString(m) }
 func (*RemoveScheduleResponse) ProtoMessage()               {}
-func (*RemoveScheduleResponse) Descriptor() ([]byte, []int) { return fileDescriptor5, []int{10} }
+func (*RemoveScheduleResponse) Descriptor() ([]byte, []int) { return fileDescriptor6, []int{10} }
 
 func (m *RemoveScheduleResponse) GetSuccess() bool {
 	if m != nil {
@@ -259,9 +259,9 @@ func init() {
 	proto.RegisterType((*RemoveScheduleResponse)(nil), "SeppoService.RemoveScheduleResponse")
 }
 
-func init() { proto.RegisterFile("schedule.proto", fileDescriptor5) }
+func init() { proto.RegisterFile("schedule.proto", fileDescriptor6) }
 
-var fileDescriptor5 = []byte{
+var fileDescriptor6 = []byte{
 	// 358 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x53, 0xcf, 0x4f, 0xfa, 0x30,
 	0x14, 0x4f, 0x81, 0x2f, 0x5f, 0x78, 0x30, 0x0e, 0x8d, 0xcc, 0x79, 0x31, 0x4b, 0xe3, 0x81, 0xc4,
