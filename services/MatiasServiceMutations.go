@@ -1,6 +1,10 @@
 package seppo
 
 import (
+	"fmt"
+	"log"
+	"os"
+
 	"golang.org/x/net/context"
 
 	"github.com/koodinikkarit/seppo/db"
@@ -70,10 +74,19 @@ func (s *MatiasServiceServer) ChangeEwSongIds(ctx context.Context, in *MatiasSer
 func (s *MatiasServiceServer) SyncEwDatabase(ctx context.Context, in *MatiasService.SyncEwDatabaseRequest) (*MatiasService.SyncEwDatabaseResponse, error) {
 	response := &MatiasService.SyncEwDatabaseResponse{}
 
+	f, err := os.OpenFile("sync-log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	if err != nil {
+		fmt.Println("error opening file: %v", err)
+	}
+	defer f.Close()
+	log.SetOutput(f)
+
 	var ewDatabase SeppoDB.EwDatabase
 	s.databaseService.GetDb().Where("ew_databases.key = ?", in.EwDatabaseKey).Find(&ewDatabase)
 
 	if ewDatabase.ID > 0 {
+
+		log.Println("Synkronisoidaan tietokantaan jonka avain on", ewDatabase.Key)
 
 		ewDatabaseVariations := []SeppoDB.Variation{}
 		variationTexts := []SeppoDB.VariationText{}
@@ -135,6 +148,7 @@ func (s *MatiasServiceServer) SyncEwDatabase(ctx context.Context, in *MatiasServ
 						}
 					}
 					if foundVariation == false {
+						log.Println("Poistetaan ewtietokannasta laulua jossa on avain", ewDatabase.Key, " nimellä", ewSong.Title)
 						response.RemoveEwSongIds = append(response.RemoveEwSongIds, ewSong.Id)
 						s.databaseService.RemoveDatabaseLink(ewdatabaseLink.ID)
 					}
@@ -198,6 +212,7 @@ func (s *MatiasServiceServer) SyncEwDatabase(ctx context.Context, in *MatiasServ
 				}
 			}
 		}
+		log.Println("Synkronisointi valmis avaimella", ewDatabase.Key)
 	}
 
 	return response, nil
