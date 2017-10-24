@@ -45,7 +45,9 @@ func (s SeppoServiceServer) UpdateLanguage(
 	newDb.First(&language, in.LanguageId)
 
 	if language.ID > 0 {
-		language.Name = in.Name
+		if in.Name != "" {
+			language.Name = in.Name
+		}
 		newDb.Save(&language)
 		res.Language = NewLanguage(&language)
 		res.Success = true

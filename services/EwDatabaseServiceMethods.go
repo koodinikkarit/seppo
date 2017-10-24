@@ -123,7 +123,9 @@ func (s *SeppoServiceServer) UpdateEwDatabase(
 	newDb.First(&ewDatabase, in.EwDatabaseId)
 
 	if ewDatabase.ID > 0 {
-		ewDatabase.Name = in.Name
+		if in.Name != "" {
+			ewDatabase.Name = in.Name
+		}
 		res.Success = true
 	} else {
 		res.Success = false
