@@ -92,6 +92,44 @@ func (s *SeppoServiceServer) UpdateVariation(
 	tx.First(&variation, in.VariationId)
 
 	if variation.ID > 0 {
+		if in.SongId > 0 {
+			variation.SongID = &in.SongId
+		}
+
+		if in.LanguageId > 0 {
+			variation.LanguageID = &in.LanguageId
+		}
+
+		if len(in.AddTagIds) > 0 && variation.VariationVersionID != nil {
+			for i := 0; i < len(in.AddTagIds); i++ {
+				tx.Create(&db.TagVariation{
+					TagID:              in.AddTagIds[i],
+					VariationVersionID: *variation.VariationVersionID,
+				})
+			}
+		}
+		if len(in.RemoveTagIds) > 0 {
+			tx.Where("tag_id in (?)", in.RemoveTagIds).
+				Where("variation_version_id = ?", variation.VariationVersionID).
+				Delete(&db.TagVariation{})
+		}
+
+		if len(in.AddSongDatabaseIds) > 0 && variation.VariationVersionID != nil {
+			for i := 0; i < len(in.AddSongDatabaseIds); i++ {
+				tx.Create(&db.SongDatabaseVariation{
+					SongDatabaseID:     in.AddSongDatabaseIds[i],
+					VariationVersionID: *variation.VariationVersionID,
+				})
+			}
+		}
+		if len(in.RemoveSongDatabaseIds) > 0 {
+			tx.Where("song_database_id in (?)", in.RemoveSongDatabaseIds).
+				Where("variation_version_id = ?", variation.VariationVersionID).
+				Delete(&db.SongDatabaseVariation{})
+		}
+
+		tx.Save(&variation)
+
 		var newestVariationVersion db.VariationVersion
 		tx.Table("variation_versions").
 			Where("variation_versions.variation_id = ?", variation.ID).
@@ -310,8 +348,7 @@ func (s *SeppoServiceServer) SearchVariations(
 					Where("variations.name LIKE ? or variation_texts.text LIKE ?", "%"+in.SearchWord+"%", "%"+in.SearchWord+"%")
 			}
 		} else {
-			query = query.Where("variation_versions.name LIKE ?", "%"+in.SearchWord+"%").
-				Where("variation_versions.text LIKE ?", "%"+in.SearchWord+"%")
+			query = query.Where("variation_versions.name LIKE ? OR variation_versions.text LIKE ?", "%"+in.SearchWord+"%", "%"+in.SearchWord+"%")
 		}
 	}
 
