@@ -1,12 +1,12 @@
-package SeppoDB
+package db
+
+import "time"
 
 type EwDatabaseLink struct {
-	ID               uint32
-	EwDatabaseID     uint32
-	EwDatabaseSongID uint32
-	VariationID      uint32
-	Version          uint64
-
-	EwDatabase EwDatabase
-	Variation  Variation
+	ID                 uint32
+	EwDatabaseID       uint32
+	EwDatabaseSongID   uint32
+	VariationVersionID uint32
+	Version            uint64
+	CreatedAt          *time.Time
 }

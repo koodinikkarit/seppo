@@ -1,4 +1,4 @@
-package SeppoDB
+package services
 
 import (
 	"crypto/rand"

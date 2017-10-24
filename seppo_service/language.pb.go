@@ -21,7 +21,7 @@ type Language struct {
 func (m *Language) Reset()                    { *m = Language{} }
 func (m *Language) String() string            { return proto.CompactTextString(m) }
 func (*Language) ProtoMessage()               {}
-func (*Language) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{0} }
+func (*Language) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{0} }
 
 func (m *Language) GetId() uint32 {
 	if m != nil {
@@ -37,37 +37,61 @@ func (m *Language) GetName() string {
 	return ""
 }
 
-type LanguagesConnection struct {
+type SearchLanguagesRequest struct {
+	Offset     uint32 `protobuf:"varint,1,opt,name=offset" json:"offset,omitempty"`
+	Limit      uint32 `protobuf:"varint,2,opt,name=limit" json:"limit,omitempty"`
+	SearchWord string `protobuf:"bytes,3,opt,name=searchWord" json:"searchWord,omitempty"`
+}
+
+func (m *SearchLanguagesRequest) Reset()                    { *m = SearchLanguagesRequest{} }
+func (m *SearchLanguagesRequest) String() string            { return proto.CompactTextString(m) }
+func (*SearchLanguagesRequest) ProtoMessage()               {}
+func (*SearchLanguagesRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{1} }
+
+func (m *SearchLanguagesRequest) GetOffset() uint32 {
+	if m != nil {
+		return m.Offset
+	}
+	return 0
+}
+
+func (m *SearchLanguagesRequest) GetLimit() uint32 {
+	if m != nil {
+		return m.Limit
+	}
+	return 0
+}
+
+func (m *SearchLanguagesRequest) GetSearchWord() string {
+	if m != nil {
+		return m.SearchWord
+	}
+	return ""
+}
+
+type SearchLanguagesResponse struct {
 	Languages    []*Language `protobuf:"bytes,1,rep,name=languages" json:"languages,omitempty"`
 	MaxLanguages uint32      `protobuf:"varint,2,opt,name=maxLanguages" json:"maxLanguages,omitempty"`
 }
 
-func (m *LanguagesConnection) Reset()                    { *m = LanguagesConnection{} }
-func (m *LanguagesConnection) String() string            { return proto.CompactTextString(m) }
-func (*LanguagesConnection) ProtoMessage()               {}
-func (*LanguagesConnection) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{1} }
+func (m *SearchLanguagesResponse) Reset()                    { *m = SearchLanguagesResponse{} }
+func (m *SearchLanguagesResponse) String() string            { return proto.CompactTextString(m) }
+func (*SearchLanguagesResponse) ProtoMessage()               {}
+func (*SearchLanguagesResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{2} }
 
-func (m *LanguagesConnection) GetLanguages() []*Language {
+func (m *SearchLanguagesResponse) GetLanguages() []*Language {
 	if m != nil {
 		return m.Languages
 	}
 	return nil
 }
 
-func (m *LanguagesConnection) GetMaxLanguages() uint32 {
+func (m *SearchLanguagesResponse) GetMaxLanguages() uint32 {
 	if m != nil {
 		return m.MaxLanguages
 	}
 	return 0
 }
-
-type SearchLanguagesRequest struct {
-}
-
-func (m *SearchLanguagesRequest) Reset()                    { *m = SearchLanguagesRequest{} }
-func (m *SearchLanguagesRequest) String() string            { return proto.CompactTextString(m) }
-func (*SearchLanguagesRequest) ProtoMessage()               {}
-func (*SearchLanguagesRequest) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{2} }
 
 type FetchLanguageByIdRequest struct {
 	LanguageIds []uint32 `protobuf:"varint,1,rep,packed,name=languageIds" json:"languageIds,omitempty"`
@@ -76,7 +100,7 @@ type FetchLanguageByIdRequest struct {
 func (m *FetchLanguageByIdRequest) Reset()                    { *m = FetchLanguageByIdRequest{} }
 func (m *FetchLanguageByIdRequest) String() string            { return proto.CompactTextString(m) }
 func (*FetchLanguageByIdRequest) ProtoMessage()               {}
-func (*FetchLanguageByIdRequest) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{3} }
+func (*FetchLanguageByIdRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{3} }
 
 func (m *FetchLanguageByIdRequest) GetLanguageIds() []uint32 {
 	if m != nil {
@@ -92,7 +116,7 @@ type FetchLanguageByIdResponse struct {
 func (m *FetchLanguageByIdResponse) Reset()                    { *m = FetchLanguageByIdResponse{} }
 func (m *FetchLanguageByIdResponse) String() string            { return proto.CompactTextString(m) }
 func (*FetchLanguageByIdResponse) ProtoMessage()               {}
-func (*FetchLanguageByIdResponse) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{4} }
+func (*FetchLanguageByIdResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{4} }
 
 func (m *FetchLanguageByIdResponse) GetLanguages() []*Language {
 	if m != nil {
@@ -108,7 +132,7 @@ type CreateLanguageRequest struct {
 func (m *CreateLanguageRequest) Reset()                    { *m = CreateLanguageRequest{} }
 func (m *CreateLanguageRequest) String() string            { return proto.CompactTextString(m) }
 func (*CreateLanguageRequest) ProtoMessage()               {}
-func (*CreateLanguageRequest) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{5} }
+func (*CreateLanguageRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{5} }
 
 func (m *CreateLanguageRequest) GetName() string {
 	if m != nil {
@@ -124,7 +148,7 @@ type CreateLanguageResponse struct {
 func (m *CreateLanguageResponse) Reset()                    { *m = CreateLanguageResponse{} }
 func (m *CreateLanguageResponse) String() string            { return proto.CompactTextString(m) }
 func (*CreateLanguageResponse) ProtoMessage()               {}
-func (*CreateLanguageResponse) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{6} }
+func (*CreateLanguageResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{6} }
 
 func (m *CreateLanguageResponse) GetLanguage() *Language {
 	if m != nil {
@@ -141,7 +165,7 @@ type UpdateLanguageRequest struct {
 func (m *UpdateLanguageRequest) Reset()                    { *m = UpdateLanguageRequest{} }
 func (m *UpdateLanguageRequest) String() string            { return proto.CompactTextString(m) }
 func (*UpdateLanguageRequest) ProtoMessage()               {}
-func (*UpdateLanguageRequest) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{7} }
+func (*UpdateLanguageRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{7} }
 
 func (m *UpdateLanguageRequest) GetLanguageId() uint32 {
 	if m != nil {
@@ -159,18 +183,26 @@ func (m *UpdateLanguageRequest) GetName() string {
 
 type UpdateLanguageResponse struct {
 	Language *Language `protobuf:"bytes,1,opt,name=language" json:"language,omitempty"`
+	Success  bool      `protobuf:"varint,3,opt,name=success" json:"success,omitempty"`
 }
 
 func (m *UpdateLanguageResponse) Reset()                    { *m = UpdateLanguageResponse{} }
 func (m *UpdateLanguageResponse) String() string            { return proto.CompactTextString(m) }
 func (*UpdateLanguageResponse) ProtoMessage()               {}
-func (*UpdateLanguageResponse) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{8} }
+func (*UpdateLanguageResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{8} }
 
 func (m *UpdateLanguageResponse) GetLanguage() *Language {
 	if m != nil {
 		return m.Language
 	}
 	return nil
+}
+
+func (m *UpdateLanguageResponse) GetSuccess() bool {
+	if m != nil {
+		return m.Success
+	}
+	return false
 }
 
 type RemoveLanguageRequest struct {
@@ -180,7 +212,7 @@ type RemoveLanguageRequest struct {
 func (m *RemoveLanguageRequest) Reset()                    { *m = RemoveLanguageRequest{} }
 func (m *RemoveLanguageRequest) String() string            { return proto.CompactTextString(m) }
 func (*RemoveLanguageRequest) ProtoMessage()               {}
-func (*RemoveLanguageRequest) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{9} }
+func (*RemoveLanguageRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{9} }
 
 func (m *RemoveLanguageRequest) GetLanguageId() uint32 {
 	if m != nil {
@@ -196,7 +228,7 @@ type RemoveLanguageResponse struct {
 func (m *RemoveLanguageResponse) Reset()                    { *m = RemoveLanguageResponse{} }
 func (m *RemoveLanguageResponse) String() string            { return proto.CompactTextString(m) }
 func (*RemoveLanguageResponse) ProtoMessage()               {}
-func (*RemoveLanguageResponse) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{10} }
+func (*RemoveLanguageResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{10} }
 
 func (m *RemoveLanguageResponse) GetSuccess() bool {
 	if m != nil {
@@ -207,8 +239,8 @@ func (m *RemoveLanguageResponse) GetSuccess() bool {
 
 func init() {
 	proto.RegisterType((*Language)(nil), "SeppoService.Language")
-	proto.RegisterType((*LanguagesConnection)(nil), "SeppoService.LanguagesConnection")
 	proto.RegisterType((*SearchLanguagesRequest)(nil), "SeppoService.SearchLanguagesRequest")
+	proto.RegisterType((*SearchLanguagesResponse)(nil), "SeppoService.SearchLanguagesResponse")
 	proto.RegisterType((*FetchLanguageByIdRequest)(nil), "SeppoService.FetchLanguageByIdRequest")
 	proto.RegisterType((*FetchLanguageByIdResponse)(nil), "SeppoService.FetchLanguageByIdResponse")
 	proto.RegisterType((*CreateLanguageRequest)(nil), "SeppoService.CreateLanguageRequest")
@@ -219,28 +251,30 @@ func init() {
 	proto.RegisterType((*RemoveLanguageResponse)(nil), "SeppoService.RemoveLanguageResponse")
 }
 
-func init() { proto.RegisterFile("language.proto", fileDescriptor3) }
+func init() { proto.RegisterFile("language.proto", fileDescriptor2) }
 
-var fileDescriptor3 = []byte{
-	// 305 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x52, 0xcf, 0x4b, 0x84, 0x40,
-	0x14, 0xc6, 0x2d, 0x6a, 0xf7, 0xed, 0x8f, 0xc3, 0x84, 0x32, 0x5d, 0x42, 0xe6, 0x24, 0x04, 0x1e,
-	0x2c, 0xe8, 0xd2, 0xa9, 0x85, 0x60, 0xc9, 0x4b, 0x23, 0xfd, 0x01, 0x93, 0x3e, 0x36, 0x21, 0x67,
-	0xcc, 0xd1, 0xa5, 0xfe, 0xfb, 0xc0, 0x66, 0xd4, 0xc4, 0x0e, 0xd5, 0x4d, 0xbf, 0x1f, 0xef, 0xfb,
-	0x66, 0xde, 0xc0, 0xe6, 0x55, 0xc8, 0x7d, 0x23, 0xf6, 0x18, 0x96, 0x95, 0xaa, 0x15, 0x59, 0x25,
-	0x58, 0x96, 0x2a, 0xc1, 0xea, 0x90, 0xa7, 0xc8, 0x42, 0x98, 0xc7, 0x86, 0x27, 0x1b, 0x98, 0xe5,
-	0x19, 0x75, 0x7c, 0x27, 0x58, 0xf3, 0x59, 0x9e, 0x11, 0x02, 0xc7, 0x52, 0x14, 0x48, 0x67, 0xbe,
-	0x13, 0x2c, 0x78, 0xfb, 0xcd, 0x14, 0x9c, 0x59, 0xbd, 0xde, 0x2a, 0x29, 0x31, 0xad, 0x73, 0x25,
-	0xc9, 0x35, 0x2c, 0x6c, 0x8c, 0xa6, 0x8e, 0x7f, 0x14, 0x2c, 0x23, 0x2f, 0x1c, 0x06, 0x85, 0xd6,
-	0xc5, 0x7b, 0x21, 0x61, 0xb0, 0x2a, 0xc4, 0x7b, 0x37, 0xaf, 0x0d, 0x5a, 0xf3, 0x6f, 0x18, 0xa3,
-	0xe0, 0x25, 0x28, 0xaa, 0xf4, 0xa5, 0x83, 0x38, 0xbe, 0x35, 0xa8, 0x6b, 0x76, 0x0b, 0xf4, 0x1e,
-	0xeb, 0x9e, 0xb8, 0xfb, 0xd8, 0x65, 0x86, 0x23, 0x3e, 0x2c, 0x6d, 0xcc, 0x2e, 0xfb, 0x6a, 0xb4,
-	0xe6, 0x43, 0x88, 0x3d, 0xc2, 0xf9, 0x84, 0x5b, 0x97, 0x4a, 0x6a, 0xfc, 0xdb, 0x71, 0xd8, 0x25,
-	0xb8, 0xdb, 0x0a, 0x45, 0x8d, 0x1d, 0x69, 0xda, 0xd8, 0x8b, 0x74, 0x06, 0x17, 0x19, 0x83, 0x37,
-	0x16, 0x9b, 0xf0, 0x08, 0xe6, 0x76, 0x66, 0xeb, 0xf8, 0x39, 0xbb, 0xd3, 0xb1, 0x07, 0x70, 0x9f,
-	0xca, 0x6c, 0x22, 0xfa, 0x02, 0xa0, 0x3f, 0xb5, 0xd9, 0xed, 0x00, 0x99, 0xdc, 0x71, 0x0c, 0xde,
-	0x78, 0xd8, 0x3f, 0xaa, 0xdd, 0x80, 0xcb, 0xb1, 0x50, 0x87, 0xdf, 0x56, 0x63, 0x11, 0x78, 0x63,
-	0xa3, 0xa9, 0x41, 0xe1, 0x54, 0x37, 0x69, 0x8a, 0x5a, 0xb7, 0xb6, 0x39, 0xb7, 0xbf, 0xcf, 0x27,
-	0xed, 0x1b, 0xbf, 0xfa, 0x0c, 0x00, 0x00, 0xff, 0xff, 0x0b, 0xf7, 0xb8, 0x4b, 0xf5, 0x02, 0x00,
-	0x00,
+var fileDescriptor2 = []byte{
+	// 341 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x93, 0x4f, 0x4f, 0xc2, 0x40,
+	0x10, 0xc5, 0x53, 0x50, 0x84, 0xc7, 0x9f, 0xc3, 0x46, 0x6a, 0xbd, 0x90, 0x66, 0x4f, 0x24, 0x26,
+	0x3d, 0xa0, 0x89, 0x17, 0x4f, 0x9a, 0x98, 0x10, 0xb9, 0xb8, 0xc4, 0x78, 0xae, 0xed, 0x80, 0x4d,
+	0x28, 0x5b, 0xbb, 0x85, 0xe8, 0xb7, 0x37, 0x59, 0x76, 0xa1, 0x54, 0x38, 0xa8, 0xb7, 0xee, 0xec,
+	0xbc, 0xf7, 0x7b, 0x93, 0xd9, 0xa2, 0xb7, 0x08, 0x97, 0xf3, 0x55, 0x38, 0xa7, 0x20, 0xcb, 0x65,
+	0x21, 0x59, 0x67, 0x4a, 0x59, 0x26, 0xa7, 0x94, 0xaf, 0x93, 0x88, 0x78, 0x80, 0xe6, 0xc4, 0xdc,
+	0xb3, 0x1e, 0x6a, 0x49, 0xec, 0x39, 0xbe, 0x33, 0xec, 0x8a, 0x5a, 0x12, 0x33, 0x86, 0x93, 0x65,
+	0x98, 0x92, 0x57, 0xf3, 0x9d, 0x61, 0x4b, 0xe8, 0x6f, 0x3e, 0x83, 0x3b, 0xa5, 0x30, 0x8f, 0xde,
+	0xad, 0x4a, 0x09, 0xfa, 0x58, 0x91, 0x2a, 0x98, 0x8b, 0x86, 0x9c, 0xcd, 0x14, 0x15, 0xc6, 0xc1,
+	0x9c, 0xd8, 0x39, 0x4e, 0x17, 0x49, 0x9a, 0x14, 0xda, 0xa6, 0x2b, 0x36, 0x07, 0x36, 0x00, 0x94,
+	0xf6, 0x79, 0x95, 0x79, 0xec, 0xd5, 0x35, 0xa1, 0x54, 0xe1, 0x0a, 0x17, 0x3f, 0x38, 0x2a, 0x93,
+	0x4b, 0x45, 0xec, 0x06, 0x2d, 0x3b, 0x92, 0xf2, 0x1c, 0xbf, 0x3e, 0x6c, 0x8f, 0xdc, 0xa0, 0x3c,
+	0x54, 0x60, 0x35, 0x62, 0xd7, 0xc8, 0x38, 0x3a, 0x69, 0xf8, 0xb9, 0x75, 0x33, 0x69, 0xf6, 0x6a,
+	0xfc, 0x0e, 0xde, 0x23, 0x15, 0x3b, 0xe6, 0xfd, 0xd7, 0x38, 0xb6, 0xe3, 0xf9, 0x68, 0x5b, 0xb3,
+	0x71, 0xbc, 0xe1, 0x76, 0x45, 0xb9, 0xc4, 0x9f, 0x71, 0x79, 0x40, 0xfd, 0x9f, 0xd0, 0xfc, 0x0a,
+	0xfd, 0x87, 0x9c, 0xc2, 0x82, 0xb6, 0x97, 0x26, 0x8d, 0x5d, 0x8d, 0x53, 0x5a, 0xcd, 0x04, 0x6e,
+	0xb5, 0xd9, 0xc0, 0x47, 0x68, 0x5a, 0x4f, 0xad, 0x38, 0xce, 0xde, 0xf6, 0xf1, 0x27, 0xf4, 0x5f,
+	0xb2, 0xf8, 0x00, 0x7a, 0x00, 0xec, 0xa6, 0x36, 0xbb, 0x2e, 0x55, 0x8e, 0xbd, 0x9a, 0xaa, 0xd9,
+	0xdf, 0xa3, 0x31, 0x0f, 0x67, 0x6a, 0x15, 0x45, 0xa4, 0x94, 0x7e, 0x38, 0x4d, 0x61, 0x8f, 0xfc,
+	0x16, 0x7d, 0x41, 0xa9, 0x5c, 0xff, 0x36, 0x34, 0x1f, 0xc1, 0xad, 0x0a, 0x4d, 0xc0, 0x12, 0xcc,
+	0xd9, 0x83, 0xbd, 0x35, 0xf4, 0xff, 0x74, 0xfd, 0x1d, 0x00, 0x00, 0xff, 0xff, 0x93, 0xa5, 0xdf,
+	0xb8, 0x61, 0x03, 0x00, 0x00,
 }
