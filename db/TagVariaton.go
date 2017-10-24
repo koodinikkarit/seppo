@@ -1,10 +1,10 @@
-package db
-
-import "time"
+package SeppoDB
 
 type TagVariation struct {
-	ID                 uint32
-	TagID              uint32
-	VariationVersionID uint32
-	CreatedAt          *time.Time
+	ID          uint32
+	TagID       uint32
+	VariationID uint32
+
+	Tag       Tag
+	Variation Variation
 }

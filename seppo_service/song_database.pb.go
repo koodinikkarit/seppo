@@ -22,7 +22,7 @@ type SongDatabase struct {
 func (m *SongDatabase) Reset()                    { *m = SongDatabase{} }
 func (m *SongDatabase) String() string            { return proto.CompactTextString(m) }
 func (*SongDatabase) ProtoMessage()               {}
-func (*SongDatabase) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{0} }
+func (*SongDatabase) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{0} }
 
 func (m *SongDatabase) GetId() uint32 {
 	if m != nil {
@@ -53,7 +53,7 @@ type SongDatabaseEdge struct {
 func (m *SongDatabaseEdge) Reset()                    { *m = SongDatabaseEdge{} }
 func (m *SongDatabaseEdge) String() string            { return proto.CompactTextString(m) }
 func (*SongDatabaseEdge) ProtoMessage()               {}
-func (*SongDatabaseEdge) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{1} }
+func (*SongDatabaseEdge) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{1} }
 
 func (m *SongDatabaseEdge) GetNode() *SongDatabase {
 	if m != nil {
@@ -78,7 +78,7 @@ type SongDatabasesConnection struct {
 func (m *SongDatabasesConnection) Reset()                    { *m = SongDatabasesConnection{} }
 func (m *SongDatabasesConnection) String() string            { return proto.CompactTextString(m) }
 func (*SongDatabasesConnection) ProtoMessage()               {}
-func (*SongDatabasesConnection) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{2} }
+func (*SongDatabasesConnection) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{2} }
 
 func (m *SongDatabasesConnection) GetMaxSongDatabases() uint32 {
 	if m != nil {
@@ -113,7 +113,7 @@ type FetchSongDatabasesRequest struct {
 func (m *FetchSongDatabasesRequest) Reset()                    { *m = FetchSongDatabasesRequest{} }
 func (m *FetchSongDatabasesRequest) String() string            { return proto.CompactTextString(m) }
 func (*FetchSongDatabasesRequest) ProtoMessage()               {}
-func (*FetchSongDatabasesRequest) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{3} }
+func (*FetchSongDatabasesRequest) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{3} }
 
 func (m *FetchSongDatabasesRequest) GetAfter() uint32 {
 	if m != nil {
@@ -164,7 +164,7 @@ type FetchSongDatabaseByIdRequest struct {
 func (m *FetchSongDatabaseByIdRequest) Reset()                    { *m = FetchSongDatabaseByIdRequest{} }
 func (m *FetchSongDatabaseByIdRequest) String() string            { return proto.CompactTextString(m) }
 func (*FetchSongDatabaseByIdRequest) ProtoMessage()               {}
-func (*FetchSongDatabaseByIdRequest) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{4} }
+func (*FetchSongDatabaseByIdRequest) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{4} }
 
 func (m *FetchSongDatabaseByIdRequest) GetSongDatabaseIds() []uint32 {
 	if m != nil {
@@ -180,7 +180,7 @@ type FetchSongDatabaseByIdResponse struct {
 func (m *FetchSongDatabaseByIdResponse) Reset()                    { *m = FetchSongDatabaseByIdResponse{} }
 func (m *FetchSongDatabaseByIdResponse) String() string            { return proto.CompactTextString(m) }
 func (*FetchSongDatabaseByIdResponse) ProtoMessage()               {}
-func (*FetchSongDatabaseByIdResponse) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{5} }
+func (*FetchSongDatabaseByIdResponse) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{5} }
 
 func (m *FetchSongDatabaseByIdResponse) GetSongDatabases() []*SongDatabase {
 	if m != nil {
@@ -196,7 +196,7 @@ func (m *FetchTagsBySongDatabaseIdRequest) Reset()         { *m = FetchTagsBySon
 func (m *FetchTagsBySongDatabaseIdRequest) String() string { return proto.CompactTextString(m) }
 func (*FetchTagsBySongDatabaseIdRequest) ProtoMessage()    {}
 func (*FetchTagsBySongDatabaseIdRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor9, []int{6}
+	return fileDescriptor8, []int{6}
 }
 
 type FetchTagsBySongDatabaseIdResponse struct {
@@ -206,7 +206,7 @@ func (m *FetchTagsBySongDatabaseIdResponse) Reset()         { *m = FetchTagsBySo
 func (m *FetchTagsBySongDatabaseIdResponse) String() string { return proto.CompactTextString(m) }
 func (*FetchTagsBySongDatabaseIdResponse) ProtoMessage()    {}
 func (*FetchTagsBySongDatabaseIdResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor9, []int{7}
+	return fileDescriptor8, []int{7}
 }
 
 type CreateSongDatabaseRequest struct {
@@ -216,7 +216,7 @@ type CreateSongDatabaseRequest struct {
 func (m *CreateSongDatabaseRequest) Reset()                    { *m = CreateSongDatabaseRequest{} }
 func (m *CreateSongDatabaseRequest) String() string            { return proto.CompactTextString(m) }
 func (*CreateSongDatabaseRequest) ProtoMessage()               {}
-func (*CreateSongDatabaseRequest) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{8} }
+func (*CreateSongDatabaseRequest) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{8} }
 
 func (m *CreateSongDatabaseRequest) GetName() string {
 	if m != nil {
@@ -232,7 +232,7 @@ type CreateSongDatabaseResponse struct {
 func (m *CreateSongDatabaseResponse) Reset()                    { *m = CreateSongDatabaseResponse{} }
 func (m *CreateSongDatabaseResponse) String() string            { return proto.CompactTextString(m) }
 func (*CreateSongDatabaseResponse) ProtoMessage()               {}
-func (*CreateSongDatabaseResponse) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{9} }
+func (*CreateSongDatabaseResponse) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{9} }
 
 func (m *CreateSongDatabaseResponse) GetSongDatabase() *SongDatabase {
 	if m != nil {
@@ -251,7 +251,7 @@ type UpdateSongDatabaseRequest struct {
 func (m *UpdateSongDatabaseRequest) Reset()                    { *m = UpdateSongDatabaseRequest{} }
 func (m *UpdateSongDatabaseRequest) String() string            { return proto.CompactTextString(m) }
 func (*UpdateSongDatabaseRequest) ProtoMessage()               {}
-func (*UpdateSongDatabaseRequest) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{10} }
+func (*UpdateSongDatabaseRequest) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{10} }
 
 func (m *UpdateSongDatabaseRequest) GetSongDatabaseId() uint32 {
 	if m != nil {
@@ -288,7 +288,7 @@ type UpdateSongDatabaseResponse struct {
 func (m *UpdateSongDatabaseResponse) Reset()                    { *m = UpdateSongDatabaseResponse{} }
 func (m *UpdateSongDatabaseResponse) String() string            { return proto.CompactTextString(m) }
 func (*UpdateSongDatabaseResponse) ProtoMessage()               {}
-func (*UpdateSongDatabaseResponse) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{11} }
+func (*UpdateSongDatabaseResponse) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{11} }
 
 func (m *UpdateSongDatabaseResponse) GetSongDatabase() *SongDatabase {
 	if m != nil {
@@ -304,7 +304,7 @@ type RemoveSongDatabaseRequest struct {
 func (m *RemoveSongDatabaseRequest) Reset()                    { *m = RemoveSongDatabaseRequest{} }
 func (m *RemoveSongDatabaseRequest) String() string            { return proto.CompactTextString(m) }
 func (*RemoveSongDatabaseRequest) ProtoMessage()               {}
-func (*RemoveSongDatabaseRequest) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{12} }
+func (*RemoveSongDatabaseRequest) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{12} }
 
 func (m *RemoveSongDatabaseRequest) GetSongDatabaseId() uint32 {
 	if m != nil {
@@ -319,7 +319,7 @@ type RemoveSongDatabaseResponse struct {
 func (m *RemoveSongDatabaseResponse) Reset()                    { *m = RemoveSongDatabaseResponse{} }
 func (m *RemoveSongDatabaseResponse) String() string            { return proto.CompactTextString(m) }
 func (*RemoveSongDatabaseResponse) ProtoMessage()               {}
-func (*RemoveSongDatabaseResponse) Descriptor() ([]byte, []int) { return fileDescriptor9, []int{13} }
+func (*RemoveSongDatabaseResponse) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{13} }
 
 func init() {
 	proto.RegisterType((*SongDatabase)(nil), "SeppoService.SongDatabase")
@@ -338,9 +338,9 @@ func init() {
 	proto.RegisterType((*RemoveSongDatabaseResponse)(nil), "SeppoService.RemoveSongDatabaseResponse")
 }
 
-func init() { proto.RegisterFile("song_database.proto", fileDescriptor9) }
+func init() { proto.RegisterFile("song_database.proto", fileDescriptor8) }
 
-var fileDescriptor9 = []byte{
+var fileDescriptor8 = []byte{
 	// 500 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x54, 0x6f, 0x8b, 0xd3, 0x4e,
 	0x10, 0x26, 0x4d, 0xae, 0x3f, 0x6e, 0xae, 0xbd, 0xdf, 0xb1, 0x8a, 0xa6, 0xa5, 0x27, 0x71, 0x05,

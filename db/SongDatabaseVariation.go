@@ -1,10 +1,10 @@
-package db
-
-import "time"
+package SeppoDB
 
 type SongDatabaseVariation struct {
-	ID                 uint32
-	SongDatabaseID     uint32
-	VariationVersionID uint32
-	CreatedAt          *time.Time
+	ID             uint32
+	SongDatabaseID uint32
+	VariationID    uint32
+
+	SongDatabase SongDatabase
+	Variation    Variation
 }

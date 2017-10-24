@@ -1,11 +1,8 @@
-package db
-
-import "time"
+package SeppoDB
 
 type ScheduleVariation struct {
-	ID                 uint32
-	ScheduleID         uint32
-	VariationVersionID uint32
-	OrderNumber        uint32
-	CreatedAt          *time.Time
+	ID          uint32
+	ScheduleID  uint32
+	VariationID uint32
+	OrderNumber uint32
 }

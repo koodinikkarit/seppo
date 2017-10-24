@@ -22,7 +22,7 @@ type VariationText struct {
 func (m *VariationText) Reset()                    { *m = VariationText{} }
 func (m *VariationText) String() string            { return proto.CompactTextString(m) }
 func (*VariationText) ProtoMessage()               {}
-func (*VariationText) Descriptor() ([]byte, []int) { return fileDescriptor16, []int{0} }
+func (*VariationText) Descriptor() ([]byte, []int) { return fileDescriptor15, []int{0} }
 
 func (m *VariationText) GetId() uint32 {
 	if m != nil {
@@ -55,7 +55,7 @@ func (m *FetchVariationTextByVariationIdRequest) Reset() {
 func (m *FetchVariationTextByVariationIdRequest) String() string { return proto.CompactTextString(m) }
 func (*FetchVariationTextByVariationIdRequest) ProtoMessage()    {}
 func (*FetchVariationTextByVariationIdRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor16, []int{1}
+	return fileDescriptor15, []int{1}
 }
 
 func (m *FetchVariationTextByVariationIdRequest) GetVariationIds() []uint32 {
@@ -75,7 +75,7 @@ func (m *FetchVariationTextByVariationIdResponse) Reset() {
 func (m *FetchVariationTextByVariationIdResponse) String() string { return proto.CompactTextString(m) }
 func (*FetchVariationTextByVariationIdResponse) ProtoMessage()    {}
 func (*FetchVariationTextByVariationIdResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor16, []int{2}
+	return fileDescriptor15, []int{2}
 }
 
 func (m *FetchVariationTextByVariationIdResponse) GetVariationTexts() []*VariationText {
@@ -91,9 +91,9 @@ func init() {
 	proto.RegisterType((*FetchVariationTextByVariationIdResponse)(nil), "SeppoService.FetchVariationTextByVariationIdResponse")
 }
 
-func init() { proto.RegisterFile("variation_text.proto", fileDescriptor16) }
+func init() { proto.RegisterFile("variation_text.proto", fileDescriptor15) }
 
-var fileDescriptor16 = []byte{
+var fileDescriptor15 = []byte{
 	// 195 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0x29, 0x4b, 0x2c, 0xca,
 	0x4c, 0x2c, 0xc9, 0xcc, 0xcf, 0x8b, 0x2f, 0x49, 0xad, 0x28, 0xd1, 0x2b, 0x28, 0xca, 0x2f, 0xc9,
