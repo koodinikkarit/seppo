@@ -48,7 +48,9 @@ create table if not exists variations (
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 	song_id INT8 UNSIGNED DEFAULT NULL,
 	language_id INT8 UNSIGNED DEFAULT NULL,
-	variation_version_id INT8 UNSIGNED DEFAULT NULL,
+	variation_id INT8 UNSIGNED DEFAULT NULL,
+	ew_song_id INT8 UNSIGNED DEFAULT NULL,
+	jyvaskyla_song_id INT8 UNSIGNED DEFAULT NULL,
 	created_at DATETIME,
 	updated_at DATETIME NULL,
 	deleted_at DATETIME DEFAULT NULL,
@@ -58,7 +60,6 @@ create table if not exists variations (
 
 create table if not exists jyvaskyla_songs(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	variation_id INT8 UNSIGNED NOT NULL,
 	added_at INT8 UNSIGNED,
 	added_by VARCHAR(50),
 	additional_info VARCHAR(255),
@@ -77,9 +78,9 @@ create table if not exists jyvaskyla_songs(
 	year VARCHAR(50)
 );
 
-create table if not exists variation_ew_songs(
+create table if not exists ew_songs(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	variation_id INT8 UNSIGNED NOT NULL,
+	title VARCHAR(50),
 	author VARCHAR(50),
 	copyright VARCHAR(50),
 	administrator VARCHAR(50),
@@ -94,6 +95,7 @@ create table if not exists variation_versions (
 	name VARCHAR(50),
 	text TEXT,
 	version INT,
+	newest BOOLEAN,
 	created_at DATETIME,
 	disabled_at DATETIME NULL,
 	FOREIGN KEY(variation_id) REFERENCES variations(id)
@@ -127,36 +129,51 @@ create table if not exists song_databases (
 	deleted_at DATETIME NULL
 );
 
+create table if not exists matias_client (
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	client_key VARCHAR(20),
+	created_at DATETIME,
+	updated_at DATETIME NULL,
+	deleted_at DATETIME NULL	
+);
+
 create table if not exists ew_databases(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 	name VARCHAR(50),
 	song_database_id INT8 UNSIGNED NOT NULL,
-	ew_database_Key VARCHAR(10),
+	ew_database_key VARCHAR(10),
 	use_newest_version BOOLEAN,
+	matias_client_id INT8 UNSIGNED NULL,
+	remove_songs_from_ew_database BOOLEAN,
+	remove_songs_from_song_database BOOLEAN,
+	variation_version_conflict_action INT, 
 	created_at DATETIME,
 	updated_at DATETIME NULL,
 	deleted_at DATETIME NULL,
-	FOREIGN KEY(song_database_id) REFERENCES song_databases(id)	
+	FOREIGN KEY(song_database_id) REFERENCES song_databases(id),
+	FOREIGN KEY(matias_client_id) REFERENCES matias_client(id)
 );
 
 create table if not exists ew_database_links(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 	ew_database_id INT8 UNSIGNED NOT NULL,
-	variation_version_id INT8 UNSIGNED NOT NULL,
+	ew_database_song_id INT8 UNSIGNED NOT NULL,
+	variation_id INT8 UNSIGNED NOT NULL,
 	version INT NOT NULL,
 	created_at DATETIME,
+	updated_at DATETIME,
 	FOREIGN KEY(ew_database_id) REFERENCES ew_databases(id),
-	FOREIGN KEY(variation_version_id) REFERENCES variation_versions(id)
+	FOREIGN KEY(variation_id) REFERENCES variations(id)
 );
 
 create table if not exists song_database_variations(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 	song_database_id INT8 UNSIGNED NOT NULL,
-	variation_version_id INT8 UNSIGNED NOT NULL,
+	variation_id INT8 UNSIGNED NOT NULL,
 	created_at DATETIME,
 	deleted_at DATETIME NULL,
 	FOREIGN KEY(song_database_id) REFERENCES song_databases(id),
-	FOREIGN KEY(variation_version_id) REFERENCES variation_versions(id)
+	FOREIGN KEY(variation_id) REFERENCES variations(id)
 );
 
 create table if not exists song_database_tags(
@@ -172,21 +189,21 @@ create table if not exists song_database_tags(
 create table if not exists tag_variations(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 	tag_id INT8 UNSIGNED NOT NULL,
-	variation_version_id INT8 UNSIGNED NOT NULL,
+	variation_id INT8 UNSIGNED NOT NULL,
 	created_at DATETIME,
 	FOREIGN KEY(tag_id) REFERENCES tags(id),
-	FOREIGN KEY(variation_version_id) REFERENCES variation_versions(id)
+	FOREIGN KEY(variation_id) REFERENCES variations(id)
 );
 
 create table if not exists schedule_variations(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 	schedule_id INT8 UNSIGNED NOT NULL,
-	variation_version_id INT8 UNSIGNED NOT NULL,
+	variation_id INT8 UNSIGNED NOT NULL,
 	order_number INT,
 	created_at DATETIME,
 	deleted_at DATETIME NULL,
 	FOREIGN KEY(schedule_id) REFERENCES schedules(id),
-	FOREIGN KEY(variation_version_id) REFERENCES variation_versions(id)
+	FOREIGN KEY(variation_id) REFERENCES variations(id)
 );
 
 create table if not exists event_schedules(
