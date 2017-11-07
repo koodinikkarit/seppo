@@ -91,6 +91,8 @@ It has these top-level messages:
 	RemoveVariationRequest
 	RemoveVariationResponse
 	VariationVersion
+	FetchNewestVariationVersionByVariationIdRequest
+	FetchNewestVariationVersionByVariationIdResponse
 	FetchVariationVersionByIdRequest
 	FetchVariationVersionByIdResponse
 */

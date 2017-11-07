@@ -119,9 +119,9 @@ func (s *SeppoServiceServer) SearchTags(
 			Where("song_database_tags.song_database_id = ?", in.SongDatabaseId)
 	}
 
-	if in.VariationVersionId > 0 {
+	if in.VariationId > 0 {
 		query = query.Joins("left join tag_variations on tags.id = tag_variations.tag_id").
-			Where("tag_variations.variation_version_id = ?", in.VariationVersionId)
+			Where("tag_variations.variation_id = ?", in.VariationId)
 	}
 
 	if in.SearchWord != "" {

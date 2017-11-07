@@ -18,6 +18,35 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
+type RequestMatiasKeyRequest struct {
+}
+
+func (m *RequestMatiasKeyRequest) Reset()                    { *m = RequestMatiasKeyRequest{} }
+func (m *RequestMatiasKeyRequest) String() string            { return proto.CompactTextString(m) }
+func (*RequestMatiasKeyRequest) ProtoMessage()               {}
+func (*RequestMatiasKeyRequest) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
+
+type RequestMatiasKeyResponse struct {
+	Key string `protobuf:"bytes,1,opt,name=key" json:"key,omitempty"`
+}
+
+func (m *RequestMatiasKeyResponse) Reset()                    { *m = RequestMatiasKeyResponse{} }
+func (m *RequestMatiasKeyResponse) String() string            { return proto.CompactTextString(m) }
+func (*RequestMatiasKeyResponse) ProtoMessage()               {}
+func (*RequestMatiasKeyResponse) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{1} }
+
+func (m *RequestMatiasKeyResponse) GetKey() string {
+	if m != nil {
+		return m.Key
+	}
+	return ""
+}
+
+func init() {
+	proto.RegisterType((*RequestMatiasKeyRequest)(nil), "MatiasService.RequestMatiasKeyRequest")
+	proto.RegisterType((*RequestMatiasKeyResponse)(nil), "MatiasService.RequestMatiasKeyResponse")
+}
+
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
 var _ grpc.ClientConn
@@ -29,9 +58,11 @@ const _ = grpc.SupportPackageIsVersion4
 // Client API for Matias service
 
 type MatiasClient interface {
+	RequestMatiasKey(ctx context.Context, in *RequestMatiasKeyRequest, opts ...grpc.CallOption) (*RequestMatiasKeyResponse, error)
 	SyncEwDatabase(ctx context.Context, in *SyncEwDatabaseRequest, opts ...grpc.CallOption) (*SyncEwDatabaseResponse, error)
+	SyncEwSong(ctx context.Context, opts ...grpc.CallOption) (Matias_SyncEwSongClient, error)
 	InsertEwSongIds(ctx context.Context, in *InsertEwSongIdsRequest, opts ...grpc.CallOption) (*InsertEwSongIdsResponse, error)
-	ChangeEwSongIds(ctx context.Context, in *ChangeEwSongIdsRequest, opts ...grpc.CallOption) (*ChangeEwSongIdsResponse, error)
+	RequestEwChanges(ctx context.Context, in *RequestEwDatabaseChangesRequest, opts ...grpc.CallOption) (Matias_RequestEwChangesClient, error)
 }
 
 type matiasClient struct {
@@ -40,6 +71,15 @@ type matiasClient struct {
 
 func NewMatiasClient(cc *grpc.ClientConn) MatiasClient {
 	return &matiasClient{cc}
+}
+
+func (c *matiasClient) RequestMatiasKey(ctx context.Context, in *RequestMatiasKeyRequest, opts ...grpc.CallOption) (*RequestMatiasKeyResponse, error) {
+	out := new(RequestMatiasKeyResponse)
+	err := grpc.Invoke(ctx, "/MatiasService.Matias/requestMatiasKey", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *matiasClient) SyncEwDatabase(ctx context.Context, in *SyncEwDatabaseRequest, opts ...grpc.CallOption) (*SyncEwDatabaseResponse, error) {
@@ -51,6 +91,37 @@ func (c *matiasClient) SyncEwDatabase(ctx context.Context, in *SyncEwDatabaseReq
 	return out, nil
 }
 
+func (c *matiasClient) SyncEwSong(ctx context.Context, opts ...grpc.CallOption) (Matias_SyncEwSongClient, error) {
+	stream, err := grpc.NewClientStream(ctx, &_Matias_serviceDesc.Streams[0], c.cc, "/MatiasService.Matias/syncEwSong", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &matiasSyncEwSongClient{stream}
+	return x, nil
+}
+
+type Matias_SyncEwSongClient interface {
+	Send(*SyncEwSongRequest) error
+	Recv() (*SyncEwSongResponse, error)
+	grpc.ClientStream
+}
+
+type matiasSyncEwSongClient struct {
+	grpc.ClientStream
+}
+
+func (x *matiasSyncEwSongClient) Send(m *SyncEwSongRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *matiasSyncEwSongClient) Recv() (*SyncEwSongResponse, error) {
+	m := new(SyncEwSongResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *matiasClient) InsertEwSongIds(ctx context.Context, in *InsertEwSongIdsRequest, opts ...grpc.CallOption) (*InsertEwSongIdsResponse, error) {
 	out := new(InsertEwSongIdsResponse)
 	err := grpc.Invoke(ctx, "/MatiasService.Matias/insertEwSongIds", in, out, c.cc, opts...)
@@ -60,25 +131,68 @@ func (c *matiasClient) InsertEwSongIds(ctx context.Context, in *InsertEwSongIdsR
 	return out, nil
 }
 
-func (c *matiasClient) ChangeEwSongIds(ctx context.Context, in *ChangeEwSongIdsRequest, opts ...grpc.CallOption) (*ChangeEwSongIdsResponse, error) {
-	out := new(ChangeEwSongIdsResponse)
-	err := grpc.Invoke(ctx, "/MatiasService.Matias/changeEwSongIds", in, out, c.cc, opts...)
+func (c *matiasClient) RequestEwChanges(ctx context.Context, in *RequestEwDatabaseChangesRequest, opts ...grpc.CallOption) (Matias_RequestEwChangesClient, error) {
+	stream, err := grpc.NewClientStream(ctx, &_Matias_serviceDesc.Streams[1], c.cc, "/MatiasService.Matias/requestEwChanges", opts...)
 	if err != nil {
 		return nil, err
 	}
-	return out, nil
+	x := &matiasRequestEwChangesClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Matias_RequestEwChangesClient interface {
+	Recv() (*EwDatabaseChange, error)
+	grpc.ClientStream
+}
+
+type matiasRequestEwChangesClient struct {
+	grpc.ClientStream
+}
+
+func (x *matiasRequestEwChangesClient) Recv() (*EwDatabaseChange, error) {
+	m := new(EwDatabaseChange)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
 // Server API for Matias service
 
 type MatiasServer interface {
+	RequestMatiasKey(context.Context, *RequestMatiasKeyRequest) (*RequestMatiasKeyResponse, error)
 	SyncEwDatabase(context.Context, *SyncEwDatabaseRequest) (*SyncEwDatabaseResponse, error)
+	SyncEwSong(Matias_SyncEwSongServer) error
 	InsertEwSongIds(context.Context, *InsertEwSongIdsRequest) (*InsertEwSongIdsResponse, error)
-	ChangeEwSongIds(context.Context, *ChangeEwSongIdsRequest) (*ChangeEwSongIdsResponse, error)
+	RequestEwChanges(*RequestEwDatabaseChangesRequest, Matias_RequestEwChangesServer) error
 }
 
 func RegisterMatiasServer(s *grpc.Server, srv MatiasServer) {
 	s.RegisterService(&_Matias_serviceDesc, srv)
+}
+
+func _Matias_RequestMatiasKey_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RequestMatiasKeyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MatiasServer).RequestMatiasKey(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/MatiasService.Matias/RequestMatiasKey",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MatiasServer).RequestMatiasKey(ctx, req.(*RequestMatiasKeyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _Matias_SyncEwDatabase_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -99,6 +213,32 @@ func _Matias_SyncEwDatabase_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Matias_SyncEwSong_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(MatiasServer).SyncEwSong(&matiasSyncEwSongServer{stream})
+}
+
+type Matias_SyncEwSongServer interface {
+	Send(*SyncEwSongResponse) error
+	Recv() (*SyncEwSongRequest, error)
+	grpc.ServerStream
+}
+
+type matiasSyncEwSongServer struct {
+	grpc.ServerStream
+}
+
+func (x *matiasSyncEwSongServer) Send(m *SyncEwSongResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *matiasSyncEwSongServer) Recv() (*SyncEwSongRequest, error) {
+	m := new(SyncEwSongRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func _Matias_InsertEwSongIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(InsertEwSongIdsRequest)
 	if err := dec(in); err != nil {
@@ -117,28 +257,35 @@ func _Matias_InsertEwSongIds_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Matias_ChangeEwSongIds_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChangeEwSongIdsRequest)
-	if err := dec(in); err != nil {
-		return nil, err
+func _Matias_RequestEwChanges_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(RequestEwDatabaseChangesRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
 	}
-	if interceptor == nil {
-		return srv.(MatiasServer).ChangeEwSongIds(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/MatiasService.Matias/ChangeEwSongIds",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MatiasServer).ChangeEwSongIds(ctx, req.(*ChangeEwSongIdsRequest))
-	}
-	return interceptor(ctx, in, info, handler)
+	return srv.(MatiasServer).RequestEwChanges(m, &matiasRequestEwChangesServer{stream})
+}
+
+type Matias_RequestEwChangesServer interface {
+	Send(*EwDatabaseChange) error
+	grpc.ServerStream
+}
+
+type matiasRequestEwChangesServer struct {
+	grpc.ServerStream
+}
+
+func (x *matiasRequestEwChangesServer) Send(m *EwDatabaseChange) error {
+	return x.ServerStream.SendMsg(m)
 }
 
 var _Matias_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "MatiasService.Matias",
 	HandlerType: (*MatiasServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "requestMatiasKey",
+			Handler:    _Matias_RequestMatiasKey_Handler,
+		},
 		{
 			MethodName: "syncEwDatabase",
 			Handler:    _Matias_SyncEwDatabase_Handler,
@@ -147,28 +294,42 @@ var _Matias_serviceDesc = grpc.ServiceDesc{
 			MethodName: "insertEwSongIds",
 			Handler:    _Matias_InsertEwSongIds_Handler,
 		},
+	},
+	Streams: []grpc.StreamDesc{
 		{
-			MethodName: "changeEwSongIds",
-			Handler:    _Matias_ChangeEwSongIds_Handler,
+			StreamName:    "syncEwSong",
+			Handler:       _Matias_SyncEwSong_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "requestEwChanges",
+			Handler:       _Matias_RequestEwChanges_Handler,
+			ServerStreams: true,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
 	Metadata: "matias_service.proto",
 }
 
 func init() { proto.RegisterFile("matias_service.proto", fileDescriptor1) }
 
 var fileDescriptor1 = []byte{
-	// 172 bytes of a gzipped FileDescriptorProto
+	// 266 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0xc9, 0x4d, 0x2c, 0xc9,
 	0x4c, 0x2c, 0x8e, 0x2f, 0x4e, 0x2d, 0x2a, 0xcb, 0x4c, 0x4e, 0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9,
 	0x17, 0xe2, 0xf5, 0x05, 0x8b, 0x06, 0x43, 0x04, 0xa5, 0x04, 0x53, 0xcb, 0xe3, 0x53, 0x12, 0x4b,
-	0x12, 0x93, 0x12, 0x8b, 0xa1, 0x2a, 0x8c, 0x36, 0x32, 0x71, 0xb1, 0x41, 0x14, 0x09, 0xc5, 0x73,
-	0xf1, 0x15, 0x57, 0xe6, 0x25, 0xbb, 0x96, 0xbb, 0x40, 0x95, 0x08, 0xa9, 0xe8, 0xa1, 0xe8, 0xd7,
-	0x0b, 0x46, 0x91, 0x0e, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e, 0x91, 0x52, 0x25, 0xa0, 0xaa, 0xb8,
-	0x20, 0x3f, 0xaf, 0x38, 0x55, 0x89, 0x41, 0x28, 0x89, 0x8b, 0x3f, 0x33, 0xaf, 0x38, 0xb5, 0xa8,
-	0xc4, 0xb5, 0x3c, 0x38, 0x3f, 0x2f, 0xdd, 0x33, 0xa5, 0x58, 0x08, 0x5d, 0xaf, 0x27, 0xaa, 0x3c,
-	0xcc, 0x0a, 0x35, 0x42, 0xca, 0x90, 0xed, 0x48, 0xce, 0x48, 0xcc, 0x4b, 0x4f, 0xc5, 0x6d, 0x87,
-	0x33, 0xaa, 0x3c, 0x2e, 0x3b, 0x30, 0x94, 0xc1, 0xec, 0x48, 0x62, 0x03, 0x07, 0x9d, 0x31, 0x20,
-	0x00, 0x00, 0xff, 0xff, 0xb7, 0xcf, 0xd9, 0xde, 0x74, 0x01, 0x00, 0x00,
+	0x12, 0x93, 0x12, 0x8b, 0xa1, 0x2a, 0x94, 0x24, 0xb9, 0xc4, 0x83, 0x52, 0x0b, 0x4b, 0x53, 0x8b,
+	0x4b, 0x20, 0x4a, 0xbd, 0x53, 0x2b, 0xa1, 0x7c, 0x25, 0x1d, 0x2e, 0x09, 0x4c, 0xa9, 0xe2, 0x82,
+	0xfc, 0xbc, 0xe2, 0x54, 0x21, 0x01, 0x2e, 0xe6, 0xec, 0xd4, 0x4a, 0x09, 0x46, 0x05, 0x46, 0x0d,
+	0xce, 0x20, 0x10, 0xd3, 0xe8, 0x1b, 0x33, 0x17, 0x1b, 0x44, 0x9d, 0x50, 0x2a, 0x97, 0x40, 0x11,
+	0x9a, 0x46, 0x21, 0x35, 0x3d, 0x14, 0xa7, 0xe8, 0xe1, 0xb0, 0x54, 0x4a, 0x9d, 0xa0, 0x3a, 0x88,
+	0x0b, 0x94, 0x18, 0x84, 0xe2, 0xb9, 0xf8, 0x8a, 0x2b, 0xf3, 0x92, 0x5d, 0xcb, 0x5d, 0xa0, 0x5e,
+	0x12, 0x52, 0x41, 0xd3, 0x1c, 0x8c, 0x22, 0x0d, 0xb3, 0x42, 0x95, 0x80, 0x2a, 0xb8, 0x05, 0xe1,
+	0x5c, 0x5c, 0x10, 0x0b, 0x82, 0xf3, 0xf3, 0xd2, 0x85, 0x14, 0xb0, 0x6a, 0x03, 0x49, 0xc1, 0x0c,
+	0x56, 0xc4, 0xa3, 0x02, 0x66, 0xa8, 0x06, 0xa3, 0x01, 0xa3, 0x50, 0x12, 0x17, 0x7f, 0x66, 0x5e,
+	0x71, 0x6a, 0x51, 0x09, 0x44, 0xd6, 0x33, 0xa5, 0x58, 0x08, 0xdd, 0x51, 0x9e, 0xa8, 0xf2, 0x30,
+	0x2b, 0xd4, 0x08, 0x29, 0x83, 0x3b, 0x3e, 0x1d, 0x1e, 0x09, 0xae, 0xe5, 0xce, 0x19, 0x89, 0x79,
+	0xe9, 0xa9, 0xc5, 0x42, 0x7a, 0xd8, 0x03, 0x17, 0xe1, 0x79, 0xa8, 0x42, 0x98, 0x6d, 0xf2, 0x68,
+	0xea, 0xd1, 0x15, 0x2a, 0x31, 0x18, 0x30, 0x26, 0xb1, 0x81, 0x13, 0x92, 0x31, 0x20, 0x00, 0x00,
+	0xff, 0xff, 0xc6, 0xa7, 0xff, 0x23, 0x82, 0x02, 0x00, 0x00,
 }

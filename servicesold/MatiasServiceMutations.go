@@ -3,7 +3,7 @@ package seppo
 import (
 	"golang.org/x/net/context"
 
-	"github.com/koodinikkarit/seppo/db"
+	"github.com/koodinikkarit/seppo/help"
 	"github.com/koodinikkarit/seppo/matias_service"
 )
 
@@ -61,12 +61,6 @@ func (s *MatiasServiceServer) InsertEwSongIds(
 	return res, nil
 }
 
-func (s *MatiasServiceServer) ChangeEwSongIds(ctx context.Context, in *MatiasService.ChangeEwSongIdsRequest) (*MatiasService.ChangeEwSongIdsResponse, error) {
-	response := &MatiasService.ChangeEwSongIdsResponse{}
-
-	return response, nil
-}
-
 func (s *MatiasServiceServer) SyncEwDatabase(ctx context.Context, in *MatiasService.SyncEwDatabaseRequest) (*MatiasService.SyncEwDatabaseResponse, error) {
 	response := &MatiasService.SyncEwDatabaseResponse{}
 
@@ -93,6 +87,7 @@ func (s *MatiasServiceServer) SyncEwDatabase(ctx context.Context, in *MatiasServ
 		s.databaseService.GetDb().Debug().Where("ew_database_id = ?", ewDatabase.ID).Find(&ewDatabaseLinks)
 
 		for _, ewSong := range in.EwSongs {
+			ewDatabaseLink := help.FindEwDatabaseLinkWithEwSong
 			foundEwDatabaseLink := false
 			for _, ewdatabaseLink := range ewDatabaseLinks {
 				if ewSong.Id == ewdatabaseLink.EwDatabaseSongID {

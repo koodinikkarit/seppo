@@ -56,8 +56,8 @@ func (s SeppoServiceServer) UpdateSchedule(
 		if len(in.AddSongIds) > 0 {
 			for i := 0; i < len(in.AddSongIds); i++ {
 				tx.Create(&db.ScheduleVariation{
-					ScheduleID:         in.ScheduleId,
-					VariationVersionID: in.AddSongIds[i],
+					ScheduleID:  in.ScheduleId,
+					VariationID: in.AddSongIds[i],
 				})
 			}
 		}

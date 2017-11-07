@@ -38,9 +38,6 @@ func NewVariation(in *db.Variation) *SeppoService.Variation {
 	if in.LanguageID != nil {
 		newVariation.LanguageId = *in.LanguageID
 	}
-	if in.VariationVersionID != nil {
-		newVariation.VariationVersionId = *in.VariationVersionID
-	}
 	return &newVariation
 }
 
@@ -87,10 +84,10 @@ func NewSchedule(in *db.Schedule) *SeppoService.Schedule {
 
 func NewEwDatabase(in *db.EwDatabase) *SeppoService.EwDatabase {
 	newEwDatabase := SeppoService.EwDatabase{
-		Id: in.ID,
-		Name: in.Name,
+		Id:             in.ID,
+		Name:           in.Name,
 		SongDatabaseId: in.SongDatabaseID,
-		Key: in.Key,
+		Key:            in.EwDatabaseKey,
 	}
 	return &newEwDatabase
 }

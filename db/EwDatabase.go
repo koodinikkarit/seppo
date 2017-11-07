@@ -3,11 +3,32 @@ package db
 import "time"
 
 type EwDatabase struct {
-	ID             uint32
-	Name           string
-	SongDatabaseID uint32
-	Key            string
-	CreatedAt      *time.Time
-	UpdatedAt      *time.Time
-	DeletedAt      *time.Time
+	ID                             uint32
+	Name                           string
+	SongDatabaseID                 uint32
+	EwDatabaseKey                  string
+	RemoveSongsFromEwDatabase      bool
+	RemoveSongsFromSongDatabase    bool
+	VariationVersionConflictAction uint32
+	CreatedAt                      *time.Time
+	UpdatedAt                      *time.Time
+	DeletedAt                      *time.Time
+
+	SongDatabase    SongDatabase
+	EwDatabaseLinks []EwDatabaseLink
+	Variations      []Variation `gorm:"many2many:ew_database_links"`
+}
+
+func (ew *EwDatabase) HasVariation(
+	variationID uint32,
+) (
+	bool,
+	*EwDatabaseLink,
+) {
+	for i := 0; i < len(ew.EwDatabaseLinks); i++ {
+		if ew.EwDatabaseLinks[i].VariationID == variationID {
+			return false, &ew.EwDatabaseLinks[i]
+		}
+	}
+	return false, nil
 }

@@ -98,7 +98,7 @@ func (s *SeppoServiceServer) CreateEwDatabase(
 	ewDatabase := db.EwDatabase{
 		Name:           in.Name,
 		SongDatabaseID: in.SongDatabaseId,
-		Key:            randString,
+		EwDatabaseKey:  randString,
 	}
 
 	newDb.Create(&ewDatabase)

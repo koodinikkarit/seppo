@@ -110,9 +110,9 @@ func (s *SeppoServiceServer) SearchSongDatabases(
 
 	query := newDb.Table("song_databases")
 
-	if in.VariationVersionId > 0 {
+	if in.VariationId > 0 {
 		query = query.Joins("JOIN song_database_variations on song_database_variations.song_database_id = song_databases.id").
-			Where("song_database_variations.variation_version_id = ?", in.VariationVersionId)
+			Where("song_database_variations.variation_id = ?", in.VariationId)
 	}
 
 	query.Count(&res.MaxSongDatabases)

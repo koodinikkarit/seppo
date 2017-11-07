@@ -5,6 +5,8 @@ import (
 
 	"golang.org/x/net/context"
 
+	"github.com/btfak/sqlext"
+	"github.com/jinzhu/gorm"
 	"github.com/koodinikkarit/seppo/db"
 	SeppoService "github.com/koodinikkarit/seppo/seppo_service"
 )
@@ -20,59 +22,111 @@ func (s *SeppoServiceServer) CreateVariation(
 	tx := s.getDB().Begin()
 	defer tx.Close()
 
-	variationVersions := []db.VariationVersion{}
-	tx.Where("name = ?", in.Name).
-		Where("text = ?", in.Text).
-		Find(&variationVersions)
+	var sameVariation db.Variation
 
-	if len(variationVersions) > 0 {
-		variationVersion := variationVersions[0]
-		var maxVersion uint32
-		tx.Table("variation_versions").
-			Where("variation_id = ?", variationVersion.VariationID).
-			Count(&maxVersion)
+	tx.Table("variations").
+		Joins("left join variation_versions on variations.id = variation_versions.variation_id").
+		Preload("VariationVersions").
+		Where("variation_versions.name = ?", in.Name).
+		Where("variation_versions.text = ?", in.Text).
+		First(&sameVariation)
 
-		var variation db.Variation
+	if sameVariation.ID > 0 {
+		sameVariationVersion := sameVariation.FindVariationVersionByNameAndText(
+			in.Name,
+			in.Text,
+		)
+		newestVariationVersion := sameVariation.FindNewestVersion()
 
-		if maxVersion == variationVersion.Version {
-			tx.First(&variation, variationVersion.VariationID)
-			res.Variation = NewVariation(&variation)
-		} else {
-			newVariation := db.Variation{}
-			tx.Create(&newVariation)
-			newVariationVersion := &db.VariationVersion{
-				VariationID: newVariation.ID,
-				Name:        in.Name,
-				Text:        in.Text,
-				Version:     1,
+		if sameVariationVersion.ID == newestVariationVersion.ID {
+			if sameVariationVersion.DisabledAt != nil {
+				tx.Model(&sameVariationVersion).Update("disabled_at", nil)
 			}
-			tx.Create(&newVariationVersion)
-			newVariation.VariationVersionID = &newVariationVersion.ID
-			tx.Save(&newVariation)
+			res.Variation = NewVariation(&sameVariation)
+		} else {
+			newVariation := db.CreateNewVariationAndVersion(
+				in.Name,
+				in.Text,
+			)
+			tx.Create(&newVariation)
 			newBranch := db.Branch{
-				SourceVariationVersionID:      variationVersion.ID,
-				DestinationVariationVersionID: newVariationVersion.ID,
+				SourceVariationVersionID:      sameVariationVersion.ID,
+				DestinationVariationVersionID: newVariation.VariationVersions[0].ID,
 			}
 			tx.Create(&newBranch)
 			res.Variation = NewVariation(&newVariation)
 		}
+
 	} else {
-		newVariation := db.Variation{}
+		newVariation := db.CreateNewVariationAndVersion(
+			in.Name,
+			in.Text,
+		)
 		tx.Create(&newVariation)
-		newVariationVersion := &db.VariationVersion{
-			VariationID: newVariation.ID,
-			Name:        in.Name,
-			Text:        in.Text,
-			Version:     1,
-		}
-		tx.Create(&newVariationVersion)
-		newVariation.VariationVersionID = &newVariationVersion.ID
-		tx.Save(&newVariation)
 		res.Variation = NewVariation(&newVariation)
 	}
 	tx.Commit()
-
 	return res, nil
+}
+
+func HandleVariationUpdateIds(
+	tx *gorm.DB,
+	in *SeppoService.UpdateVariationRequest,
+	variation db.Variation,
+) {
+	if len(in.AddTagIds) > 0 {
+		var tagVariations []db.TagVariation
+		for _, id := range in.AddTagIds {
+			tagVariations = append(
+				tagVariations,
+				db.TagVariation{
+					VariationID: in.VariationId,
+					TagID:       id,
+				},
+			)
+		}
+		sqlext.BatchInsert(tx.DB(), tagVariations)
+	}
+	if len(in.RemoveTagIds) > 0 {
+		tx.Where("variation_id", in.VariationId).
+			Where("tag_id in (?)", in.RemoveTagIds).
+			Delete(&db.TagVariation{})
+	}
+	if len(in.AddSongDatabaseIds) > 0 {
+		var songDatabaseVariations []*db.SongDatabaseVariation
+		for _, id := range in.AddSongDatabaseIds {
+			songDatabaseVariations = append(
+				songDatabaseVariations,
+				&db.SongDatabaseVariation{
+					VariationID:    in.VariationId,
+					SongDatabaseID: id,
+				},
+			)
+		}
+		db.BatchAddVariationsToSongDatabase(
+			tx,
+			songDatabaseVariations,
+		)
+	}
+	if len(in.RemoveSongDatabaseIds) > 0 {
+		tx.Where("variation_id", in.VariationId).
+			Where("song_database_id", in.RemoveSongDatabaseIds).
+			Delete(&db.SongDatabaseVariation{})
+	}
+
+	variationUpdateMap := make(map[string]interface{})
+
+	if in.SongId > 0 {
+		variationUpdateMap["song_id"] = in.SongId
+	}
+
+	if in.LanguageId > 0 {
+		variationUpdateMap["language_id"] = in.LanguageId
+	}
+
+	if len(variationUpdateMap) > 0 {
+		tx.Model(&variation).Updates(variationUpdateMap)
+	}
 }
 
 func (s *SeppoServiceServer) UpdateVariation(
@@ -86,117 +140,219 @@ func (s *SeppoServiceServer) UpdateVariation(
 	tx := s.getDB().Begin()
 	defer tx.Close()
 
-	now := time.Now()
-
 	var variation db.Variation
-	tx.First(&variation, in.VariationId)
 
-	if variation.ID > 0 {
-		if in.SongId > 0 {
-			variation.SongID = &in.SongId
-		}
+	tx.Preload("VariationVersions").First(&variation, in.VariationId)
 
-		if in.LanguageId > 0 {
-			variation.LanguageID = &in.LanguageId
-		}
+	if variation.ID == 0 {
+		res.Success = false
+		return res, nil
+	}
 
-		if len(in.AddTagIds) > 0 && variation.VariationVersionID != nil {
-			for i := 0; i < len(in.AddTagIds); i++ {
-				tx.Create(&db.TagVariation{
-					TagID:              in.AddTagIds[i],
-					VariationVersionID: *variation.VariationVersionID,
-				})
-			}
-		}
-		if len(in.RemoveTagIds) > 0 {
-			tx.Where("tag_id in (?)", in.RemoveTagIds).
-				Where("variation_version_id = ?", variation.VariationVersionID).
-				Delete(&db.TagVariation{})
-		}
+	if in.Name == "" && in.Text == "" {
+		HandleVariationUpdateIds(
+			tx,
+			in,
+			variation,
+		)
+		tx.Commit()
+		res.Success = true
+		res.Variation = NewVariation(&variation)
+		return res, nil
+	}
 
-		if len(in.AddSongDatabaseIds) > 0 && variation.VariationVersionID != nil {
-			for i := 0; i < len(in.AddSongDatabaseIds); i++ {
-				tx.Create(&db.SongDatabaseVariation{
-					SongDatabaseID:     in.AddSongDatabaseIds[i],
-					VariationVersionID: *variation.VariationVersionID,
-				})
-			}
-		}
-		if len(in.RemoveSongDatabaseIds) > 0 {
-			tx.Where("song_database_id in (?)", in.RemoveSongDatabaseIds).
-				Where("variation_version_id = ?", variation.VariationVersionID).
-				Delete(&db.SongDatabaseVariation{})
-		}
+	currentNewestVariationVersion := variation.FindNewestVersion()
 
-		tx.Save(&variation)
+	var name string
+	var text string
+	if in.Name != "" {
+		name = in.Name
+	} else {
+		name = currentNewestVariationVersion.Name
+	}
 
-		var newestVariationVersion db.VariationVersion
-		tx.Table("variation_versions").
-			Where("variation_versions.variation_id = ?", variation.ID).
-			Where("variation_versions.version = (select max(version) from variation_versions where variation_versions.variation_id = ?)", variation.ID).
-			First(&newestVariationVersion)
+	if in.Text != "" {
+		text = in.Text
+	} else {
+		text = currentNewestVariationVersion.Text
+	}
 
-		var name string
-		var text string
-		if in.Name != "" {
-			name = in.Name
-		} else {
-			name = newestVariationVersion.Name
-		}
+	if name == currentNewestVariationVersion.Name &&
+		text == currentNewestVariationVersion.Text {
 
-		if in.Text != "" {
-			text = in.Text
-		} else {
-			text = newestVariationVersion.Text
-		}
+		HandleVariationUpdateIds(
+			tx,
+			in,
+			variation,
+		)
+		tx.Commit()
+		res.Success = true
+		res.Variation = NewVariation(&variation)
+		return res, nil
+	}
 
-		sameVariationVersions := []db.VariationVersion{}
+	var sameVariation db.Variation
 
-		tx.Where("name = ?", name).Where("text = ?", text).Find(&sameVariationVersions)
+	tx.Table("variations").
+		Joins("left join variation_versions on variations.id = variation_versions.variation_id").
+		Preload("VariationVersions").
+		Where("variation_versions.name = ?", name).
+		Where("variation_versions.text = ?", text).
+		First(&sameVariation)
 
-		if len(sameVariationVersions) > 0 {
-			sameVariationVersion := sameVariationVersions[0]
+	if sameVariation.ID > 0 {
+		sameVariationVersion := sameVariation.FindVariationVersionByNameAndText(
+			name,
+			text,
+		)
+		newestVariationVersion := sameVariation.FindNewestVersion()
+		if sameVariationVersion.ID != currentNewestVariationVersion.ID {
 			if sameVariationVersion.ID == newestVariationVersion.ID {
-				res.Variation = NewVariation(&variation)
-			} else {
-				MoveVariationVersionReferences(
-					tx,
-					newestVariationVersion.ID,
-					sameVariationVersion.ID,
+				tx.Model(&currentNewestVariationVersion).Update(
+					"disabled_at",
+					time.Now(),
 				)
 				newMerge := db.Merge{
-					VariationVersion1ID:           newestVariationVersion.ID,
+					VariationVersion1ID:           currentNewestVariationVersion.ID,
 					VariationVersion2ID:           sameVariationVersion.ID,
 					DestinationVariationVersionID: sameVariationVersion.ID,
 				}
 				tx.Create(&newMerge)
-				var sameVariation db.Variation
-				tx.First(&sameVariation, sameVariationVersion.VariationID)
-				newestVariationVersion.DisabledAt = &now
-				tx.Save(&newestVariationVersion)
-				res.Variation = NewVariation(&sameVariation)
+				db.MoveVariationReferences(
+					tx,
+					currentNewestVariationVersion.VariationID,
+					sameVariation.ID,
+				)
+			} else {
+				tx.Model(&currentNewestVariationVersion).Update(
+					"disabled_at",
+					time.Now(),
+				)
+				newVariationVersion := db.VariationVersion{
+					VariationID: in.VariationId,
+					Name:        name,
+					Text:        text,
+					Version:     currentNewestVariationVersion.Version + 1,
+				}
+				tx.Create(&newVariationVersion)
+				HandleVariationUpdateIds(
+					tx,
+					in,
+					variation,
+				)
 			}
-		} else {
-			newVariationVersion := db.VariationVersion{
-				VariationID: newestVariationVersion.VariationID,
-				Name:        name,
-				Text:        text,
-				Version:     newestVariationVersion.Version + 1,
-			}
-			tx.Create(&newVariationVersion)
-			MoveVariationVersionReferences(
-				tx,
-				newestVariationVersion.ID,
-				newVariationVersion.ID,
-			)
-			newestVariationVersion.DisabledAt = &now
-			tx.Save(&newestVariationVersion)
-			variation.VariationVersionID = &newVariationVersion.ID
-			tx.Save(&variation)
-			res.Variation = NewVariation(&variation)
 		}
-		tx.Commit()
+	} else {
+		tx.Model(&currentNewestVariationVersion).Update(
+			"disabled_at",
+			time.Now(),
+		)
+		newVariationVersion := db.VariationVersion{
+			VariationID: in.VariationId,
+			Name:        name,
+			Text:        text,
+			Version:     currentNewestVariationVersion.Version + 1,
+		}
+		tx.Create(&newVariationVersion)
+		HandleVariationUpdateIds(
+			tx,
+			in,
+			variation,
+		)
 	}
+
+	tx.Commit()
+
+	res.Variation = NewVariation(&variation)
+	res.Success = true
+
+	// now := time.Now()
+
+	// var variation db.Variation
+	// tx.First(&variation, in.VariationId)
+
+	// if variation.ID == 0 {
+	// 	res.Success = false
+	// 	return res, nil
+	// }
+
+	// if in.SongId > 0 {
+	// 	variation.SongID = &in.SongId
+	// }
+
+	// if in.LanguageId > 0 {
+	// 	variation.LanguageID = &in.LanguageId
+	// }
+
+	// tx.Save(&variation)
+
+	// var newestVariationVersion db.VariationVersion
+	// tx.Table("variation_versions").
+	// 	Where("variation_versions.variation_id = ?", variation.ID).
+	// 	Where("variation_versions.version = (select max(version) from variation_versions where variation_versions.variation_id = ?)", variation.ID).
+	// 	First(&newestVariationVersion)
+
+	// var name string
+	// var text string
+	// if in.Name != "" {
+	// 	name = in.Name
+	// } else {
+	// 	name = newestVariationVersion.Name
+	// }
+
+	// if in.Text != "" {
+	// 	text = in.Text
+	// } else {
+	// 	text = newestVariationVersion.Text
+	// }
+
+	// sameVariationVersions := []db.VariationVersion{}
+
+	// tx.Where("name = ?", name).Where("text = ?", text).Find(&sameVariationVersions)
+
+	// if len(sameVariationVersions) > 0 {
+	// 	sameVariationVersion := sameVariationVersions[0]
+	// 	if sameVariationVersion.ID == newestVariationVersion.ID {
+	// 		res.Variation = NewVariation(&variation)
+	// 	} else {
+
+	// 		MoveVariationVersionReferences(
+	// 			tx,
+	// 			newestVariationVersion.ID,
+	// 			sameVariationVersion.ID,
+	// 		)
+	// 		newMerge := db.Merge{
+	// 			VariationVersion1ID:           newestVariationVersion.ID,
+	// 			VariationVersion2ID:           sameVariationVersion.ID,
+	// 			DestinationVariationVersionID: sameVariationVersion.ID,
+	// 		}
+	// 		tx.Create(&newMerge)
+	// 		var sameVariation db.Variation
+	// 		tx.First(&sameVariation, sameVariationVersion.VariationID)
+	// 		newestVariationVersion.DisabledAt = &now
+	// 		tx.Save(&newestVariationVersion)
+	// 		res.Variation = NewVariation(&sameVariation)
+	// 	}
+	// } else {
+	// 	newVariationVersion := db.VariationVersion{
+	// 		VariationID: newestVariationVersion.VariationID,
+	// 		Name:        name,
+	// 		Text:        text,
+	// 		Version:     newestVariationVersion.Version + 1,
+	// 	}
+	// 	tx.Create(&newVariationVersion)
+	// 	MoveVariationVersionReferences(
+	// 		tx,
+	// 		newestVariationVersion.ID,
+	// 		newVariationVersion.ID,
+	// 	)
+	// 	newestVariationVersion.DisabledAt = &now
+	// 	tx.Save(&newestVariationVersion)
+	// 	tx.Save(&variation)
+	// 	res.Variation = NewVariation(&variation)
+	// }
+	// tx.Commit()
+	// res.Success = true
 
 	return res, nil
 }
@@ -212,22 +368,31 @@ func (s *SeppoServiceServer) RemoveVariation(
 	tx := s.getDB().Begin()
 	defer tx.Close()
 
-	var newestVariationVersion db.VariationVersion
-	tx.Table("variation_versions").
-		Where("variation_versions.variation_id = ?", in.VariationId).
-		Where("variation_versions.version = (select max(version) from variation_versions where variation_versions.variation_id = ?)", in.VariationId).
-		First(&newestVariationVersion)
-
-	if newestVariationVersion.ID > 0 {
+	var n uint32
+	tx.Table("variations").Where("id = ?", in.VariationId).Count(&n)
+	if n > 0 {
+		tx.Table("variation_versions").
+			Where("variation_id = ?", in.VariationId).
+			Where("disabled_at is null").
+			Update("disabled_at", time.Now())
 		res.Success = true
-		now := time.Now()
-		newestVariationVersion.DisabledAt = &now
-		tx.Save(&newestVariationVersion)
-	} else {
-		res.Success = false
+		tx.Commit()
 	}
 
-	tx.Commit()
+	// var newestVariationVersion db.VariationVersion
+	// tx.Table("variation_versions").
+	// 	Where("variation_versions.variation_id = ?", in.VariationId).
+	// 	Where("variation_versions.version = (select max(version) from variation_versions where variation_versions.variation_id = ?)", in.VariationId).
+	// 	First(&newestVariationVersion)
+
+	// if newestVariationVersion.ID > 0 {
+	// 	res.Success = true
+	// 	now := time.Now()
+	// 	newestVariationVersion.DisabledAt = &now
+	// 	tx.Save(&newestVariationVersion)
+	// } else {
+	// 	res.Success = false
+	// }
 
 	return res, nil
 }
@@ -325,7 +490,7 @@ func (s *SeppoServiceServer) SearchVariations(
 		for _, v := range filterSongDatabaseVariations {
 			filterSongDatabaseVariationVersionIds = append(
 				filterSongDatabaseVariationVersionIds,
-				v.VariationVersionID,
+				v.VariationID,
 			)
 		}
 		if filterSongDatabaseVariationVersionIds != nil {
@@ -360,13 +525,59 @@ func (s *SeppoServiceServer) SearchVariations(
 		query = query.Limit(in.Limit)
 	}
 
-	query = query.Select("variations.id, variations.song_id, variations.language_id, variations.variation_version_id").Scan(&variations)
+	query = query.Select("variations.id, variations.song_id, variations.language_id").Scan(&variations)
 
 	for i := 0; i < len(variations); i++ {
 		res.Variations = append(
 			res.Variations,
 			NewVariation(&variations[i]),
 		)
+	}
+
+	return res, nil
+}
+
+func (s *SeppoServiceServer) FetchNewestVariationVersionByVariationId(
+	ctx context.Context,
+	in *SeppoService.FetchNewestVariationVersionByVariationIdRequest,
+) (
+	*SeppoService.FetchNewestVariationVersionByVariationIdResponse,
+	error,
+) {
+	res := &SeppoService.FetchNewestVariationVersionByVariationIdResponse{}
+	newDb := s.getDB()
+	defer newDb.Close()
+
+	variationVersions := []db.VariationVersion{}
+
+	// newDb.Table("variation_versions as vv1").
+	// 	Joins("left join variation_versions as vv2 on vv1.variation_id = vv2.variation_id").
+	// 	Where("vv1.version >= vv2.version").
+	// 	Where("vv1.variation_id in (?)", in.VariationIds).
+	// 	Select("vv1.*").
+	// 	Find(&variationVersions)
+
+	newDb.Where("variation_id in (?)", in.VariationIds).
+		Where("disabled_at is null").
+		Find(&variationVersions)
+
+	for _, variationID := range in.VariationIds {
+		found := false
+		for _, variationVersion := range variationVersions {
+			if variationVersion.VariationID == variationID {
+				found = true
+				res.VariationVersions = append(
+					res.VariationVersions,
+					NewVariationVersion(&variationVersion),
+				)
+			}
+		}
+		if found == false {
+			res.VariationVersions = append(
+				res.VariationVersions,
+				&SeppoService.VariationVersion{},
+			)
+		}
 	}
 
 	return res, nil
@@ -389,11 +600,13 @@ func (s *SeppoServiceServer) FetchVariationVersionById(
 	for i := 0; i < len(in.VariationVersionIds); i++ {
 		found := false
 		for j := 0; j < len(variationVersions); j++ {
-			found = true
-			res.VariationVersions = append(
-				res.VariationVersions,
-				NewVariationVersion(&variationVersions[j]),
-			)
+			if in.VariationVersionIds[i] == variationVersions[j].ID {
+				found = true
+				res.VariationVersions = append(
+					res.VariationVersions,
+					NewVariationVersion(&variationVersions[j]),
+				)
+			}
 		}
 		if found == false {
 			res.VariationVersions = append(
