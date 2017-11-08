@@ -148,9 +148,9 @@ func (s *MatiasServiceServer) SyncEwDatabase(ctx context.Context, in *MatiasServ
 						}
 					}
 					if foundVariation == false {
-						log.Println("Poistetaan ewtietokannasta laulua jossa on avain", ewDatabase.Key, " nimellä", ewSong.Title)
-						response.RemoveEwSongIds = append(response.RemoveEwSongIds, ewSong.Id)
-						s.databaseService.RemoveDatabaseLink(ewdatabaseLink.ID)
+						// log.Println("Poistetaan ewtietokannasta laulua jossa on avain", ewDatabase.Key, " nimellä", ewSong.Title)
+						// response.RemoveEwSongIds = append(response.RemoveEwSongIds, ewSong.Id)
+						// s.databaseService.RemoveDatabaseLink(ewdatabaseLink.ID)
 					}
 				}
 			}
