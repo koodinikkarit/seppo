@@ -10,3 +10,34 @@ func (r *SyncEwDatabaseRequest) HasEwSong(
 	}
 	return false
 }
+
+func (r *SyncEwDatabaseRequest) HasEwSongWithNameAndText(
+	name string,
+	text string,
+) bool {
+	for _, ewSong := range r.EwSongs {
+		if ewSong.Title == name &&
+			ewSong.Text == text {
+			return true
+		}
+	}
+	return false
+}
+
+func (r *SyncEwDatabaseResponse) CreateOrGetEwSong(
+	id uint32,
+) *EwSong {
+	for _, ewSong := range r.EwSongs {
+		if ewSong.Id == id {
+			return ewSong
+		}
+	}
+	newEwSong := &EwSong{
+		Id: id,
+	}
+	r.EwSongs = append(
+		r.EwSongs,
+		newEwSong,
+	)
+	return newEwSong
+}
