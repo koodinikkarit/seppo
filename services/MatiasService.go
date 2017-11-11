@@ -3,6 +3,7 @@ package services
 import (
 	"log"
 	"net"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
@@ -70,7 +71,79 @@ func (s *MatiasServiceServer) InsertEwSongIds(
 	error,
 ) {
 	res := &MatiasService.InsertEwSongIdsResponse{}
-	//newDb := s.getDB()
+	tx := s.getDB().Begin()
+
+	var ewDatabase db.EwDatabase
+	tx.Where("ew_databases.ew_database_key = ?", in.EwDatabaseKey).
+		First(&ewDatabase)
+
+	if ewDatabase.ID == 0 {
+		res.EwDatabaseFound = false
+		return res, nil
+	}
+
+	var variationIds []uint32
+	for _, variationIdEwSongId := range in.VariationIdEwSongIds {
+		variationIds = append(
+			variationIds,
+			variationIdEwSongId.VariationId,
+		)
+	}
+
+	variations := []db.Variation{}
+	tx.Where("id in (?)", variationIds).
+		Preload("VariationVersions").
+		Find(&variations)
+
+	var newEwDatabaseLinks []*db.EwDatabaseLink
+
+	for _, variationIdEwSongId := range in.VariationIdEwSongIds {
+		for _, variation := range variations {
+			newestVersion := variation.FindNewestVersion()
+			if newestVersion.ID > 0 {
+				if variationIdEwSongId.VariationId == variation.ID {
+					newEwDatabaseLinks = append(
+						newEwDatabaseLinks,
+						&db.EwDatabaseLink{
+							EwDatabaseID:     ewDatabase.ID,
+							EwDatabaseSongID: variationIdEwSongId.EwSongId,
+							VariationID:      variationIdEwSongId.VariationId,
+							Version:          newestVersion.Version,
+						},
+					)
+				}
+			}
+		}
+	}
+
+	//tx.Model(&ewDatabaseLink).UpdateColumn("version", newestVariationVersion.Version)
+
+	db.BatchAddVariationsToEwDatabase(
+		tx,
+		newEwDatabaseLinks,
+	)
+
+	var ewSongIDs []uint32
+	ewDatabaseLinks := []db.EwDatabaseLink{}
+
+	for _, link := range in.NewSongIds {
+		ewSongIDs = append(ewSongIDs, link.OldEwSongId)
+	}
+
+	tx.Where("ew_database_song_id in (?)", ewSongIDs).
+		Find(&ewDatabaseLinks)
+
+	for _, ewDatabaseLink := range ewDatabaseLinks {
+		for i := 0; i < len(in.NewSongIds); i++ {
+			if ewDatabaseLink.EwDatabaseSongID == in.NewSongIds[i].OldEwSongId {
+				tx.Model(&ewDatabaseLink).
+					Update("ew_database_song_id", ewDatabaseLink.EwDatabaseSongID)
+			}
+		}
+	}
+
+	tx.Commit()
+
 	return res, nil
 }
 
@@ -85,24 +158,42 @@ func (s *MatiasServiceServer) SyncEwDatabase(
 	tx := s.getDB().Begin()
 	defer tx.Close()
 
+	startDate := time.Now()
+	startTime := startDate.UnixNano() / int64(time.Millisecond)
+	var synchronizationRaport db.SynchronizationRaport
+	synchronizationRaport.StartedAt = &startDate
+	synchronizationRaport.DatabaseKey = in.EwDatabaseKey
+
 	var ewDatabase db.EwDatabase
 	tx.Where("ew_databases.ew_database_key = ?", in.EwDatabaseKey).
 		Preload("SongDatabase").
 		Preload("SongDatabase.Variations").
+		Preload("SongDatabase.Variations.Author").
+		Preload("SongDatabase.Variations.Copyright").
+		Preload("SongDatabase.Variations.VariationVersions").
 		Preload("SongDatabase.SongDatabaseTags").
 		Preload("EwDatabaseLinks").
 		Preload("EwDatabaseLinks.Variation").
+		Preload("EwDatabaseLinks.Variation.Author").
+		Preload("EwDatabaseLinks.Variation.Copyright").
 		Preload("EwDatabaseLinks.Variation.VariationVersions").
 		Find(&ewDatabase)
 
 	if ewDatabase.ID == 0 {
 		res.EwDatabaseFound = false
+		synchronizationRaport.DatabaseFound = false
+		endDate := time.Now()
+		endTime := endDate.UnixNano() / int64(time.Millisecond)
+		synchronizationRaport.DurationMS = endTime - startTime
+		synchronizationRaport.FinishedAt = &endDate
+		tx.Create(&synchronizationRaport)
+		tx.Commit()
 		return res, nil
 	}
 
-	//var newVariations []*db.Variation
-	var checkSameVariations []*MatiasService.EwSong
-	//updateEwDatabaseLinkVersions := make(map[uint32]uint32)
+	synchronizationRaport.DatabaseFound = true
+	synchronizationRaport.DatabaseID = &ewDatabase.ID
+
 	var createNewVariationVersions []*db.VariationVersion
 	var addVariationsToSongDatabase []*db.SongDatabaseVariation
 	var addVariationsToEwDatabase []*db.EwDatabaseLink
@@ -111,201 +202,186 @@ func (s *MatiasServiceServer) SyncEwDatabase(
 	var removeSongDatabaseVariationLinks []uint32
 
 	for _, ewSong := range in.EwSongs {
-		ewDatabaseLink := help.FindEwDatabaseLinkWithEwSongIDFromSlice(
-			ewDatabase.EwDatabaseLinks,
-			ewSong.Id,
-		)
+		ewDatabaseLink := ewDatabase.FindEwDatabaseLinkByEwSongID(ewSong.Id)
 		if ewDatabaseLink == nil {
-			checkSameVariations = append(
-				checkSameVariations,
-				ewSong,
-			)
-		} else {
-			if ewDatabaseLink.Variation.ID > 0 {
-				newestVariationVersion := help.FindNewestVariationVersionFromSlice(
-					ewDatabaseLink.Variation.VariationVersions,
+			var sameVariation db.Variation
+
+			tx.Table("variations").
+				Joins("left join variation_versions on variations.id = variation_versions.variation_id").
+				Where("variation_versions.name = ?", ewSong.Title).
+				Where("variation_versions.text = ?", ewSong.Text).
+				Preload("VariationVersions").
+				Preload("SongDatabases").
+				Preload("TagVariations").
+				First(&sameVariation)
+
+			if sameVariation.ID == 0 {
+				newVariation := db.NewVariationFromEwSong(
+					ewSong,
 				)
 
-				if newestVariationVersion.Version == ewDatabaseLink.Version {
-					if newestVariationVersion.DisabledAt == nil {
-						if ewSong.Title != newestVariationVersion.Name ||
-							ewSong.Text != newestVariationVersion.Text {
+				if ewSong.Author != "" {
+					newAuthor := db.CreateAuthorByName(
+						tx,
+						ewSong.Author,
+					)
+					newVariation.AuthorID = &newAuthor.ID
+				}
 
-							newVariationVersion := help.NewVariationVersionFromEwSong(
-								ewSong,
-								newestVariationVersion.VariationID,
-								newestVariationVersion.Version,
+				if ewSong.Copyright != "" {
+					newCopyright := db.CreateCopyrightByName(
+						tx,
+						ewSong.Copyright,
+					)
+					newVariation.Copyright = newCopyright
+				}
+
+				tx.Create(&newVariation)
+				addVariationsToSongDatabase = append(
+					addVariationsToSongDatabase,
+					&db.SongDatabaseVariation{
+						SongDatabaseID: ewDatabase.SongDatabaseID,
+						VariationID:    newVariation.ID,
+					},
+				)
+				addVariationsToEwDatabase = append(
+					addVariationsToEwDatabase,
+					&db.EwDatabaseLink{
+						EwDatabaseID:     ewDatabase.ID,
+						EwDatabaseSongID: ewSong.Id,
+						VariationID:      newVariation.ID,
+						Version:          1,
+					},
+				)
+			} else {
+				newestVariationVersion := sameVariation.FindNewestVersion()
+				sameVariationVersion := sameVariation.FindVariationVersionByNameAndText(
+					ewSong.Title,
+					ewSong.Text,
+				)
+				if sameVariationVersion.Version == newestVariationVersion.Version {
+					if sameVariationVersion.DisabledAt == nil {
+						if ewSong.Author != "" {
+							newAuthor := db.CreateAuthorByName(
+								tx,
+								ewSong.Author,
 							)
-							createNewVariationVersions = append(
-								createNewVariationVersions,
-								newVariationVersion,
-							)
+							tx.Model(&sameVariation).
+								Update("author_id", newAuthor.ID)
 						}
-					} else {
-						res.RemoveEwSongIds = append(
-							res.RemoveEwSongIds,
-							ewDatabaseLink.EwDatabaseSongID,
-						)
-						removeEwDatabaseLinks = append(
-							removeEwDatabaseLinks,
-							ewDatabaseLink.ID,
-						)
-					}
-				} else {
-					if newestVariationVersion.DisabledAt == nil {
-						if ewSong.Title != newestVariationVersion.Name ||
-							ewSong.Text != newestVariationVersion.Text {
 
-							switch ewDatabase.VariationVersionConflictAction {
-							case 1: // Use ew version
-								newVariationVersion := help.NewVariationVersionFromEwSong(
-									ewSong,
-									newestVariationVersion.VariationID,
-									newestVariationVersion.Version,
-								)
-								createNewVariationVersions = append(
-									createNewVariationVersions,
-									newVariationVersion,
-								)
-
-							case 2: // Use database
-								res.EwSongs = append(
-									res.EwSongs,
-									&MatiasService.EwSong{
-										Id:            ewSong.Id,
-										Title:         newestVariationVersion.Name,
-										Author:        ewSong.Author,
-										Copyright:     ewSong.Copyright,
-										Administrator: ewSong.Administrator,
-										Description:   ewSong.Description,
-										Tags:          ewSong.Tags,
-										Text:          newestVariationVersion.Text,
-										VariationId:   newestVariationVersion.ID,
+						if ewSong.Copyright != "" {
+							newCopyright := db.CreateCopyrightByName(
+								tx,
+								ewSong.Copyright,
+							)
+							tx.Model(&sameVariation).
+								Update("copyright_id", newCopyright.ID)
+						}
+						if sameVariation.FindSongDatabaseByID(ewDatabase.SongDatabaseID) == nil {
+							foundTag := false
+							for _, tagVariation := range sameVariation.TagVariations {
+								if ewDatabase.SongDatabase.HasSongDatabaseTag(tagVariation.TagID) == true {
+									foundTag = true
+									break
+								}
+							}
+							if foundTag == false {
+								addVariationsToSongDatabase = append(
+									addVariationsToSongDatabase,
+									&db.SongDatabaseVariation{
+										SongDatabaseID: ewDatabase.SongDatabaseID,
+										VariationID:    sameVariation.ID,
 									},
 								)
-							case 3: // Report conflict
-							case 4: // Create branch
+								addVariationsToEwDatabase = append(
+									addVariationsToEwDatabase,
+									&db.EwDatabaseLink{
+										EwDatabaseID:     ewDatabase.ID,
+										EwDatabaseSongID: ewSong.Id,
+										VariationID:      sameVariation.ID,
+										Version:          sameVariationVersion.Version,
+									},
+								)
 							}
-						} else {
-							tx.Model(&ewDatabaseLink).UpdateColumn("version", newestVariationVersion.Version)
-							//updateEwDatabaseLinkVersions[ewDatabaseLink.ID] = newestVariationVersion.Version
 						}
 					} else {
-						if ewDatabase.RemoveSongsFromEwDatabase == true {
-							res.RemoveEwSongIds = append(
-								res.RemoveEwSongIds,
-								ewDatabaseLink.EwDatabaseSongID,
+						newVariation, newVariationVersion := help.NewVariationVersionFromVariationVersion(
+							tx,
+							sameVariationVersion,
+						)
+
+						if ewSong.Author != "" {
+							newAuthor := db.CreateAuthorByName(
+								tx,
+								ewSong.Author,
 							)
-							removeEwDatabaseLinks = append(
-								removeEwDatabaseLinks,
-								ewDatabaseLink.ID,
-							)
+							tx.Model(&newVariation).
+								Update("author_id", newAuthor.ID)
 						}
-					}
-				}
-			}
-		}
 
-	}
-
-	// checkSameVariations
-
-	var names []string
-	var texts []string
-
-	for _, ewSong := range checkSameVariations {
-		texts = append(
-			texts,
-			ewSong.Text,
-		)
-
-		names = append(
-			names,
-			ewSong.Title,
-		)
-	}
-
-	sameVariations := []db.Variation{}
-
-	tx.Table("variations").
-		Joins("left join on variation_versions.variation_id = variation.id").
-		Where("variation_versions.name in (?)", names).
-		Where("variation_versions.text in (?)", texts).
-		Preload("variation_versions").
-		Preload("SongDatabases").
-		Preload("TagVariations").
-		Select("distrinct variations.*").
-		Find(&sameVariations)
-
-	for _, ewSong := range checkSameVariations {
-		variation, variationVersion := help.FindFirstVariationWithNameOrText(
-			sameVariations,
-			ewSong.Title,
-			ewSong.Text,
-		)
-
-		if variationVersion == nil {
-			newVariation := help.NewVariationFromEwSong(
-				ewSong,
-			)
-			tx.Create(&newVariation)
-			addVariationsToSongDatabase = append(
-				addVariationsToSongDatabase,
-				&db.SongDatabaseVariation{
-					SongDatabaseID: ewDatabase.SongDatabaseID,
-					VariationID:    newVariation.ID,
-				},
-			)
-			addVariationsToEwDatabase = append(
-				addVariationsToEwDatabase,
-				&db.EwDatabaseLink{
-					EwDatabaseID:     ewDatabase.ID,
-					EwDatabaseSongID: ewSong.Id,
-					VariationID:      newVariation.ID,
-					Version:          1,
-				},
-			)
-		} else {
-			newestVariationVersion := variation.FindNewestVersion()
-			if variationVersion.Version == newestVariationVersion.Version {
-				if variationVersion.DisabledAt == nil {
-					if variation.FindSongDatabaseByID(ewDatabase.SongDatabaseID) == nil {
-						foundTag := false
-						for _, tagVariation := range variation.TagVariations {
-							if ewDatabase.SongDatabase.HasSongDatabaseTag(tagVariation.TagID) == true {
-								foundTag = true
-								break
-							}
-						}
-						if foundTag == false {
-							addVariationsToSongDatabase = append(
-								addVariationsToSongDatabase,
-								&db.SongDatabaseVariation{
-									SongDatabaseID: ewDatabase.SongDatabaseID,
-									VariationID:    variation.ID,
-								},
+						if ewSong.Copyright != "" {
+							newCopyright := db.CreateCopyrightByName(
+								tx,
+								ewSong.Copyright,
 							)
-							addVariationsToEwDatabase = append(
-								addVariationsToEwDatabase,
-								&db.EwDatabaseLink{
-									EwDatabaseID:     ewDatabase.ID,
-									EwDatabaseSongID: ewSong.Id,
-									VariationID:      variation.ID,
-									Version:          variationVersion.Version,
-								},
-							)
+							tx.Model(&newCopyright).
+								Update("copyright_id", newCopyright.ID)
 						}
+
+						createBranches = append(
+							createBranches,
+							&db.Branch{
+								SourceVariationVersionID:      sameVariationVersion.ID,
+								DestinationVariationVersionID: newVariationVersion.ID,
+							},
+						)
+
+						addVariationsToSongDatabase = append(
+							addVariationsToSongDatabase,
+							&db.SongDatabaseVariation{
+								SongDatabaseID: ewDatabase.SongDatabaseID,
+								VariationID:    newVariation.ID,
+							},
+						)
+						addVariationsToEwDatabase = append(
+							addVariationsToEwDatabase,
+							&db.EwDatabaseLink{
+								EwDatabaseID:     ewDatabase.ID,
+								EwDatabaseSongID: ewSong.Id,
+								VariationID:      newVariation.ID,
+								Version:          newVariationVersion.Version,
+							},
+						)
 					}
 				} else {
 					newVariation, newVariationVersion := help.NewVariationVersionFromVariationVersion(
 						tx,
-						variationVersion,
+						sameVariationVersion,
 					)
+
+					if ewSong.Author != "" {
+						newAuthor := db.CreateAuthorByName(
+							tx,
+							ewSong.Author,
+						)
+						tx.Model(&newVariation).
+							Update("author_id", newAuthor.ID)
+					}
+
+					if ewSong.Copyright != "" {
+						newCopyright := db.CreateCopyrightByName(
+							tx,
+							ewSong.Copyright,
+						)
+						tx.Model(&newCopyright).
+							Update("copyright_id", newCopyright.ID)
+					}
 
 					createBranches = append(
 						createBranches,
 						&db.Branch{
-							SourceVariationVersionID:      variationVersion.ID,
+							SourceVariationVersionID:      sameVariationVersion.ID,
 							DestinationVariationVersionID: newVariationVersion.ID,
 						},
 					)
@@ -327,42 +403,239 @@ func (s *MatiasServiceServer) SyncEwDatabase(
 						},
 					)
 				}
-			} else {
-				newVariation, newVariationVersion := help.NewVariationVersionFromVariationVersion(
-					tx,
-					variationVersion,
-				)
+			}
+		} else {
+			if ewDatabaseLink.Variation.ID > 0 {
 
-				createBranches = append(
-					createBranches,
-					&db.Branch{
-						SourceVariationVersionID:      variationVersion.ID,
-						DestinationVariationVersionID: newVariationVersion.ID,
-					},
-				)
+				if ewSong.Author != "" {
+					if ewDatabaseLink.Variation.Author.ID > 0 {
+						if ewDatabaseLink.Author == ewSong.Author {
+							if ewDatabaseLink.Variation.Author.Name != ewSong.Author {
+								newEwSong := res.CreateOrGetEwSong(ewSong.Id)
+								newEwSong.Author = ewDatabaseLink.Variation.Author.Name
+								tx.Model(&ewDatabaseLink).
+									Update("author", ewDatabaseLink.Variation.Author.Name)
+							}
+						} else {
+							if ewDatabaseLink.Variation.Author.Name != ewDatabaseLink.Author {
+								newEwSong := res.CreateOrGetEwSong(ewSong.Id)
+								newEwSong.Author = ewDatabaseLink.Variation.Author.Name
+								tx.Model(&ewDatabaseLink).
+									Update("author", ewDatabaseLink.Variation.Author.Name)
+							} else {
+								tx.Model(&ewDatabaseLink).
+									Update("author", ewSong.Author)
+								tx.Model(&ewDatabaseLink.Variation.Author).
+									Update("name", ewSong.Author)
+							}
+						}
+					} else {
+						newAuthor := db.CreateAuthorByName(
+							tx,
+							ewSong.Author,
+						)
+						tx.Model(&ewDatabaseLink.Variation).
+							Update("author_id", newAuthor.ID)
 
-				addVariationsToSongDatabase = append(
-					addVariationsToSongDatabase,
-					&db.SongDatabaseVariation{
-						SongDatabaseID: ewDatabase.SongDatabaseID,
-						VariationID:    newVariation.ID,
-					},
-				)
-				addVariationsToEwDatabase = append(
-					addVariationsToEwDatabase,
-					&db.EwDatabaseLink{
-						EwDatabaseID:     ewDatabase.ID,
-						EwDatabaseSongID: ewSong.Id,
-						VariationID:      newVariation.ID,
-						Version:          newVariationVersion.Version,
-					},
-				)
+						if ewDatabaseLink.Author != ewSong.Author {
+							tx.Model(&ewDatabaseLink).
+								Update("author", ewSong.Author)
+						}
+					}
+				} else {
+					if ewDatabaseLink.Variation.Author.ID > 0 {
+						newEwSong := res.CreateOrGetEwSong(ewSong.Id)
+						newEwSong.Author = ewDatabaseLink.Variation.Author.Name
+					}
+				}
+
+				if ewSong.Copyright != "" {
+					if ewDatabaseLink.Variation.Copyright.ID > 0 {
+						if ewDatabaseLink.Copyright == ewSong.Copyright {
+							if ewDatabaseLink.Variation.Copyright.Name != ewSong.Copyright {
+								newEwSong := res.CreateOrGetEwSong(ewSong.Id)
+								newEwSong.Copyright = ewDatabaseLink.Variation.Copyright.Name
+								tx.Model(&ewDatabaseLink).
+									Update("copyright", ewDatabaseLink.Variation.Copyright.Name)
+							}
+						} else {
+							if ewDatabaseLink.Variation.Copyright.Name != ewDatabaseLink.Copyright {
+								newEwSong := res.CreateOrGetEwSong(ewSong.Id)
+								newEwSong.Copyright = ewDatabaseLink.Variation.Copyright.Name
+								tx.Model(&ewDatabaseLink).
+									Update("copyright", ewDatabaseLink.Variation.Copyright.Name)
+							} else {
+								tx.Model(&ewDatabaseLink).
+									Update("copyright", ewSong.Copyright)
+								tx.Model(&ewDatabaseLink.Variation.Copyright).
+									Update("name", ewSong.Copyright)
+							}
+						}
+					} else {
+						newCopyright := db.CreateCopyrightByName(
+							tx,
+							ewSong.Copyright,
+						)
+
+						tx.Model(&ewDatabaseLink.Variation).
+							Update("copyright_id", newCopyright.ID)
+
+						if ewDatabaseLink.Copyright != ewSong.Copyright {
+							tx.Model(&ewDatabaseLink).
+								Update("copyright", ewSong.Copyright)
+						}
+					}
+				} else {
+					if ewDatabaseLink.Variation.Copyright.ID > 0 {
+						newEwSong := res.CreateOrGetEwSong(ewSong.Id)
+						newEwSong.Copyright = ewDatabaseLink.Variation.Copyright.Name
+					}
+				}
+
+				newestVariationVersion := ewDatabaseLink.Variation.FindNewestVersion()
+				if newestVariationVersion.ID > 0 {
+					if newestVariationVersion.Version == ewDatabaseLink.Version {
+						if newestVariationVersion.DisabledAt == nil &&
+							ewDatabase.SongDatabase.
+								HasVariation(newestVariationVersion.VariationID) == true {
+							if ewSong.Title != newestVariationVersion.Name ||
+								ewSong.Text != newestVariationVersion.Text {
+
+								newVariationVersion := help.NewVariationVersionFromEwSong(
+									ewSong,
+									newestVariationVersion.VariationID,
+									newestVariationVersion.Version+1,
+								)
+								tx.Model(&newestVariationVersion).
+									Update("disabled_at", time.Now())
+								createNewVariationVersions = append(
+									createNewVariationVersions,
+									newVariationVersion,
+								)
+								tx.Model(&newestVariationVersion).
+									Update("disabled_at", time.Now())
+							}
+						} else {
+							if ewDatabase.RemoveSongsFromEwDatabase == true {
+								res.RemoveEwSongIds = append(
+									res.RemoveEwSongIds,
+									ewDatabaseLink.EwDatabaseSongID,
+								)
+								removeEwDatabaseLinks = append(
+									removeEwDatabaseLinks,
+									ewDatabaseLink.ID,
+								)
+							}
+						}
+					} else {
+						if newestVariationVersion.DisabledAt == nil {
+							ewLinkVariationVersion := ewDatabaseLink.Variation.
+								FindVersionWithVersionNumber(ewDatabaseLink.Version)
+
+							if ewSong.Title != ewLinkVariationVersion.Name ||
+								ewSong.Text != ewLinkVariationVersion.Text {
+
+								switch ewDatabase.VariationVersionConflictAction {
+								case 1: // Use ew version
+									newVariationVersion := help.NewVariationVersionFromEwSong(
+										ewSong,
+										newestVariationVersion.VariationID,
+										newestVariationVersion.Version,
+									)
+									createNewVariationVersions = append(
+										createNewVariationVersions,
+										newVariationVersion,
+									)
+
+								case 2: // Use database
+									tx.Model(&ewDatabaseLink).
+										Update(
+											"version",
+											newestVariationVersion.Version,
+										)
+
+									ewSong := res.CreateOrGetEwSong(ewSong.Id)
+
+									ewSong.Title = newestVariationVersion.Name
+									ewSong.Text = newestVariationVersion.Text
+								case 3: // Report conflict
+								case 4: // Create branch
+								default:
+									tx.Model(&ewDatabaseLink).
+										Update(
+											"version",
+											newestVariationVersion.Version,
+										)
+
+									ewSong := res.CreateOrGetEwSong(ewSong.Id)
+
+									ewSong.Title = newestVariationVersion.Name
+									ewSong.Text = newestVariationVersion.Text
+
+									// res.EwSongs = append(
+									// 	res.EwSongs,
+									// 	&MatiasService.EwSong{
+									// 		Id:            ewSong.Id,
+									// 		Title:         newestVariationVersion.Name,
+									// 		Author:        ewSong.Author,
+									// 		Copyright:     ewSong.Copyright,
+									// 		Administrator: ewSong.Administrator,
+									// 		Description:   ewSong.Description,
+									// 		Tags:          ewSong.Tags,
+									// 		Text:          newestVariationVersion.Text,
+									// 		VariationId:   newestVariationVersion.ID,
+									// 	},
+									// )
+								}
+							} else {
+								tx.Model(&ewDatabaseLink).
+									Update(
+										"version",
+										newestVariationVersion.Version,
+									)
+
+								ewSong := res.CreateOrGetEwSong(ewSong.Id)
+
+								ewSong.Title = newestVariationVersion.Name
+								ewSong.Text = newestVariationVersion.Text
+
+								// res.EwSongs = append(
+								// 	res.EwSongs,
+								// 	&MatiasService.EwSong{
+								// 		Id:    ewSong.Id,
+								// 		Title: newestVariationVersion.Name,
+								// 		Text:  newestVariationVersion.Text,
+								// 	},
+								// )
+								//updateEwDatabaseLinkVersions[ewDatabaseLink.ID] = newestVariationVersion.Version
+							}
+						} else {
+							if ewDatabase.RemoveSongsFromEwDatabase == true {
+								res.RemoveEwSongIds = append(
+									res.RemoveEwSongIds,
+									ewDatabaseLink.EwDatabaseSongID,
+								)
+								removeEwDatabaseLinks = append(
+									removeEwDatabaseLinks,
+									ewDatabaseLink.ID,
+								)
+							}
+						}
+					}
+				}
 			}
 		}
+
 	}
-	// end checkSameVariations
+
+	var excludeVariationIds []uint32
 
 	for _, variation := range ewDatabase.SongDatabase.Variations {
+		excludeVariationIds = append(
+			excludeVariationIds,
+			variation.ID,
+		)
+
 		if is, link := ewDatabase.HasVariation(variation.ID); is == true {
 			if in.HasEwSong(link.EwDatabaseSongID) == false {
 				if ewDatabase.RemoveSongsFromSongDatabase == true {
@@ -370,10 +643,139 @@ func (s *MatiasServiceServer) SyncEwDatabase(
 						removeSongDatabaseVariationLinks,
 						variation.ID,
 					)
+					removeEwDatabaseLinks = append(
+						removeEwDatabaseLinks,
+						link.ID,
+					)
+				} else {
+					newestVersion := variation.FindNewestVersion()
+					if newestVersion.ID > 0 {
+						removeEwDatabaseLinks = append(
+							removeEwDatabaseLinks,
+							link.ID,
+						)
+
+						newEwSong := &MatiasService.EwSong{
+							VariationId: variation.ID,
+							Title:       newestVersion.Name,
+							Text:        newestVersion.Text,
+						}
+
+						if variation.Author.ID > 0 {
+							newEwSong.Author = variation.Author.Name
+						}
+
+						if variation.Copyright.ID > 0 {
+							newEwSong.Copyright = variation.Copyright.Name
+						}
+
+						res.EwSongs = append(
+							res.EwSongs,
+							newEwSong,
+						)
+					}
 				}
 			}
 		} else {
+			newestVersion := variation.FindNewestVersion()
+			if in.HasEwSongWithNameAndText(
+				newestVersion.Name,
+				newestVersion.Text,
+			) == false {
+				if newestVersion.ID > 0 {
+					newEwSong := &MatiasService.EwSong{
+						VariationId: variation.ID,
+						Title:       newestVersion.Name,
+						Text:        newestVersion.Text,
+					}
 
+					if variation.Author.ID > 0 {
+						newEwSong.Author = variation.Author.Name
+					}
+
+					if variation.Copyright.ID > 0 {
+						newEwSong.Copyright = variation.Copyright.Name
+					}
+
+					res.EwSongs = append(
+						res.EwSongs,
+						newEwSong,
+					)
+				}
+			}
+		}
+	}
+
+	var songDatabaseTagVariations []db.Variation
+	q := tx.Table("variations").
+		Preload("Author").
+		Preload("Copyright").
+		Preload("VariationVersions").
+		Joins("left join tag_variations on tag_variations.variation_id = variations.id").
+		Joins("left join song_database_tags on song_database_tags.tag_id = tag_variations.tag_id").
+		Where("song_database_tags.song_database_id = ?", ewDatabase.SongDatabaseID).
+		Select("distinct variations.*")
+	if len(excludeVariationIds) > 0 {
+		q = q.Where("variations.id not in(?)", excludeVariationIds)
+	}
+	q.Find(&songDatabaseTagVariations)
+
+	for _, variation := range songDatabaseTagVariations {
+		if is, link := ewDatabase.HasVariation(variation.ID); is == true {
+			if in.HasEwSong(link.EwDatabaseSongID) == false {
+				newestVersion := variation.FindNewestVersion()
+				if newestVersion.ID > 0 {
+					removeEwDatabaseLinks = append(
+						removeEwDatabaseLinks,
+						link.ID,
+					)
+					newEwSong := &MatiasService.EwSong{
+						VariationId: variation.ID,
+						Title:       newestVersion.Name,
+						Text:        newestVersion.Text,
+					}
+
+					if variation.Author.ID > 0 {
+						newEwSong.Author = variation.Author.Name
+					}
+
+					if variation.Copyright.ID > 0 {
+						newEwSong.Copyright = variation.Copyright.Name
+					}
+
+					res.EwSongs = append(
+						res.EwSongs,
+						newEwSong,
+					)
+				}
+			}
+		} else {
+			newestVersion := variation.FindNewestVersion()
+			if in.HasEwSongWithNameAndText(
+				newestVersion.Name,
+				newestVersion.Text,
+			) == false {
+				if newestVersion.ID > 0 {
+					newEwSong := &MatiasService.EwSong{
+						VariationId: variation.ID,
+						Title:       newestVersion.Name,
+						Text:        newestVersion.Text,
+					}
+
+					if variation.Author.ID > 0 {
+						newEwSong.Author = variation.Author.Name
+					}
+
+					if variation.Copyright.ID > 0 {
+						newEwSong.Copyright = variation.Copyright.Name
+					}
+
+					res.EwSongs = append(
+						res.EwSongs,
+						newEwSong,
+					)
+				}
+			}
 		}
 	}
 
@@ -397,10 +799,22 @@ func (s *MatiasServiceServer) SyncEwDatabase(
 		createBranches,
 	)
 
-	tx.Where("id in (?)", removeEwDatabaseLinks).Delete(&db.EwDatabaseLink{})
-	tx.Where("variation_id in (?)", removeSongDatabaseVariationLinks).
-		Where("song_database_id = ?", ewDatabase.SongDatabaseID).
-		Delete(&db.SongDatabaseVariation{})
+	if len(removeEwDatabaseLinks) > 0 {
+		tx.Where("id in (?)", removeEwDatabaseLinks).Delete(&db.EwDatabaseLink{})
+	}
+
+	if len(removeSongDatabaseVariationLinks) > 0 {
+		tx.Where("variation_id in (?)", removeSongDatabaseVariationLinks).
+			Where("song_database_id = ?", ewDatabase.SongDatabaseID).
+			Delete(&db.SongDatabaseVariation{})
+	}
+
+	endDate := time.Now()
+	endTime := endDate.UnixNano() / int64(time.Millisecond)
+	synchronizationRaport.DurationMS = endTime - startTime
+	synchronizationRaport.FinishedAt = &endDate
+
+	tx.Create(&synchronizationRaport)
 
 	tx.Commit()
 
