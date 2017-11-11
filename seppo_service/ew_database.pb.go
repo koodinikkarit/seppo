@@ -2,100 +2,6 @@
 // source: ew_database.proto
 // DO NOT EDIT!
 
-/*
-Package SeppoService is a generated protocol buffer package.
-
-It is generated from these files:
-	ew_database.proto
-	ew_song.proto
-	language.proto
-	log.proto
-	schedule.proto
-	seppo_service.proto
-	song.proto
-	song_database.proto
-	tag.proto
-	variation.proto
-	variation_version.proto
-
-It has these top-level messages:
-	EwDatabase
-	SearchEwDatabasesRequest
-	SearchEwDatabasesResponse
-	FetchEwDatabaseByIdRequest
-	FetchEwDatabaseByIdResponse
-	CreateEwDatabaseRequest
-	CreateEwDatabaseResponse
-	UpdateEwDatabaseRequest
-	UpdateEwDatabaseResponse
-	RemoveEwDatabaseRequest
-	RemoveEwDatabaseResponse
-	EwSong
-	Language
-	SearchLanguagesRequest
-	SearchLanguagesResponse
-	FetchLanguageByIdRequest
-	FetchLanguageByIdResponse
-	CreateLanguageRequest
-	CreateLanguageResponse
-	UpdateLanguageRequest
-	UpdateLanguageResponse
-	RemoveLanguageRequest
-	RemoveLanguageResponse
-	Log
-	SearchLogsRequest
-	SearchLogsResponse
-	Schedule
-	SearchSchedulesRequest
-	SearchSchedulesResponse
-	FetchScheduleByIdRequest
-	FetchScheduleByIdResponse
-	CreateScheduleRequest
-	CreateScheduleResponse
-	UpdateScheduleRequest
-	UpdateScheduleResponse
-	RemoveScheduleRequest
-	RemoveScheduleResponse
-	Song
-	SongDatabase
-	SearchSongDatabasesRequest
-	SearchSongDatabasesResponse
-	FetchSongDatabaseByIdRequest
-	FetchSongDatabaseByIdResponse
-	CreateSongDatabaseRequest
-	CreateSongDatabaseResponse
-	UpdateSongDatabaseRequest
-	UpdateSongDatabaseResponse
-	RemoveSongDatabaseRequest
-	RemoveSongDatabaseResponse
-	Tag
-	SearchTagsRequest
-	SearchTagsResponse
-	FetchTagByIdRequest
-	FetchTagByIdResponse
-	CreateTagRequest
-	CreateTagResponse
-	UpdateTagRequest
-	UpdateTagResponse
-	RemoveTagRequest
-	RemoveTagResponse
-	Variation
-	SearchVariationsRequest
-	SearchVariationsResponse
-	FetchVariationByIdRequest
-	FetchVariationByIdResponse
-	CreateVariationRequest
-	CreateVariationResponse
-	UpdateVariationRequest
-	UpdateVariationResponse
-	RemoveVariationRequest
-	RemoveVariationResponse
-	VariationVersion
-	FetchNewestVariationVersionByVariationIdRequest
-	FetchNewestVariationVersionByVariationIdResponse
-	FetchVariationVersionByIdRequest
-	FetchVariationVersionByIdResponse
-*/
 package SeppoService
 
 import proto "github.com/golang/protobuf/proto"
@@ -107,24 +13,20 @@ var _ = proto.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
-// This is a compile-time assertion to ensure that this generated file
-// is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
-
 type EwDatabase struct {
-	Id             uint32 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
-	Name           string `protobuf:"bytes,2,opt,name=name" json:"name,omitempty"`
-	SongDatabaseId uint32 `protobuf:"varint,3,opt,name=songDatabaseId" json:"songDatabaseId,omitempty"`
-	Version        uint64 `protobuf:"varint,4,opt,name=version" json:"version,omitempty"`
-	Key            string `protobuf:"bytes,5,opt,name=key" json:"key,omitempty"`
+	Id                              uint32 `protobuf:"varint,1,opt,name=id" json:"id,omitempty"`
+	Name                            string `protobuf:"bytes,2,opt,name=name" json:"name,omitempty"`
+	SongDatabaseId                  uint32 `protobuf:"varint,3,opt,name=songDatabaseId" json:"songDatabaseId,omitempty"`
+	DatabaseKey                     string `protobuf:"bytes,4,opt,name=databaseKey" json:"databaseKey,omitempty"`
+	RemoveSongsFromExternalDatabase bool   `protobuf:"varint,5,opt,name=removeSongsFromExternalDatabase" json:"removeSongsFromExternalDatabase,omitempty"`
+	RemoveSongsFromSongDatabase     bool   `protobuf:"varint,6,opt,name=removeSongsFromSongDatabase" json:"removeSongsFromSongDatabase,omitempty"`
+	VariationVersionConflictAction  uint32 `protobuf:"varint,7,opt,name=variationVersionConflictAction" json:"variationVersionConflictAction,omitempty"`
 }
 
 func (m *EwDatabase) Reset()                    { *m = EwDatabase{} }
 func (m *EwDatabase) String() string            { return proto.CompactTextString(m) }
 func (*EwDatabase) ProtoMessage()               {}
-func (*EwDatabase) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+func (*EwDatabase) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{0} }
 
 func (m *EwDatabase) GetId() uint32 {
 	if m != nil {
@@ -147,18 +49,32 @@ func (m *EwDatabase) GetSongDatabaseId() uint32 {
 	return 0
 }
 
-func (m *EwDatabase) GetVersion() uint64 {
+func (m *EwDatabase) GetDatabaseKey() string {
 	if m != nil {
-		return m.Version
-	}
-	return 0
-}
-
-func (m *EwDatabase) GetKey() string {
-	if m != nil {
-		return m.Key
+		return m.DatabaseKey
 	}
 	return ""
+}
+
+func (m *EwDatabase) GetRemoveSongsFromExternalDatabase() bool {
+	if m != nil {
+		return m.RemoveSongsFromExternalDatabase
+	}
+	return false
+}
+
+func (m *EwDatabase) GetRemoveSongsFromSongDatabase() bool {
+	if m != nil {
+		return m.RemoveSongsFromSongDatabase
+	}
+	return false
+}
+
+func (m *EwDatabase) GetVariationVersionConflictAction() uint32 {
+	if m != nil {
+		return m.VariationVersionConflictAction
+	}
+	return 0
 }
 
 type SearchEwDatabasesRequest struct {
@@ -170,7 +86,7 @@ type SearchEwDatabasesRequest struct {
 func (m *SearchEwDatabasesRequest) Reset()                    { *m = SearchEwDatabasesRequest{} }
 func (m *SearchEwDatabasesRequest) String() string            { return proto.CompactTextString(m) }
 func (*SearchEwDatabasesRequest) ProtoMessage()               {}
-func (*SearchEwDatabasesRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+func (*SearchEwDatabasesRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{1} }
 
 func (m *SearchEwDatabasesRequest) GetOffset() uint32 {
 	if m != nil {
@@ -201,7 +117,7 @@ type SearchEwDatabasesResponse struct {
 func (m *SearchEwDatabasesResponse) Reset()                    { *m = SearchEwDatabasesResponse{} }
 func (m *SearchEwDatabasesResponse) String() string            { return proto.CompactTextString(m) }
 func (*SearchEwDatabasesResponse) ProtoMessage()               {}
-func (*SearchEwDatabasesResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
+func (*SearchEwDatabasesResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{2} }
 
 func (m *SearchEwDatabasesResponse) GetEwDatabases() []*EwDatabase {
 	if m != nil {
@@ -224,7 +140,7 @@ type FetchEwDatabaseByIdRequest struct {
 func (m *FetchEwDatabaseByIdRequest) Reset()                    { *m = FetchEwDatabaseByIdRequest{} }
 func (m *FetchEwDatabaseByIdRequest) String() string            { return proto.CompactTextString(m) }
 func (*FetchEwDatabaseByIdRequest) ProtoMessage()               {}
-func (*FetchEwDatabaseByIdRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
+func (*FetchEwDatabaseByIdRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{3} }
 
 func (m *FetchEwDatabaseByIdRequest) GetEwDatabaseIds() []uint32 {
 	if m != nil {
@@ -240,7 +156,7 @@ type FetchEwDatabaseByIdResponse struct {
 func (m *FetchEwDatabaseByIdResponse) Reset()                    { *m = FetchEwDatabaseByIdResponse{} }
 func (m *FetchEwDatabaseByIdResponse) String() string            { return proto.CompactTextString(m) }
 func (*FetchEwDatabaseByIdResponse) ProtoMessage()               {}
-func (*FetchEwDatabaseByIdResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
+func (*FetchEwDatabaseByIdResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{4} }
 
 func (m *FetchEwDatabaseByIdResponse) GetEwDatabases() []*EwDatabase {
 	if m != nil {
@@ -257,7 +173,7 @@ type CreateEwDatabaseRequest struct {
 func (m *CreateEwDatabaseRequest) Reset()                    { *m = CreateEwDatabaseRequest{} }
 func (m *CreateEwDatabaseRequest) String() string            { return proto.CompactTextString(m) }
 func (*CreateEwDatabaseRequest) ProtoMessage()               {}
-func (*CreateEwDatabaseRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
+func (*CreateEwDatabaseRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{5} }
 
 func (m *CreateEwDatabaseRequest) GetSongDatabaseId() uint32 {
 	if m != nil {
@@ -280,7 +196,7 @@ type CreateEwDatabaseResponse struct {
 func (m *CreateEwDatabaseResponse) Reset()                    { *m = CreateEwDatabaseResponse{} }
 func (m *CreateEwDatabaseResponse) String() string            { return proto.CompactTextString(m) }
 func (*CreateEwDatabaseResponse) ProtoMessage()               {}
-func (*CreateEwDatabaseResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{6} }
+func (*CreateEwDatabaseResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{6} }
 
 func (m *CreateEwDatabaseResponse) GetEwDatabase() *EwDatabase {
 	if m != nil {
@@ -290,15 +206,18 @@ func (m *CreateEwDatabaseResponse) GetEwDatabase() *EwDatabase {
 }
 
 type UpdateEwDatabaseRequest struct {
-	EwDatabaseId   uint32 `protobuf:"varint,1,opt,name=ewDatabaseId" json:"ewDatabaseId,omitempty"`
-	Name           string `protobuf:"bytes,2,opt,name=name" json:"name,omitempty"`
-	SongDatabaseId uint32 `protobuf:"varint,3,opt,name=songDatabaseId" json:"songDatabaseId,omitempty"`
+	EwDatabaseId                    uint32 `protobuf:"varint,1,opt,name=ewDatabaseId" json:"ewDatabaseId,omitempty"`
+	Name                            string `protobuf:"bytes,2,opt,name=name" json:"name,omitempty"`
+	SongDatabaseId                  uint32 `protobuf:"varint,3,opt,name=songDatabaseId" json:"songDatabaseId,omitempty"`
+	RemoveSongsFromExternalDatabase bool   `protobuf:"varint,4,opt,name=removeSongsFromExternalDatabase" json:"removeSongsFromExternalDatabase,omitempty"`
+	RemoveSongsFromSongDatabase     bool   `protobuf:"varint,5,opt,name=removeSongsFromSongDatabase" json:"removeSongsFromSongDatabase,omitempty"`
+	VariationVersionConflictAction  uint32 `protobuf:"varint,6,opt,name=variationVersionConflictAction" json:"variationVersionConflictAction,omitempty"`
 }
 
 func (m *UpdateEwDatabaseRequest) Reset()                    { *m = UpdateEwDatabaseRequest{} }
 func (m *UpdateEwDatabaseRequest) String() string            { return proto.CompactTextString(m) }
 func (*UpdateEwDatabaseRequest) ProtoMessage()               {}
-func (*UpdateEwDatabaseRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{7} }
+func (*UpdateEwDatabaseRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{7} }
 
 func (m *UpdateEwDatabaseRequest) GetEwDatabaseId() uint32 {
 	if m != nil {
@@ -321,6 +240,27 @@ func (m *UpdateEwDatabaseRequest) GetSongDatabaseId() uint32 {
 	return 0
 }
 
+func (m *UpdateEwDatabaseRequest) GetRemoveSongsFromExternalDatabase() bool {
+	if m != nil {
+		return m.RemoveSongsFromExternalDatabase
+	}
+	return false
+}
+
+func (m *UpdateEwDatabaseRequest) GetRemoveSongsFromSongDatabase() bool {
+	if m != nil {
+		return m.RemoveSongsFromSongDatabase
+	}
+	return false
+}
+
+func (m *UpdateEwDatabaseRequest) GetVariationVersionConflictAction() uint32 {
+	if m != nil {
+		return m.VariationVersionConflictAction
+	}
+	return 0
+}
+
 type UpdateEwDatabaseResponse struct {
 	EwDatabase *EwDatabase `protobuf:"bytes,1,opt,name=ewDatabase" json:"ewDatabase,omitempty"`
 	Success    bool        `protobuf:"varint,2,opt,name=success" json:"success,omitempty"`
@@ -329,7 +269,7 @@ type UpdateEwDatabaseResponse struct {
 func (m *UpdateEwDatabaseResponse) Reset()                    { *m = UpdateEwDatabaseResponse{} }
 func (m *UpdateEwDatabaseResponse) String() string            { return proto.CompactTextString(m) }
 func (*UpdateEwDatabaseResponse) ProtoMessage()               {}
-func (*UpdateEwDatabaseResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{8} }
+func (*UpdateEwDatabaseResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{8} }
 
 func (m *UpdateEwDatabaseResponse) GetEwDatabase() *EwDatabase {
 	if m != nil {
@@ -352,7 +292,7 @@ type RemoveEwDatabaseRequest struct {
 func (m *RemoveEwDatabaseRequest) Reset()                    { *m = RemoveEwDatabaseRequest{} }
 func (m *RemoveEwDatabaseRequest) String() string            { return proto.CompactTextString(m) }
 func (*RemoveEwDatabaseRequest) ProtoMessage()               {}
-func (*RemoveEwDatabaseRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{9} }
+func (*RemoveEwDatabaseRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{9} }
 
 func (m *RemoveEwDatabaseRequest) GetEwDatabaseId() uint32 {
 	if m != nil {
@@ -368,7 +308,7 @@ type RemoveEwDatabaseResponse struct {
 func (m *RemoveEwDatabaseResponse) Reset()                    { *m = RemoveEwDatabaseResponse{} }
 func (m *RemoveEwDatabaseResponse) String() string            { return proto.CompactTextString(m) }
 func (*RemoveEwDatabaseResponse) ProtoMessage()               {}
-func (*RemoveEwDatabaseResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{10} }
+func (*RemoveEwDatabaseResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{10} }
 
 func (m *RemoveEwDatabaseResponse) GetSuccess() bool {
 	if m != nil {
@@ -391,33 +331,38 @@ func init() {
 	proto.RegisterType((*RemoveEwDatabaseResponse)(nil), "SeppoService.RemoveEwDatabaseResponse")
 }
 
-func init() { proto.RegisterFile("ew_database.proto", fileDescriptor0) }
+func init() { proto.RegisterFile("ew_database.proto", fileDescriptor2) }
 
-var fileDescriptor0 = []byte{
-	// 387 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x94, 0xbb, 0x4f, 0xe3, 0x40,
-	0x10, 0xc6, 0xb5, 0x79, 0xdd, 0xdd, 0x24, 0x8e, 0xee, 0x56, 0x27, 0xb2, 0x40, 0x63, 0xad, 0x10,
-	0x72, 0x95, 0x02, 0x28, 0x10, 0x12, 0x4d, 0x78, 0x48, 0x69, 0x37, 0xa4, 0xa0, 0x42, 0x8e, 0x3d,
-	0x01, 0x0b, 0xec, 0x35, 0x5e, 0x27, 0x21, 0x15, 0x0d, 0x7f, 0x38, 0x8a, 0xb3, 0x96, 0x37, 0xb1,
-	0x85, 0x10, 0xe9, 0x76, 0x46, 0x33, 0xdf, 0xf7, 0x9b, 0xd1, 0xd8, 0xf0, 0x0f, 0x17, 0x0f, 0xbe,
-	0x9b, 0xba, 0x13, 0x57, 0x61, 0x3f, 0x4e, 0x64, 0x2a, 0x69, 0x67, 0x84, 0x71, 0x2c, 0x47, 0x98,
-	0xcc, 0x03, 0x0f, 0xf9, 0x07, 0x01, 0xb8, 0x59, 0x5c, 0xeb, 0x12, 0xda, 0x85, 0x5a, 0xe0, 0x33,
-	0x62, 0x13, 0xc7, 0x12, 0xb5, 0xc0, 0xa7, 0x14, 0x1a, 0x91, 0x1b, 0x22, 0xab, 0xd9, 0xc4, 0xf9,
-	0x23, 0xb2, 0x37, 0x3d, 0x86, 0xae, 0x92, 0xd1, 0x63, 0xde, 0x33, 0xf4, 0x59, 0x3d, 0xab, 0xdf,
-	0xca, 0x52, 0x06, 0xbf, 0xe6, 0x98, 0xa8, 0x40, 0x46, 0xac, 0x61, 0x13, 0xa7, 0x21, 0xf2, 0x90,
-	0xfe, 0x85, 0xfa, 0x33, 0x2e, 0x59, 0x33, 0x13, 0x5d, 0x3d, 0x79, 0x0c, 0x6c, 0x84, 0x6e, 0xe2,
-	0x3d, 0x15, 0x2c, 0x4a, 0xe0, 0xeb, 0x0c, 0x55, 0x4a, 0xf7, 0xa0, 0x25, 0xa7, 0x53, 0x85, 0xa9,
-	0xe6, 0xd2, 0x11, 0xfd, 0x0f, 0xcd, 0x97, 0x20, 0x0c, 0xd2, 0x0c, 0xce, 0x12, 0xeb, 0xe0, 0xbb,
-	0x74, 0xfc, 0x1d, 0xf6, 0x2b, 0x1c, 0x55, 0x2c, 0x23, 0x85, 0xf4, 0x02, 0xda, 0x58, 0xa4, 0x19,
-	0xb1, 0xeb, 0x4e, 0xfb, 0x84, 0xf5, 0xcd, 0xcd, 0xf5, 0x8b, 0x3e, 0x61, 0x16, 0xaf, 0x00, 0x42,
-	0xf7, 0xcd, 0x50, 0xd5, 0x7c, 0x5b, 0x59, 0x3e, 0x80, 0x83, 0x5b, 0x4c, 0x4d, 0xff, 0xc1, 0x72,
-	0xe8, 0xe7, 0x43, 0x1f, 0x81, 0x55, 0x88, 0x0e, 0xfd, 0x35, 0x83, 0x25, 0x36, 0x93, 0xfc, 0x1e,
-	0x0e, 0x2b, 0x35, 0x76, 0x1f, 0x83, 0x8f, 0xa1, 0x77, 0x95, 0xa0, 0x9b, 0xa2, 0x51, 0xa0, 0xd9,
-	0xca, 0x2b, 0x26, 0x95, 0x07, 0x50, 0x71, 0x3c, 0xfc, 0x0e, 0x58, 0x59, 0x56, 0xe3, 0x9e, 0x03,
-	0x14, 0x04, 0x99, 0xe6, 0x57, 0xb4, 0x46, 0x2d, 0x5f, 0x42, 0x6f, 0x1c, 0xfb, 0x95, 0xb0, 0x1c,
-	0x3a, 0xe6, 0xce, 0x34, 0xea, 0x46, 0x6e, 0x97, 0x2b, 0xe7, 0x11, 0xb0, 0xb2, 0xf5, 0xae, 0x03,
-	0xad, 0xbe, 0x1d, 0x35, 0xf3, 0x3c, 0x54, 0xeb, 0xeb, 0xf9, 0x2d, 0xf2, 0x90, 0x5f, 0x42, 0x4f,
-	0x60, 0x28, 0xe7, 0x3f, 0x1b, 0x95, 0x9f, 0x01, 0x2b, 0xb7, 0x6b, 0x5c, 0xc3, 0x94, 0x6c, 0x98,
-	0x4e, 0x5a, 0xd9, 0xaf, 0xe3, 0xf4, 0x33, 0x00, 0x00, 0xff, 0xff, 0xb3, 0x5b, 0xe6, 0x5e, 0x4f,
-	0x04, 0x00, 0x00,
+var fileDescriptor2 = []byte{
+	// 469 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xac, 0x54, 0x41, 0x6b, 0x13, 0x41,
+	0x18, 0x65, 0xd3, 0x24, 0xad, 0x5f, 0x9a, 0x82, 0x83, 0x98, 0xd1, 0x82, 0x2e, 0x83, 0x48, 0x4e,
+	0x39, 0xa8, 0x07, 0x11, 0x04, 0x6d, 0x6d, 0x30, 0x78, 0x9b, 0xb5, 0x82, 0x27, 0x99, 0xee, 0x7e,
+	0xa9, 0x03, 0xd9, 0x99, 0x75, 0x66, 0x9a, 0xb6, 0x27, 0x7f, 0xa1, 0xfe, 0x26, 0xe9, 0x64, 0x97,
+	0x9d, 0x24, 0x4b, 0x1b, 0x4c, 0x6f, 0x99, 0xc7, 0x9b, 0xf7, 0xbd, 0xef, 0xed, 0xbc, 0xc0, 0x43,
+	0xbc, 0xfc, 0x91, 0x09, 0x27, 0xce, 0x84, 0xc5, 0x51, 0x61, 0xb4, 0xd3, 0x64, 0x3f, 0xc1, 0xa2,
+	0xd0, 0x09, 0x9a, 0xb9, 0x4c, 0x91, 0xfd, 0x6d, 0x01, 0x9c, 0x5c, 0x7e, 0x2a, 0x29, 0xe4, 0x00,
+	0x5a, 0x32, 0xa3, 0x51, 0x1c, 0x0d, 0xfb, 0xbc, 0x25, 0x33, 0x42, 0xa0, 0xad, 0x44, 0x8e, 0xb4,
+	0x15, 0x47, 0xc3, 0x07, 0xdc, 0xff, 0x26, 0x2f, 0xe1, 0xc0, 0x6a, 0x75, 0x5e, 0xdd, 0x99, 0x64,
+	0x74, 0xc7, 0xf3, 0x57, 0x50, 0x12, 0x43, 0xaf, 0x1a, 0xfd, 0x05, 0xaf, 0x69, 0xdb, 0x4b, 0x84,
+	0x10, 0xf9, 0x0c, 0xcf, 0x0d, 0xe6, 0x7a, 0x8e, 0x89, 0x56, 0xe7, 0x76, 0x6c, 0x74, 0x7e, 0x72,
+	0xe5, 0xd0, 0x28, 0x31, 0xab, 0x64, 0x68, 0x27, 0x8e, 0x86, 0x7b, 0xfc, 0x2e, 0x1a, 0xf9, 0x00,
+	0x87, 0x2b, 0x94, 0x24, 0x30, 0x43, 0xbb, 0x5e, 0xe5, 0x36, 0x0a, 0x19, 0xc3, 0xb3, 0xb9, 0x30,
+	0x52, 0x38, 0xa9, 0xd5, 0x37, 0x34, 0x56, 0x6a, 0x75, 0xac, 0xd5, 0x74, 0x26, 0x53, 0xf7, 0x31,
+	0xbd, 0x01, 0xe9, 0xae, 0xdf, 0xf2, 0x0e, 0x16, 0x2b, 0x80, 0x26, 0x28, 0x4c, 0xfa, 0xb3, 0x4e,
+	0xd5, 0x72, 0xfc, 0x75, 0x81, 0xd6, 0x91, 0xc7, 0xd0, 0xd5, 0xd3, 0xa9, 0x45, 0x57, 0x26, 0x5c,
+	0x9e, 0xc8, 0x23, 0xe8, 0xcc, 0x64, 0x2e, 0x9d, 0x8f, 0xb9, 0xcf, 0x17, 0x87, 0x4d, 0x73, 0x66,
+	0xbf, 0xe1, 0x49, 0xc3, 0x44, 0x5b, 0x68, 0x65, 0x91, 0xbc, 0x83, 0x1e, 0xd6, 0x30, 0x8d, 0xe2,
+	0x9d, 0x61, 0xef, 0x15, 0x1d, 0x85, 0x6f, 0x60, 0x54, 0xdf, 0xe3, 0x21, 0xf9, 0xc6, 0x40, 0x2e,
+	0xae, 0x02, 0xd5, 0xd2, 0xdf, 0x0a, 0xca, 0x8e, 0xe0, 0xe9, 0x18, 0x5d, 0x38, 0xff, 0xe8, 0x7a,
+	0x92, 0x55, 0x4b, 0xbf, 0x80, 0x7e, 0x2d, 0x3a, 0xc9, 0x16, 0x1e, 0xfa, 0x7c, 0x19, 0x64, 0xdf,
+	0xe1, 0xb0, 0x51, 0x63, 0xfb, 0x35, 0xd8, 0x29, 0x0c, 0x8e, 0x0d, 0x0a, 0x87, 0x01, 0xa1, 0xf4,
+	0xb6, 0x1e, 0x71, 0xd4, 0xf8, 0x94, 0x1b, 0x6a, 0xc0, 0xbe, 0x02, 0x5d, 0x97, 0x2d, 0xed, 0xbe,
+	0x05, 0xa8, 0x1d, 0x78, 0xcd, 0xdb, 0xdc, 0x06, 0x5c, 0xf6, 0xa7, 0x05, 0x83, 0xd3, 0x22, 0x6b,
+	0x74, 0xcb, 0x60, 0x3f, 0x0c, 0xad, 0xf4, 0xba, 0x84, 0x6d, 0x55, 0xd8, 0x0d, 0xea, 0xd8, 0xbe,
+	0x97, 0x3a, 0x76, 0xee, 0xa3, 0x8e, 0xdd, 0x8d, 0xea, 0xa8, 0x80, 0xae, 0xc7, 0xb9, 0xed, 0x57,
+	0x22, 0x14, 0x76, 0xed, 0x45, 0x9a, 0xa2, 0x5d, 0x54, 0x62, 0x8f, 0x57, 0x47, 0xf6, 0x1e, 0x06,
+	0xdc, 0xaf, 0xf5, 0x5f, 0x9f, 0x8f, 0xbd, 0x01, 0xba, 0x7e, 0xbd, 0xb4, 0x1b, 0x0c, 0x8d, 0x96,
+	0x86, 0x9e, 0x75, 0xfd, 0x3f, 0xfb, 0xeb, 0x7f, 0x01, 0x00, 0x00, 0xff, 0xff, 0xad, 0x30, 0x4c,
+	0x0e, 0xee, 0x05, 0x00, 0x00,
 }

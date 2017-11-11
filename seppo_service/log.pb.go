@@ -23,7 +23,7 @@ type Log struct {
 func (m *Log) Reset()                    { *m = Log{} }
 func (m *Log) String() string            { return proto.CompactTextString(m) }
 func (*Log) ProtoMessage()               {}
-func (*Log) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{0} }
+func (*Log) Descriptor() ([]byte, []int) { return fileDescriptor5, []int{0} }
 
 func (m *Log) GetId() uint32 {
 	if m != nil {
@@ -65,7 +65,7 @@ type SearchLogsRequest struct {
 func (m *SearchLogsRequest) Reset()                    { *m = SearchLogsRequest{} }
 func (m *SearchLogsRequest) String() string            { return proto.CompactTextString(m) }
 func (*SearchLogsRequest) ProtoMessage()               {}
-func (*SearchLogsRequest) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{1} }
+func (*SearchLogsRequest) Descriptor() ([]byte, []int) { return fileDescriptor5, []int{1} }
 
 func (m *SearchLogsRequest) GetOffset() uint32 {
 	if m != nil {
@@ -117,7 +117,7 @@ type SearchLogsResponse struct {
 func (m *SearchLogsResponse) Reset()                    { *m = SearchLogsResponse{} }
 func (m *SearchLogsResponse) String() string            { return proto.CompactTextString(m) }
 func (*SearchLogsResponse) ProtoMessage()               {}
-func (*SearchLogsResponse) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{2} }
+func (*SearchLogsResponse) Descriptor() ([]byte, []int) { return fileDescriptor5, []int{2} }
 
 func (m *SearchLogsResponse) GetLogs() []*Log {
 	if m != nil {
@@ -139,9 +139,9 @@ func init() {
 	proto.RegisterType((*SearchLogsResponse)(nil), "SeppoService.SearchLogsResponse")
 }
 
-func init() { proto.RegisterFile("log.proto", fileDescriptor3) }
+func init() { proto.RegisterFile("log.proto", fileDescriptor5) }
 
-var fileDescriptor3 = []byte{
+var fileDescriptor5 = []byte{
 	// 261 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x4c, 0x91, 0xc1, 0x4a, 0xc4, 0x30,
 	0x10, 0x86, 0x49, 0xbb, 0x5b, 0xe9, 0xac, 0x0a, 0x1b, 0x44, 0x72, 0x10, 0x29, 0x05, 0xa1, 0xa7,

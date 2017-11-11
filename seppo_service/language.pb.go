@@ -21,7 +21,7 @@ type Language struct {
 func (m *Language) Reset()                    { *m = Language{} }
 func (m *Language) String() string            { return proto.CompactTextString(m) }
 func (*Language) ProtoMessage()               {}
-func (*Language) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{0} }
+func (*Language) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{0} }
 
 func (m *Language) GetId() uint32 {
 	if m != nil {
@@ -46,7 +46,7 @@ type SearchLanguagesRequest struct {
 func (m *SearchLanguagesRequest) Reset()                    { *m = SearchLanguagesRequest{} }
 func (m *SearchLanguagesRequest) String() string            { return proto.CompactTextString(m) }
 func (*SearchLanguagesRequest) ProtoMessage()               {}
-func (*SearchLanguagesRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{1} }
+func (*SearchLanguagesRequest) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{1} }
 
 func (m *SearchLanguagesRequest) GetOffset() uint32 {
 	if m != nil {
@@ -77,7 +77,7 @@ type SearchLanguagesResponse struct {
 func (m *SearchLanguagesResponse) Reset()                    { *m = SearchLanguagesResponse{} }
 func (m *SearchLanguagesResponse) String() string            { return proto.CompactTextString(m) }
 func (*SearchLanguagesResponse) ProtoMessage()               {}
-func (*SearchLanguagesResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{2} }
+func (*SearchLanguagesResponse) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{2} }
 
 func (m *SearchLanguagesResponse) GetLanguages() []*Language {
 	if m != nil {
@@ -100,7 +100,7 @@ type FetchLanguageByIdRequest struct {
 func (m *FetchLanguageByIdRequest) Reset()                    { *m = FetchLanguageByIdRequest{} }
 func (m *FetchLanguageByIdRequest) String() string            { return proto.CompactTextString(m) }
 func (*FetchLanguageByIdRequest) ProtoMessage()               {}
-func (*FetchLanguageByIdRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{3} }
+func (*FetchLanguageByIdRequest) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{3} }
 
 func (m *FetchLanguageByIdRequest) GetLanguageIds() []uint32 {
 	if m != nil {
@@ -116,7 +116,7 @@ type FetchLanguageByIdResponse struct {
 func (m *FetchLanguageByIdResponse) Reset()                    { *m = FetchLanguageByIdResponse{} }
 func (m *FetchLanguageByIdResponse) String() string            { return proto.CompactTextString(m) }
 func (*FetchLanguageByIdResponse) ProtoMessage()               {}
-func (*FetchLanguageByIdResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{4} }
+func (*FetchLanguageByIdResponse) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{4} }
 
 func (m *FetchLanguageByIdResponse) GetLanguages() []*Language {
 	if m != nil {
@@ -132,7 +132,7 @@ type CreateLanguageRequest struct {
 func (m *CreateLanguageRequest) Reset()                    { *m = CreateLanguageRequest{} }
 func (m *CreateLanguageRequest) String() string            { return proto.CompactTextString(m) }
 func (*CreateLanguageRequest) ProtoMessage()               {}
-func (*CreateLanguageRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{5} }
+func (*CreateLanguageRequest) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{5} }
 
 func (m *CreateLanguageRequest) GetName() string {
 	if m != nil {
@@ -148,7 +148,7 @@ type CreateLanguageResponse struct {
 func (m *CreateLanguageResponse) Reset()                    { *m = CreateLanguageResponse{} }
 func (m *CreateLanguageResponse) String() string            { return proto.CompactTextString(m) }
 func (*CreateLanguageResponse) ProtoMessage()               {}
-func (*CreateLanguageResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{6} }
+func (*CreateLanguageResponse) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{6} }
 
 func (m *CreateLanguageResponse) GetLanguage() *Language {
 	if m != nil {
@@ -165,7 +165,7 @@ type UpdateLanguageRequest struct {
 func (m *UpdateLanguageRequest) Reset()                    { *m = UpdateLanguageRequest{} }
 func (m *UpdateLanguageRequest) String() string            { return proto.CompactTextString(m) }
 func (*UpdateLanguageRequest) ProtoMessage()               {}
-func (*UpdateLanguageRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{7} }
+func (*UpdateLanguageRequest) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{7} }
 
 func (m *UpdateLanguageRequest) GetLanguageId() uint32 {
 	if m != nil {
@@ -189,7 +189,7 @@ type UpdateLanguageResponse struct {
 func (m *UpdateLanguageResponse) Reset()                    { *m = UpdateLanguageResponse{} }
 func (m *UpdateLanguageResponse) String() string            { return proto.CompactTextString(m) }
 func (*UpdateLanguageResponse) ProtoMessage()               {}
-func (*UpdateLanguageResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{8} }
+func (*UpdateLanguageResponse) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{8} }
 
 func (m *UpdateLanguageResponse) GetLanguage() *Language {
 	if m != nil {
@@ -212,7 +212,7 @@ type RemoveLanguageRequest struct {
 func (m *RemoveLanguageRequest) Reset()                    { *m = RemoveLanguageRequest{} }
 func (m *RemoveLanguageRequest) String() string            { return proto.CompactTextString(m) }
 func (*RemoveLanguageRequest) ProtoMessage()               {}
-func (*RemoveLanguageRequest) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{9} }
+func (*RemoveLanguageRequest) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{9} }
 
 func (m *RemoveLanguageRequest) GetLanguageId() uint32 {
 	if m != nil {
@@ -228,7 +228,7 @@ type RemoveLanguageResponse struct {
 func (m *RemoveLanguageResponse) Reset()                    { *m = RemoveLanguageResponse{} }
 func (m *RemoveLanguageResponse) String() string            { return proto.CompactTextString(m) }
 func (*RemoveLanguageResponse) ProtoMessage()               {}
-func (*RemoveLanguageResponse) Descriptor() ([]byte, []int) { return fileDescriptor2, []int{10} }
+func (*RemoveLanguageResponse) Descriptor() ([]byte, []int) { return fileDescriptor4, []int{10} }
 
 func (m *RemoveLanguageResponse) GetSuccess() bool {
 	if m != nil {
@@ -251,9 +251,9 @@ func init() {
 	proto.RegisterType((*RemoveLanguageResponse)(nil), "SeppoService.RemoveLanguageResponse")
 }
 
-func init() { proto.RegisterFile("language.proto", fileDescriptor2) }
+func init() { proto.RegisterFile("language.proto", fileDescriptor4) }
 
-var fileDescriptor2 = []byte{
+var fileDescriptor4 = []byte{
 	// 341 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xa4, 0x93, 0x4f, 0x4f, 0xc2, 0x40,
 	0x10, 0xc5, 0x53, 0x50, 0x84, 0xc7, 0x9f, 0xc3, 0x46, 0x6a, 0xbd, 0x90, 0x66, 0x4f, 0x24, 0x26,

@@ -20,7 +20,7 @@ type Song struct {
 func (m *Song) Reset()                    { *m = Song{} }
 func (m *Song) String() string            { return proto.CompactTextString(m) }
 func (*Song) ProtoMessage()               {}
-func (*Song) Descriptor() ([]byte, []int) { return fileDescriptor6, []int{0} }
+func (*Song) Descriptor() ([]byte, []int) { return fileDescriptor8, []int{0} }
 
 func (m *Song) GetId() uint32 {
 	if m != nil {
@@ -33,9 +33,9 @@ func init() {
 	proto.RegisterType((*Song)(nil), "SeppoService.Song")
 }
 
-func init() { proto.RegisterFile("song.proto", fileDescriptor6) }
+func init() { proto.RegisterFile("song.proto", fileDescriptor8) }
 
-var fileDescriptor6 = []byte{
+var fileDescriptor8 = []byte{
 	// 79 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x2a, 0xce, 0xcf, 0x4b,
 	0xd7, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x09, 0x4e, 0x2d, 0x28, 0xc8, 0x0f, 0x4e, 0x2d,

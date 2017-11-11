@@ -28,7 +28,7 @@ type EwSong struct {
 func (m *EwSong) Reset()                    { *m = EwSong{} }
 func (m *EwSong) String() string            { return proto.CompactTextString(m) }
 func (*EwSong) ProtoMessage()               {}
-func (*EwSong) Descriptor() ([]byte, []int) { return fileDescriptor1, []int{0} }
+func (*EwSong) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{0} }
 
 func (m *EwSong) GetId() uint32 {
 	if m != nil {
@@ -97,9 +97,9 @@ func init() {
 	proto.RegisterType((*EwSong)(nil), "SeppoService.EwSong")
 }
 
-func init() { proto.RegisterFile("ew_song.proto", fileDescriptor1) }
+func init() { proto.RegisterFile("ew_song.proto", fileDescriptor3) }
 
-var fileDescriptor1 = []byte{
+var fileDescriptor3 = []byte{
 	// 214 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x54, 0xd0, 0xb1, 0x4e, 0xc3, 0x40,
 	0x0c, 0x06, 0x60, 0x25, 0xb4, 0x81, 0x18, 0xc2, 0x60, 0x21, 0xe4, 0x81, 0x21, 0x42, 0x0c, 0x9d,

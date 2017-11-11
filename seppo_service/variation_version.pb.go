@@ -26,7 +26,7 @@ type VariationVersion struct {
 func (m *VariationVersion) Reset()                    { *m = VariationVersion{} }
 func (m *VariationVersion) String() string            { return proto.CompactTextString(m) }
 func (*VariationVersion) ProtoMessage()               {}
-func (*VariationVersion) Descriptor() ([]byte, []int) { return fileDescriptor10, []int{0} }
+func (*VariationVersion) Descriptor() ([]byte, []int) { return fileDescriptor12, []int{0} }
 
 func (m *VariationVersion) GetId() uint32 {
 	if m != nil {
@@ -89,7 +89,7 @@ func (m *FetchNewestVariationVersionByVariationIdRequest) String() string {
 }
 func (*FetchNewestVariationVersionByVariationIdRequest) ProtoMessage() {}
 func (*FetchNewestVariationVersionByVariationIdRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor10, []int{1}
+	return fileDescriptor12, []int{1}
 }
 
 func (m *FetchNewestVariationVersionByVariationIdRequest) GetVariationIds() []uint32 {
@@ -111,7 +111,7 @@ func (m *FetchNewestVariationVersionByVariationIdResponse) String() string {
 }
 func (*FetchNewestVariationVersionByVariationIdResponse) ProtoMessage() {}
 func (*FetchNewestVariationVersionByVariationIdResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor10, []int{2}
+	return fileDescriptor12, []int{2}
 }
 
 func (m *FetchNewestVariationVersionByVariationIdResponse) GetVariationVersions() []*VariationVersion {
@@ -129,7 +129,7 @@ func (m *FetchVariationVersionByIdRequest) Reset()         { *m = FetchVariation
 func (m *FetchVariationVersionByIdRequest) String() string { return proto.CompactTextString(m) }
 func (*FetchVariationVersionByIdRequest) ProtoMessage()    {}
 func (*FetchVariationVersionByIdRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor10, []int{3}
+	return fileDescriptor12, []int{3}
 }
 
 func (m *FetchVariationVersionByIdRequest) GetVariationVersionIds() []uint32 {
@@ -147,7 +147,7 @@ func (m *FetchVariationVersionByIdResponse) Reset()         { *m = FetchVariatio
 func (m *FetchVariationVersionByIdResponse) String() string { return proto.CompactTextString(m) }
 func (*FetchVariationVersionByIdResponse) ProtoMessage()    {}
 func (*FetchVariationVersionByIdResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor10, []int{4}
+	return fileDescriptor12, []int{4}
 }
 
 func (m *FetchVariationVersionByIdResponse) GetVariationVersions() []*VariationVersion {
@@ -165,9 +165,9 @@ func init() {
 	proto.RegisterType((*FetchVariationVersionByIdResponse)(nil), "SeppoService.FetchVariationVersionByIdResponse")
 }
 
-func init() { proto.RegisterFile("variation_version.proto", fileDescriptor10) }
+func init() { proto.RegisterFile("variation_version.proto", fileDescriptor12) }
 
-var fileDescriptor10 = []byte{
+var fileDescriptor12 = []byte{
 	// 292 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x92, 0xb1, 0x4e, 0xc3, 0x30,
 	0x10, 0x86, 0xe5, 0xa4, 0xb4, 0xea, 0xb5, 0x45, 0x60, 0x06, 0x3c, 0xa0, 0xca, 0x78, 0xca, 0x14,
