@@ -8,6 +8,8 @@ type EwDatabaseLink struct {
 	EwDatabaseSongID uint32
 	VariationID      uint32
 	Version          uint32
+	Author           string
+	Copyright        string
 	CreatedAt        *time.Time
 	UpdatedAt        *time.Time
 
