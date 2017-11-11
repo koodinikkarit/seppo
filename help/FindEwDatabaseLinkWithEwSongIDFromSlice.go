@@ -12,6 +12,7 @@ func FindEwDatabaseLinkWithEwSongIDFromSlice(
 	for _, ewDatabaseLink := range ewDatabaseLinks {
 		if ewDatabaseLink.EwDatabaseSongID == ewSongID {
 			foundEwDatabaseLink = &ewDatabaseLink
+			break
 		}
 	}
 	return foundEwDatabaseLink
