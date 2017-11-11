@@ -1,7 +1,6 @@
 package db
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -28,7 +27,6 @@ func BatchAddVariationsToEwDatabase(
 		}
 
 		sqlStr = sqlStr[0 : len(sqlStr)-2]
-		fmt.Println(sqlStr)
 		tx.Exec(sqlStr, vals...)
 	}
 }

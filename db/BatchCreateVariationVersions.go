@@ -15,7 +15,7 @@ func BatchCreateVariationVersions(
 		vals := []interface{}{}
 
 		for _, variationVersion := range variationVersions {
-			sqlStr += "(?, ?, ?, ?, ?, ?, ?), "
+			sqlStr += "(?, ?, ?, ?, ?, ?), "
 			vals = append(
 				vals,
 				variationVersion.VariationID,
