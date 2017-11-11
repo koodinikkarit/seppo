@@ -126,6 +126,11 @@ func (s *SeppoServiceServer) UpdateEwDatabase(
 		if in.Name != "" {
 			ewDatabase.Name = in.Name
 		}
+		ewDatabase.RemoveSongsFromEwDatabase = in.RemoveSongsFromExternalDatabase
+		ewDatabase.RemoveSongsFromSongDatabase = in.RemoveSongsFromSongDatabase
+		ewDatabase.VariationVersionConflictAction = in.VariationVersionConflictAction
+		newDb.Save(&ewDatabase)
+		res.EwDatabase = NewEwDatabase(&ewDatabase)
 		res.Success = true
 	} else {
 		res.Success = false

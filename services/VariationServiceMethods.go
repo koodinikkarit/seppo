@@ -5,7 +5,6 @@ import (
 
 	"golang.org/x/net/context"
 
-	"github.com/btfak/sqlext"
 	"github.com/jinzhu/gorm"
 	"github.com/koodinikkarit/seppo/db"
 	SeppoService "github.com/koodinikkarit/seppo/seppo_service"
@@ -85,10 +84,13 @@ func HandleVariationUpdateIds(
 				},
 			)
 		}
-		sqlext.BatchInsert(tx.DB(), tagVariations)
+		db.BatchAddTagsToVariation(
+			tx,
+			tagVariations,
+		)
 	}
 	if len(in.RemoveTagIds) > 0 {
-		tx.Where("variation_id", in.VariationId).
+		tx.Where("variation_id = ?", in.VariationId).
 			Where("tag_id in (?)", in.RemoveTagIds).
 			Delete(&db.TagVariation{})
 	}
@@ -109,8 +111,8 @@ func HandleVariationUpdateIds(
 		)
 	}
 	if len(in.RemoveSongDatabaseIds) > 0 {
-		tx.Where("variation_id", in.VariationId).
-			Where("song_database_id", in.RemoveSongDatabaseIds).
+		tx.Where("variation_id = (?)", in.VariationId).
+			Where("song_database_id in (?)", in.RemoveSongDatabaseIds).
 			Delete(&db.SongDatabaseVariation{})
 	}
 
@@ -460,17 +462,17 @@ func (s *SeppoServiceServer) SearchVariations(
 	}
 
 	if in.TagId > 0 {
-		query = query.Joins("left join tag_variations on tag_variations.variation_version_id = variation_versions.id").
+		query = query.Joins("left join tag_variations on tag_variations.variation_id = variations.id").
 			Where("tag_variations.tag_id = ?", in.TagId)
 	}
 
 	if in.SongDatabaseId > 0 {
-		query = query.Joins("left join song_database_variations on song_database_variations.variation_version_id = variation_versions.id").
+		query = query.Joins("left join song_database_variations on song_database_variations.variation_id = variations.id").
 			Where("song_database_variations.song_database_id = ?", in.SongDatabaseId)
 	}
 
 	if in.ScheduleId > 0 {
-		query = query.Joins("left join schedule_variations on schedule_variations.variation_version_id = variation_versions.id").
+		query = query.Joins("left join schedule_variations on schedule_variations.variation_id = variations.id").
 			Where("schedule_variations.schedule_id = ?", in.ScheduleId)
 	}
 

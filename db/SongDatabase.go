@@ -24,3 +24,14 @@ func (sdb *SongDatabase) HasSongDatabaseTag(
 	}
 	return false
 }
+
+func (sdb *SongDatabase) HasVariation(
+	variationID uint32,
+) bool {
+	for _, variation := range sdb.Variations {
+		if variation.ID == variationID {
+			return true
+		}
+	}
+	return false
+}

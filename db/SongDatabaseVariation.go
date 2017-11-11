@@ -7,6 +7,7 @@ type SongDatabaseVariation struct {
 	SongDatabaseID uint32
 	VariationID    uint32
 	CreatedAt      *time.Time
+	DeletedAt      *time.Time
 
 	SongDatabase SongDatabase
 	Variation    Variation
