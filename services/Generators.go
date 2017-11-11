@@ -84,10 +84,29 @@ func NewSchedule(in *db.Schedule) *SeppoService.Schedule {
 
 func NewEwDatabase(in *db.EwDatabase) *SeppoService.EwDatabase {
 	newEwDatabase := SeppoService.EwDatabase{
-		Id:             in.ID,
-		Name:           in.Name,
-		SongDatabaseId: in.SongDatabaseID,
-		Key:            in.EwDatabaseKey,
+		Id:                              in.ID,
+		Name:                            in.Name,
+		SongDatabaseId:                  in.SongDatabaseID,
+		DatabaseKey:                     in.EwDatabaseKey,
+		RemoveSongsFromExternalDatabase: in.RemoveSongsFromEwDatabase,
+		RemoveSongsFromSongDatabase:     in.RemoveSongsFromSongDatabase,
+		VariationVersionConflictAction:  in.VariationVersionConflictAction,
 	}
 	return &newEwDatabase
+}
+
+func NewAuthor(in *db.Author) *SeppoService.Author {
+	newAuthor := SeppoService.Author{
+		Id:   in.ID,
+		Name: in.Name,
+	}
+	return &newAuthor
+}
+
+func NewCopyright(in *db.Copyright) *SeppoService.Copyright {
+	newCopyright := SeppoService.Copyright{
+		Id:   in.ID,
+		Name: in.Name,
+	}
+	return &newCopyright
 }
