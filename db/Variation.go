@@ -10,12 +10,16 @@ type Variation struct {
 	LanguageID      *uint32
 	EwSongID        *uint32
 	JyvaskylaSongID *uint32
+	AuthorID        *uint32
+	CopyrightID     *uint32
 	CreatedAt       *time.Time
 	UpdatedAt       *time.Time
 	DeletedAt       *time.Time
 
 	Song              Song
 	Language          Language
+	Author            Author
+	Copyright         Copyright
 	VariationVersions []VariationVersion
 	SongDatabases     []SongDatabase `gorm:"many2many:song_database_variations"`
 	TagVariations     []TagVariation
@@ -55,4 +59,26 @@ func (v *Variation) FindVariationVersionByNameAndText(
 		}
 	}
 	return nil
+}
+
+func (v *Variation) FindVersionWithVersionNumber(
+	versionNumber uint32,
+) *VariationVersion {
+	for _, variationVersion := range v.VariationVersions {
+		if variationVersion.Version == versionNumber {
+			return &variationVersion
+		}
+	}
+	return nil
+}
+
+func (v *Variation) HasTag(
+	tagID uint32,
+) bool {
+	for _, tagVariation := range v.TagVariations {
+		if tagVariation.TagID == tagID {
+			return true
+		}
+	}
+	return false
 }
