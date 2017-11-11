@@ -9,7 +9,7 @@ func CreateNewVariationAndVersion(
 		newVariation.VariationVersions,
 		VariationVersion{
 			Name:    name,
-			Text:    name,
+			Text:    text,
 			Version: 1,
 		},
 	)
