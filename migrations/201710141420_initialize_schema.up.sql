@@ -51,11 +51,29 @@ create table if not exists variations (
 	variation_id INT8 UNSIGNED DEFAULT NULL,
 	ew_song_id INT8 UNSIGNED DEFAULT NULL,
 	jyvaskyla_song_id INT8 UNSIGNED DEFAULT NULL,
+	author_id INT8 UNSIGNED NULL,
+	copyright_id INT8 UNSIGNED NULL,
 	created_at DATETIME,
 	updated_at DATETIME NULL,
 	deleted_at DATETIME DEFAULT NULL,
 	FOREIGN KEY(song_id) REFERENCES songs(id),
 	FOREIGN KEY(language_id) REFERENCES languages(id)
+);
+
+create table if not exists authors(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(255),
+	created_at DATETIME,
+	updated_at DATETIME NULL,
+	deleted_at DATETIME NULL
+);
+
+create table if not exists copyrights(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(255),
+	created_at DATETIME,
+	updated_at DATETIME NULL,
+	deleted_at DATETIME NULL
 );
 
 create table if not exists jyvaskyla_songs(
@@ -160,6 +178,8 @@ create table if not exists ew_database_links(
 	ew_database_song_id INT8 UNSIGNED NOT NULL,
 	variation_id INT8 UNSIGNED NOT NULL,
 	version INT NOT NULL,
+	author VARCHAR(255),
+	copyright VARCHAR(255),
 	created_at DATETIME,
 	updated_at DATETIME,
 	FOREIGN KEY(ew_database_id) REFERENCES ew_databases(id),
@@ -214,4 +234,71 @@ create table if not exists event_schedules(
 	deleted_at DATETIME NULL,
 	FOREIGN KEY(schedule_id) REFERENCES schedules(id),
 	FOREIGN KEY(event_id) REFERENCES events(id)
+);
+
+create table if not exists synchronization_raports(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	raport_type INT,
+	database_id INT8 UNSIGNED NULL,
+	database_key VARCHAR(10),
+	database_found BOOLEAN,
+	duration_ms INT8,
+	started_at DATETIME,
+	finished_at DATETIME
+);
+
+create table if not exists synchronization_raport_add_ew_songs(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	synchronization_raport_id INT8 UNSIGNED NOT NULL,
+	ew_database_link_id INT8 UNSIGNED NOT NULL,
+	FOREIGN KEY(synchronization_raport_id) REFERENCES synchronization_raports(id),
+	FOREIGN KEY(ew_database_link_id) REFERENCES ew_database_links(id)
+);
+
+create table if not exists synchronization_raport_variation_version_passivations(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	variation_version_id INT8 UNSIGNED NOT NULL,
+	synchronization_raport_id INT8 UNSIGNED NOT NULL,
+	FOREIGN KEY(variation_version_id) REFERENCES variation_versions(id),
+	FOREIGN KEY(synchronization_raport_id) REFERENCES synchronization_raports(id)
+);
+
+create table if not exists synchronization_raport_new_variation_versions(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	synchronization_raport_id INT8 UNSIGNED NOT NULL,
+	variation_version_id INT8 UNSIGNED NOT NULL,
+	FOREIGN KEY(synchronization_raport_id) REFERENCES synchronization_raports(id),
+	FOREIGN KEY(variation_version_id) REFERENCES variation_versions(id)
+);
+
+create table if not exists synchronization_raport_new_branches(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	synchronization_raport_id INT8 UNSIGNED NOT NULL,	
+	branch_id INT8 UNSIGNED NOT NULL,
+	FOREIGN KEY(synchronization_raport_id) REFERENCES synchronization_raports(id),
+	FOREIGN KEY(branch_id) REFERENCES branches(id)
+);
+
+create table if not exists synchronization_raport_remove_ew_song(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	synchronization_raport_id INT8 UNSIGNED NOT NULL,	
+	ew_database_link_id INT8 UNSIGNED NOT NULL,
+	FOREIGN KEY(synchronization_raport_id) REFERENCES synchronization_raports(id),
+	FOREIGN KEY(ew_database_link_id) REFERENCES ew_database_links(id)
+);
+
+create table if not exists synchronization_raport_add_song_database_variations(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	synchronization_raport_id INT8 UNSIGNED NOT NULL,	
+	song_database_variation_id INT8 UNSIGNED NOT NULL,
+	FOREIGN KEY(synchronization_raport_id) REFERENCES synchronization_raports(id),
+	FOREIGN KEY(song_database_variation_id) REFERENCES song_database_variations(id)
+);
+
+create table if not exists synchronization_raport_remove_song_database_variations(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	synchronization_raport_id INT8 UNSIGNED NOT NULL,	
+	song_database_variation_id INT8 UNSIGNED NOT NULL,
+	FOREIGN KEY(synchronization_raport_id) REFERENCES synchronization_raports(id),
+	FOREIGN KEY(song_database_variation_id) REFERENCES song_database_variations(id)
 );
