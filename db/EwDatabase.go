@@ -27,8 +27,19 @@ func (ew *EwDatabase) HasVariation(
 ) {
 	for i := 0; i < len(ew.EwDatabaseLinks); i++ {
 		if ew.EwDatabaseLinks[i].VariationID == variationID {
-			return false, &ew.EwDatabaseLinks[i]
+			return true, &ew.EwDatabaseLinks[i]
 		}
 	}
 	return false, nil
+}
+
+func (ew *EwDatabase) FindEwDatabaseLinkByEwSongID(
+	ewSongID uint32,
+) *EwDatabaseLink {
+	for _, ewDatabaseLink := range ew.EwDatabaseLinks {
+		if ewDatabaseLink.EwDatabaseSongID == ewSongID {
+			return &ewDatabaseLink
+		}
+	}
+	return nil
 }
