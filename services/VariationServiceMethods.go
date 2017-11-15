@@ -7,6 +7,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	"github.com/koodinikkarit/seppo/db"
+	"github.com/koodinikkarit/seppo/managers"
 	SeppoService "github.com/koodinikkarit/seppo/seppo_service"
 )
 
@@ -84,7 +85,7 @@ func HandleVariationUpdateIds(
 				},
 			)
 		}
-		db.BatchAddTagsToVariation(
+		managers.BatchAddTagsToVariation(
 			tx,
 			tagVariations,
 		)
@@ -95,17 +96,17 @@ func HandleVariationUpdateIds(
 			Delete(&db.TagVariation{})
 	}
 	if len(in.AddSongDatabaseIds) > 0 {
-		var songDatabaseVariations []*db.SongDatabaseVariation
+		var songDatabaseVariations []db.SongDatabaseVariation
 		for _, id := range in.AddSongDatabaseIds {
 			songDatabaseVariations = append(
 				songDatabaseVariations,
-				&db.SongDatabaseVariation{
+				db.SongDatabaseVariation{
 					VariationID:    in.VariationId,
 					SongDatabaseID: id,
 				},
 			)
 		}
-		db.BatchAddVariationsToSongDatabase(
+		managers.BatchAddVariationsToSongDatabase(
 			tx,
 			songDatabaseVariations,
 		)
@@ -551,6 +552,14 @@ func (s *SeppoServiceServer) FetchNewestVariationVersionByVariationId(
 	defer newDb.Close()
 
 	variationVersions := []db.VariationVersion{}
+
+	// select v1.id,v1.name,v1.version,v2.id,v2.name,v2.version
+	// from variation_versions v1
+	// left join variation_versions v2
+	// on v1.variation_id = v2.variation_id
+	// and v1.version < v2.version
+	// where v2.id is null
+	// and v1.variation_id in (1,2)
 
 	// newDb.Table("variation_versions as vv1").
 	// 	Joins("left join variation_versions as vv2 on vv1.variation_id = vv2.variation_id").
