@@ -247,58 +247,107 @@ create table if not exists synchronization_raports(
 	finished_at DATETIME
 );
 
-create table if not exists synchronization_raport_add_ew_songs(
+create table if not exists sr_ew_conflicts(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	synchronization_raport_id INT8 UNSIGNED NOT NULL,
-	ew_database_link_id INT8 UNSIGNED NOT NULL,
-	FOREIGN KEY(synchronization_raport_id) REFERENCES synchronization_raports(id),
-	FOREIGN KEY(ew_database_link_id) REFERENCES ew_database_links(id)
+	sr_id INT8 UNSIGNED NOT NULL,
+	variation_version_id INT8 UNSIGNED NOT NULL,
+	ew_database_id INT8 UNSIGNED NOT NULL,
+	ew_song_id INT8 UNSIGNED NOT NULL,
+	name VARCHAR(50),
+	text TEXT,
+	FOREIGN KEY(sr_id) REFERENCES synchronization_raports(id),
+ 	FOREIGN KEY(variation_version_id) REFERENCES variation_versions(id),
+	FOREIGN KEY(ew_database_id) REFERENCES ew_databases(id)
 );
 
-create table if not exists synchronization_raport_variation_version_passivations(
+create table if not exists sr_new_authors(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	variation_version_id INT8 UNSIGNED NOT NULL,
-	synchronization_raport_id INT8 UNSIGNED NOT NULL,
-	FOREIGN KEY(variation_version_id) REFERENCES variation_versions(id),
-	FOREIGN KEY(synchronization_raport_id) REFERENCES synchronization_raports(id)
+	sr_id INT8 UNSIGNED NOT NULL,
+	author_id INT8 UNSIGNED NOT NULL,
+	FOREIGN KEY(sr_id) REFERENCES synchronization_raports(id),
+	FOREIGN KEY(author_id) REFERENCES authors(id)
 );
 
-create table if not exists synchronization_raport_new_variation_versions(
+create table if not exists sr_new_copyrights(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	synchronization_raport_id INT8 UNSIGNED NOT NULL,
-	variation_version_id INT8 UNSIGNED NOT NULL,
-	FOREIGN KEY(synchronization_raport_id) REFERENCES synchronization_raports(id),
+	sr_id INT8 UNSIGNED NOT NULL,
+	copyright_id INT8 UNSIGNED NOT NULL,
+	FOREIGN KEY(sr_id) REFERENCES synchronization_raports(id),
+	FOREIGN KEY(copyright_id) REFERENCES copyrights(id)
+);
+
+create table if not exists sr_new_variations(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	sr_id INT8 UNSIGNED NOT NULL,
+	variation_id INT8 UNSIGNED NOT NULL,
+	FOREIGN KEY(sr_id) REFERENCES synchronization_raports(id),
+	FOREIGN KEY(variation_id) REFERENCES variations(id)
+);
+
+create table if not exists sr_passivated_variation_versions(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	sr_id INT8 UNSIGNED NOT NULL,
+	variation_version_id INT8 UNSIGNED NOT NULL,	
+	FOREIGN KEY(sr_id) REFERENCES synchronization_raports(id),
 	FOREIGN KEY(variation_version_id) REFERENCES variation_versions(id)
 );
 
-create table if not exists synchronization_raport_new_branches(
+create table if not exists sr_ew_database_links(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	synchronization_raport_id INT8 UNSIGNED NOT NULL,	
+	sr_id INT8 UNSIGNED NOT NULL,
+	ew_database_id INT8 UNSIGNED NOT NULL,
+	ew_database_song_id INT8 UNSIGNED NOT NULL,
+	variation_id INT8 UNSIGNED NOT NULL,
+	version INT UNSIGNED NOT NULL,
+	author VARCHAR(255),
+	copyright VARCHAR(255),
+	operation BOOLEAN NOT NULL,
+	FOREIGN KEY(sr_id) REFERENCES synchronization_raports(id),
+	FOREIGN KEY(ew_database_id) REFERENCES ew_databases(id),
+	FOREIGN KEY(variation_id) REFERENCES variations(id)
+);
+
+create table if not exists sr_new_branches(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	sr_id INT8 UNSIGNED NOT NULL,
 	branch_id INT8 UNSIGNED NOT NULL,
-	FOREIGN KEY(synchronization_raport_id) REFERENCES synchronization_raports(id),
+	FOREIGN KEY(sr_id) REFERENCES synchronization_raports(id),
 	FOREIGN KEY(branch_id) REFERENCES branches(id)
 );
 
-create table if not exists synchronization_raport_remove_ew_song(
+create table if not exists sr_new_variation_versions(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	synchronization_raport_id INT8 UNSIGNED NOT NULL,	
-	ew_database_link_id INT8 UNSIGNED NOT NULL,
-	FOREIGN KEY(synchronization_raport_id) REFERENCES synchronization_raports(id),
-	FOREIGN KEY(ew_database_link_id) REFERENCES ew_database_links(id)
+	sr_id INT8 UNSIGNED NOT NULL,
+	variation_version_id INT8 UNSIGNED NOT NULL,
+	FOREIGN KEY(sr_id) REFERENCES synchronization_raports(id),
+	FOREIGN KEY(variation_version_id) REFERENCES variation_versions(id)
 );
 
-create table if not exists synchronization_raport_add_song_database_variations(
+create table if not exists sr_ew_song(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	synchronization_raport_id INT8 UNSIGNED NOT NULL,	
-	song_database_variation_id INT8 UNSIGNED NOT NULL,
-	FOREIGN KEY(synchronization_raport_id) REFERENCES synchronization_raports(id),
-	FOREIGN KEY(song_database_variation_id) REFERENCES song_database_variations(id)
+	sr_id INT8 UNSIGNED NOT NULL,	
+	variation_version_id INT8 UNSIGNED NOT NULL,
+	operation BOOLEAN,
+	FOREIGN KEY(sr_id) REFERENCES synchronization_raports(id),
+	FOREIGN KEY(variation_version_id) REFERENCES variation_versions(id)
 );
 
-create table if not exists synchronization_raport_remove_song_database_variations(
+create table if not exists sr_add_song_database_variations(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	synchronization_raport_id INT8 UNSIGNED NOT NULL,	
-	song_database_variation_id INT8 UNSIGNED NOT NULL,
-	FOREIGN KEY(synchronization_raport_id) REFERENCES synchronization_raports(id),
-	FOREIGN KEY(song_database_variation_id) REFERENCES song_database_variations(id)
+	sr_id INT8 UNSIGNED NOT NULL,
+	variation_id INT8 UNSIGNED NOT NULL,
+	song_database_id INT8 UNSIGNED NOT NULL,	
+	FOREIGN KEY(sr_id) REFERENCES synchronization_raports(id),
+	FOREIGN KEY(variation_id) REFERENCES variations(id),
+	FOREIGN KEY(song_database_id) REFERENCES song_databases(id)
+);
+
+create table if not exists sr_remove_song_database_variations(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	sr_id INT8 UNSIGNED NOT NULL,
+	variation_id INT8 UNSIGNED NOT NULL,
+	song_database_id INT8 UNSIGNED NOT NULL,	
+	FOREIGN KEY(sr_id) REFERENCES synchronization_raports(id),
+	FOREIGN KEY(variation_id) REFERENCES variations(id),
+	FOREIGN KEY(song_database_id) REFERENCES song_databases(id)
 );
