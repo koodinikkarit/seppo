@@ -12,11 +12,15 @@ type SynchronizationRaport struct {
 	StartedAt     *time.Time
 	FinishedAt    *time.Time
 
-	PassivatedVariationVersions []VariationVersion `gorm:"many2many:synchronization_raport_variation_version_passivations"`
-	NewVariationVersions        []VariationVersion `gorm:"many2many:synchronization_raport_new_variation_versions"`
-	NewBranches                 []Branch           `gorm:"many2many:synchronization_raport_new_branches"`
-	RemovedEwSongs              []EwDatabaseLink   `gorm:"many2many:synchronization_raport_remove_ew_song"`
-	AddedVariations             []Variation        `gorm:"many2many:synchronization_raport_add_song_database_variations"`
-	RemovedVariations           []Variation        `gorm:"many2many:synchronization_raport_remove_song_database_variations"`
-	AddEwSongs                  []EwDatabaseLink   `gorm:"many2many:synchronization_raport_add_ew_songs"`
+	Conflicts                     []SrEwConflict                  `gorm:"ForeignKey:SrID"`
+	NewAuthors                    []SrNewAuthors                  `gorm:"ForeignKey:SrID"`
+	NewCopyrights                 []SrcNewCopyright               `gorm:"ForeignKey:SrID"`
+	NewVariations                 []SrNewVariation                `gorm:"ForeignKey:SrID"`
+	NewEwDatabaseLinks            []SrEwDatabaseLink              `gorm:"ForeignKey:SrID"`
+	RemovedSongDatabaseVariations []SrRemoveSongDatabaseVariation `gorm:"ForeignKey:SrID"`
+	AddedSongDatabaseVariations   []SrAddSongDatabaseVariation    `gorm:"ForeignKey:SrID"`
+	EwSongs                       []SrEwSong                      `gorm:"ForeignKey:SrID"`
+	NewBranches                   []SrNewBranch                   `gorm:"ForeignKey:SrID"`
+	NewVariationVersions          []SrNewVariationVersion         `gorm:"ForeignKey:SrID"`
+	PassivatedVariationVersions   []SrPassivatedVariationVersion  `gorm:"ForeignKey:SrID"`
 }
