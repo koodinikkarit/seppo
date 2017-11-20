@@ -1,40 +1,46 @@
 package managers
 
 import (
-	"github.com/jinzhu/gorm"
-	"github.com/koodinikkarit/seppo/db"
+	"database/sql"
+
 	"github.com/koodinikkarit/seppo/matias_service"
+	"github.com/koodinikkarit/seppo/models"
+	null "gopkg.in/volatiletech/null.v6"
 )
 
 func NewVariationFromEwSong(
-	tx *gorm.DB,
+	tx *sql.Tx,
 	ewSong *MatiasService.EwSong,
-) db.Variation {
-	newVariation := db.Variation{}
-	newVariation.VariationVersions = append(
-		newVariation.VariationVersions,
-		db.VariationVersion{
-			Name:    ewSong.Title,
-			Text:    ewSong.Text,
-			Version: 1,
-		},
-	)
+) (
+	*models.Variation,
+	*models.VariationVersion,
+) {
+	newVariation := &models.Variation{}
 	if ewSong.Author != "" {
-		newAuthor := db.CreateAuthorByName(
+		newAuthor := CreateAuthorByName(
 			tx,
 			ewSong.Author,
 		)
-		newVariation.AuthorID = &newAuthor.ID
+		newVariation.AuthorID = null.NewUint64(newAuthor.ID, true)
 	}
 
 	if ewSong.Copyright != "" {
-		newCopyright := db.CreateCopyrightByName(
+		newCopyright := CreateCopyrightByName(
 			tx,
 			ewSong.Copyright,
 		)
-		newVariation.Copyright = newCopyright
+		newVariation.CopyrightID = null.NewUint64(newCopyright.ID, true)
 	}
+	newVariation.Insert(tx)
+	newVariationVersion := &models.VariationVersion{
+		Name: ewSong.Title,
+		Text: ewSong.Text,
+	}
+	newVariation.AddVariationVersions(
+		tx,
+		true,
+		newVariationVersion,
+	)
 
-	tx.Create(&newVariation)
-	return newVariation
+	return newVariation, newVariationVersion
 }
