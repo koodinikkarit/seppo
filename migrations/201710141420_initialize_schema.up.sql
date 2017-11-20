@@ -44,6 +44,22 @@ create table if not exists events(
 	deleted_at DATETIME NULL	
 );
 
+create table if not exists authors(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(255) DEFAULT "" NOT NULL,
+	created_at DATETIME,
+	updated_at DATETIME NULL,
+	deleted_at DATETIME NULL
+);
+
+create table if not exists copyrights(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(255) DEFAULT "" NOT NULL,
+	created_at DATETIME,
+	updated_at DATETIME NULL,
+	deleted_at DATETIME NULL
+);
+
 create table if not exists variations (
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 	song_id INT8 UNSIGNED DEFAULT NULL,
@@ -57,23 +73,9 @@ create table if not exists variations (
 	updated_at DATETIME NULL,
 	deleted_at DATETIME DEFAULT NULL,
 	FOREIGN KEY(song_id) REFERENCES songs(id),
-	FOREIGN KEY(language_id) REFERENCES languages(id)
-);
-
-create table if not exists authors(
-	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(255),
-	created_at DATETIME,
-	updated_at DATETIME NULL,
-	deleted_at DATETIME NULL
-);
-
-create table if not exists copyrights(
-	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(255),
-	created_at DATETIME,
-	updated_at DATETIME NULL,
-	deleted_at DATETIME NULL
+	FOREIGN KEY(language_id) REFERENCES languages(id),
+	FOREIGN KEY(author_id) REFERENCES authors(id),
+	FOREIGN KEY(copyright_id) REFERENCES copyrights(id)
 );
 
 create table if not exists jyvaskyla_songs(
@@ -110,9 +112,9 @@ create table if not exists ew_songs(
 create table if not exists variation_versions (
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 	variation_id INT8 UNSIGNED NOT NULL,
-	name VARCHAR(50),
-	text TEXT,
-	version INT,
+	name VARCHAR(255) NOT NULL,
+	text TEXT NOT NULL,
+	version INT UNSIGNED DEFAULT 1 NOT NULL,
 	newest BOOLEAN,
 	created_at DATETIME,
 	disabled_at DATETIME NULL,
@@ -162,9 +164,9 @@ create table if not exists ew_databases(
 	ew_database_key VARCHAR(10),
 	use_newest_version BOOLEAN,
 	matias_client_id INT8 UNSIGNED NULL,
-	remove_songs_from_ew_database BOOLEAN,
-	remove_songs_from_song_database BOOLEAN,
-	variation_version_conflict_action INT, 
+	remove_songs_from_ew_database BOOLEAN DEFAULT false,
+	remove_songs_from_song_database BOOLEAN DEFAULT false,
+	variation_version_conflict_action INT DEFAULT 0 NOT NULL, 
 	created_at DATETIME,
 	updated_at DATETIME NULL,
 	deleted_at DATETIME NULL,
@@ -177,9 +179,9 @@ create table if not exists ew_database_links(
 	ew_database_id INT8 UNSIGNED NOT NULL,
 	ew_database_song_id INT8 UNSIGNED NOT NULL,
 	variation_id INT8 UNSIGNED NOT NULL,
-	version INT NOT NULL,
-	author VARCHAR(255),
-	copyright VARCHAR(255),
+	version INT UNSIGNED DEFAULT 1 NOT NULL,
+	author VARCHAR(255) DEFAULT "" NOT NULL,
+	copyright VARCHAR(255) DEFAULT "" NOT NULL,
 	created_at DATETIME,
 	updated_at DATETIME,
 	FOREIGN KEY(ew_database_id) REFERENCES ew_databases(id),
@@ -243,6 +245,7 @@ create table if not exists synchronization_raports(
 	database_key VARCHAR(10),
 	database_found BOOLEAN,
 	duration_ms INT8,
+	sr_gen_duration_ms INT8,
 	started_at DATETIME,
 	finished_at DATETIME
 );
@@ -298,9 +301,9 @@ create table if not exists sr_ew_database_links(
 	ew_database_id INT8 UNSIGNED NOT NULL,
 	ew_database_song_id INT8 UNSIGNED NOT NULL,
 	variation_id INT8 UNSIGNED NOT NULL,
-	version INT UNSIGNED NOT NULL,
-	author VARCHAR(255),
-	copyright VARCHAR(255),
+	version INT UNSIGNED DEFAULT 1 NOT NULL,
+	author VARCHAR(255) DEFAULT "" NOT NULL,
+	copyright VARCHAR(255) DEFAULT "" NOT NULL,
 	operation BOOLEAN NOT NULL,
 	FOREIGN KEY(sr_id) REFERENCES synchronization_raports(id),
 	FOREIGN KEY(ew_database_id) REFERENCES ew_databases(id),
@@ -350,4 +353,14 @@ create table if not exists sr_remove_song_database_variations(
 	FOREIGN KEY(sr_id) REFERENCES synchronization_raports(id),
 	FOREIGN KEY(variation_id) REFERENCES variations(id),
 	FOREIGN KEY(song_database_id) REFERENCES song_databases(id)
+);
+
+create table if not exists sr_updated_ew_database_link_versions(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	sr_id INT8 UNSIGNED NOT NULL,
+	orig_version INT UNSIGNED NOT NULL,
+	changed_version INT UNSIGNED NOT NULL,
+	variation_id INT8 UNSIGNED NOT NULL,
+	FOREIGN KEY(sr_id) REFERENCES synchronization_raports(id),
+	FOREIGN KEY(variation_id) REFERENCES variations(id)
 );
