@@ -640,23 +640,14 @@ func ewSyncCreateEwSong(
 	variation *models.Variation,
 	variationVersion *models.VariationVersion,
 ) {
-	ewSong := MatiasService.EwSong{
-		Title:       variationVersion.Name,
-		Text:        variationVersion.Text,
-		VariationId: uint32(variation.ID),
-	}
-
-	author := variation.Author(tx).OneP()
-	if author != nil {
-		ewSong.Author = author.Name
-	}
-	copyright := variation.Copyright(tx).OneP()
-	if copyright != nil {
-		ewSong.Copyright = copyright.Name
-	}
+	ewSong := managers.NewEwSongFromVariation(
+		tx,
+		variation,
+		variationVersion,
+	)
 	res.EwSongs = append(
 		res.EwSongs,
-		&ewSong,
+		ewSong,
 	)
 }
 
@@ -721,6 +712,59 @@ func ewSyncProcessSongDatabaseVariation(
 
 }
 
+func ewSyncProcessSongDatabaseTagVariation(
+	tx *sql.Tx,
+	res *MatiasService.SyncEwDatabaseResponse,
+	ewSongs map[uint32]*MatiasService.EwSong,
+	ewDatabase *models.EwDatabase,
+	variation *models.Variation,
+	synchronizationRaport *models.SynchronizationRaport,
+) {
+	variationVersions, _ := variation.VariationVersions(tx).All()
+	newestVariationVersion := managers.FindNewestVariationVersion(
+		variationVersions,
+	)
+
+	ewDatabaseLink, _ := ewDatabase.EwDatabaseLinks(
+		tx,
+		Where("ew_Database_links.variation_id", ewDatabase.SongDatabaseID),
+	).One()
+
+	if ewDatabaseLink == nil {
+		ewSong := managers.FindEwSongWithNameText(
+			ewSongs,
+			newestVariationVersion.Name,
+			newestVariationVersion.Text,
+		)
+
+		if ewSong != nil {
+			return
+		}
+
+		ewSyncCreateEwSong(
+			tx,
+			res,
+			synchronizationRaport,
+			variation,
+			newestVariationVersion,
+		)
+		return
+	}
+
+	if ewSongs[uint32(ewDatabaseLink.EwDatabaseSongID)] != nil {
+		return
+	}
+
+	res.EwSongs = append(
+		res.EwSongs,
+		managers.NewEwSongFromVariation(
+			tx,
+			variation,
+			newestVariationVersion,
+		),
+	)
+}
+
 func (s *MatiasServiceServer) SyncEwDatabase(
 	ctx context.Context,
 	in *MatiasService.SyncEwDatabaseRequest,
@@ -729,7 +773,6 @@ func (s *MatiasServiceServer) SyncEwDatabase(
 	error,
 ) {
 	res := &MatiasService.SyncEwDatabaseResponse{}
-
 	db, _ := sql.Open(
 		"mysql",
 		"root:asdf321@tcp(localhost:3306)/seppo2?parseTime=True&loc=Local",
@@ -777,7 +820,7 @@ func (s *MatiasServiceServer) SyncEwDatabase(
 		return res, nil
 	}
 
-	songDatabaseVariations := songDatabase.SongDatabaseVariations(tx).AllP()
+	songDatabaseVariations, _ := songDatabase.SongDatabaseVariations(tx).All()
 	for _, songDatabaseVariation := range songDatabaseVariations {
 		ewSyncProcessSongDatabaseVariation(
 			tx,
@@ -785,6 +828,25 @@ func (s *MatiasServiceServer) SyncEwDatabase(
 			ewSongs,
 			ewDatabase,
 			songDatabaseVariation,
+			&synchronizationRaport,
+		)
+	}
+
+	songDatabaseTagVariations, _ := models.Variations(
+		tx,
+		Load("VariationVersions"),
+		InnerJoin("tag_variations tg on tg.variation_id = variations.id"),
+		InnerJoin("song_database_tags sdt on sdt.tag_id = tg.tag_id"),
+		Where("sdt.song_database_id = ?", ewDatabase.SongDatabaseID),
+	).All()
+
+	for _, variation := range songDatabaseTagVariations {
+		ewSyncProcessSongDatabaseTagVariation(
+			tx,
+			res,
+			ewSongs,
+			ewDatabase,
+			variation,
 			&synchronizationRaport,
 		)
 	}
