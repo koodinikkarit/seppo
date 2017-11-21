@@ -13,7 +13,7 @@ func main() {
 	dbPassword := os.Getenv("SEPPO_DB_PASSWORD")
 	dbIP := os.Getenv("SEPPO_DB_IP")
 	dbPort := os.Getenv("SEPPO_DB_PORT")
-	dbName := "seppo2"
+	dbName := os.Getenv("SEPPO_DB_NAME")
 	seppoPort := os.Getenv("SEPPO_PORT")
 	matiasPort := os.Getenv("SEPPO_MATIAS_PORT")
 
