@@ -1,5 +1,6 @@
 # Seppo
 [![Build Status](https://travis-ci.org/koodinikkarit/seppo.svg?branch=master)](https://travis-ci.org/koodinikkarit/seppo)
+[![Go Report Card](https://goreportcard.com/badge/github.com/koodinikkarit/seppo)](https://goreportcard.com/report/github.com/koodinikkarit/seppo)
 
 ### Environment variables
 
