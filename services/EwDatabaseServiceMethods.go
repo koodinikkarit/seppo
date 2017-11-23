@@ -3,8 +3,10 @@ package services
 import (
 	"golang.org/x/net/context"
 
-	"github.com/koodinikkarit/seppo/db"
+	"github.com/koodinikkarit/seppo/generators"
+	"github.com/koodinikkarit/seppo/models"
 	SeppoService "github.com/koodinikkarit/seppo/seppo_service"
+	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
 func (s *SeppoServiceServer) SearchEwDatabases(
@@ -18,29 +20,51 @@ func (s *SeppoServiceServer) SearchEwDatabases(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	query := newDb.Table("ew_databases")
+	var queryMods []qm.QueryMod
+
+	queryMods = append(
+		queryMods,
+		qm.From("ew_databases"),
+	)
 
 	if in.SongDatabaseId > 0 {
-		query = query.Where("song_database_id = ?", in.SongDatabaseId)
+		queryMods = append(
+			queryMods,
+			qm.Where("song_database_id = ?", in.SongDatabaseId),
+		)
 	}
 
-	query.Count(&res.MaxEwDatabases)
+	c, _ := models.EwDatabases(newDb, queryMods...).Count()
+	res.MaxEwDatabases = uint64(c)
 
 	if in.Offset > 0 {
-		query = query.Offset(in.Offset)
+		queryMods = append(
+			queryMods,
+			qm.Offset(int(in.Offset)),
+		)
+	} else {
+		queryMods = append(
+			queryMods,
+			qm.Offset(10000),
+		)
 	}
 
 	if in.Limit > 0 {
-		query = query.Limit(in.Limit)
+		queryMods = append(
+			queryMods,
+			qm.Limit(int(in.Offset)),
+		)
 	}
 
-	ewDatabases := []db.EwDatabase{}
-	query.Find(&ewDatabases)
+	ewDatabases, _ := models.EwDatabases(
+		newDb,
+		queryMods...,
+	).All()
 
-	for i := 0; i < len(ewDatabases); i++ {
+	for _, ewDatabase := range ewDatabases {
 		res.EwDatabases = append(
 			res.EwDatabases,
-			NewEwDatabase(&ewDatabases[i]),
+			generators.NewEwDatabase(ewDatabase),
 		)
 	}
 
@@ -58,8 +82,11 @@ func (s *SeppoServiceServer) FetchEwDatabaseById(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	ewDatabases := []db.EwDatabase{}
-	newDb.Where("id in (?)", in.EwDatabaseIds).Find(&ewDatabases)
+	ewDatabases, _ := models.EwDatabases(
+		newDb,
+		qm.WhereIn("id in ?", in.EwDatabaseIds),
+	).All()
+
 	for _, ewDatabaseId := range in.EwDatabaseIds {
 		found := false
 		for _, ewDatabase := range ewDatabases {
@@ -67,7 +94,7 @@ func (s *SeppoServiceServer) FetchEwDatabaseById(
 				found = true
 				res.EwDatabases = append(
 					res.EwDatabases,
-					NewEwDatabase(&ewDatabase),
+					generators.NewEwDatabase(ewDatabase),
 				)
 			}
 		}
@@ -95,15 +122,14 @@ func (s *SeppoServiceServer) CreateEwDatabase(
 
 	randString, _ := GenerateRandomString(10)
 
-	ewDatabase := db.EwDatabase{
+	ewDatabase := models.EwDatabase{
 		Name:           in.Name,
 		SongDatabaseID: in.SongDatabaseId,
 		EwDatabaseKey:  randString,
 	}
+	ewDatabase.Insert(newDb)
 
-	newDb.Create(&ewDatabase)
-
-	res.EwDatabase = NewEwDatabase(&ewDatabase)
+	res.EwDatabase = generators.NewEwDatabase(&ewDatabase)
 
 	return res, nil
 }
@@ -119,22 +145,39 @@ func (s *SeppoServiceServer) UpdateEwDatabase(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	var ewDatabase db.EwDatabase
-	newDb.First(&ewDatabase, in.EwDatabaseId)
+	ewDatabase, _ := models.FindEwDatabase(
+		newDb,
+		in.EwDatabaseId,
+	)
 
-	if ewDatabase.ID > 0 {
-		if in.Name != "" {
-			ewDatabase.Name = in.Name
-		}
-		ewDatabase.RemoveSongsFromEwDatabase = in.RemoveSongsFromExternalDatabase
-		ewDatabase.RemoveSongsFromSongDatabase = in.RemoveSongsFromSongDatabase
-		ewDatabase.VariationVersionConflictAction = in.VariationVersionConflictAction
-		newDb.Save(&ewDatabase)
-		res.EwDatabase = NewEwDatabase(&ewDatabase)
+	if ewDatabase == nil {
 		res.Success = true
-	} else {
-		res.Success = false
+		return res, nil
 	}
+
+	if in.RemoveSongsFromEwDatabase > 0 {
+		if in.RemoveSongsFromEwDatabase == 1 {
+			ewDatabase.RemoveSongsFromEwDatabase = 1
+		} else {
+			ewDatabase.RemoveSongsFromEwDatabase = 0
+		}
+	}
+
+	if in.RemoveSongsFromSongDatabase > 0 {
+		if in.RemoveSongsFromSongDatabase == 1 {
+			ewDatabase.RemoveSongsFromSongDatabase = 1
+		} else {
+			ewDatabase.RemoveSongsFromSongDatabase = 0
+		}
+	}
+
+	if in.VariationVersionConflictAction > 0 {
+		ewDatabase.VariationVersionConflictAction = uint(in.VariationVersionConflictAction)
+	}
+
+	ewDatabase.Update(newDb)
+	res.EwDatabase = generators.NewEwDatabase(ewDatabase)
+	res.Success = true
 
 	return res, nil
 }
@@ -150,15 +193,17 @@ func (s *SeppoServiceServer) RemoveEwDatabase(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	var ewDatabase db.EwDatabase
-	newDb.First(&ewDatabase, in.EwDatabaseId)
+	ewDatabase, _ := models.FindEwDatabase(
+		newDb,
+		in.EwDatabaseId,
+	)
 
-	if ewDatabase.ID > 0 {
-		newDb.Delete(&ewDatabase)
+	if ewDatabase == nil {
 		res.Success = true
-	} else {
-		res.Success = false
+		return res, nil
 	}
 
+	ewDatabase.Delete(newDb)
+	res.Success = true
 	return res, nil
 }

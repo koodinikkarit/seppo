@@ -1,13 +1,16 @@
 package services
 
 import (
-	"strconv"
+	"time"
+
+	null "gopkg.in/volatiletech/null.v6"
 
 	"golang.org/x/net/context"
 
-	"github.com/koodinikkarit/seppo/db"
-	"github.com/koodinikkarit/seppo/logs"
+	"github.com/koodinikkarit/seppo/generators"
+	"github.com/koodinikkarit/seppo/models"
 	SeppoService "github.com/koodinikkarit/seppo/seppo_service"
+	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
 func (s SeppoServiceServer) CreateTag(
@@ -21,22 +24,12 @@ func (s SeppoServiceServer) CreateTag(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	tag := db.Tag{
+	tag := models.Tag{
 		Name: in.Name,
 	}
+	tag.Insert(newDb)
 
-	newDb.Create(&tag)
-
-	logs.InsertLog(
-		newDb,
-		1,
-		"Created tag named "+in.Name,
-	)
-
-	res.Tag = &SeppoService.Tag{
-		Id:   tag.ID,
-		Name: tag.Name,
-	}
+	res.Tag = generators.NewTag(&tag)
 
 	return res, nil
 }
@@ -52,26 +45,21 @@ func (s SeppoServiceServer) UpdateTag(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	tag := db.Tag{}
+	tag, _ := models.FindTag(
+		newDb,
+		in.TagId,
+	)
 
-	newDb.First(&tag, in.TagId)
-
-	if tag.ID > 0 {
-		if in.Name != "" {
-			tag.Name = in.Name
-		}
-
-		newDb.Save(&tag)
-		res.Tag = &SeppoService.Tag{
-			Id:   tag.ID,
-			Name: tag.Name,
-		}
-		logs.InsertLog(newDb, 1, "Updated tag named "+tag.Name)
-		res.Success = true
-	} else {
+	if tag == nil {
 		res.Success = false
+		return res, nil
 	}
 
+	if in.Name != "" {
+		tag.Name = in.Name
+	}
+	tag.Update(newDb)
+	res.Success = true
 	return res, nil
 }
 
@@ -86,18 +74,19 @@ func (s SeppoServiceServer) RemoveTag(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	tag := db.Tag{}
+	tag, _ := models.FindTag(
+		newDb,
+		in.TagId,
+	)
 
-	newDb.Select("id").First(&tag, in.TagId)
-
-	if tag.ID > 0 {
-		newDb.Delete(&tag)
-		logs.InsertLog(newDb, 1, "Removed tag with id "+strconv.Itoa(int(in.TagId)))
-		res.Success = true
-	} else {
+	if tag == nil {
 		res.Success = false
+		return res, nil
 	}
 
+	tag.DeletedAt = null.NewTime(time.Now(), true)
+	tag.Update(newDb)
+	res.Success = true
 	return res, nil
 }
 
@@ -112,45 +101,65 @@ func (s *SeppoServiceServer) SearchTags(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	query := newDb.Select("tags.id, tags.name").Table("tags")
+	var queryMods []qm.QueryMod
 
 	if in.SongDatabaseId > 0 {
-		query = query.Joins("left join song_database_tags on song_database_tags.tag_id = tags.id").
-			Where("song_database_tags.song_database_id = ?", in.SongDatabaseId)
+		queryMods = append(
+			queryMods,
+			qm.InnerJoin("song_database_tags sdt on sdt.tag_id = tags.id"),
+			qm.Where("sdt.song_database_id = ?", in.SongDatabaseId),
+		)
 	}
 
 	if in.VariationId > 0 {
-		query = query.Joins("left join tag_variations on tags.id = tag_variations.tag_id").
-			Where("tag_variations.variation_id = ?", in.VariationId)
+		queryMods = append(
+			queryMods,
+			qm.InnerJoin("tag_variations tv on tags.id = tv.tag_id"),
+			qm.Where("tv.variation_id = ?", in.VariationId),
+		)
 	}
+
+	c, _ := models.Tags(
+		newDb,
+		queryMods...,
+	).Count()
+	res.MaxTags = uint64(c)
 
 	if in.SearchWord != "" {
-		query = query.Where("tags.name LIKE ?", "%"+in.SearchWord+"%")
+		queryMods = append(
+			queryMods,
+			qm.Where("tags.name LIKE ?", "%"+in.SearchWord+"%"),
+		)
 	}
 
-	query.Count(&res.MaxTags)
-
-	query = query.Limit(5000)
-
 	if in.Offset > 0 {
-		query = query.Offset(in.Offset)
+		queryMods = append(
+			queryMods,
+			qm.Offset(int(in.Offset)),
+		)
+	} else {
+		queryMods = append(
+			queryMods,
+			qm.Offset(10000),
+		)
 	}
 
 	if in.Limit > 0 {
-		query = query.Limit(in.Limit)
+		queryMods = append(
+			queryMods,
+			qm.Limit(int(in.Offset)),
+		)
 	}
 
-	tags := []db.Tag{}
+	tags, _ := models.Tags(
+		newDb,
+		queryMods...,
+	).All()
 
-	query.Find(&tags)
-
-	for i := 0; i < len(tags); i++ {
+	for _, tag := range tags {
 		res.Tags = append(
 			res.Tags,
-			&SeppoService.Tag{
-				Id:   tags[i].ID,
-				Name: tags[i].Name,
-			},
+			generators.NewTag(tag),
 		)
 	}
 
@@ -168,21 +177,25 @@ func (s *SeppoServiceServer) FetchTagById(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	tags := []db.Tag{}
-	newDb.Where("id in (?)", in.TagIds).Find(&tags)
+	tags, _ := models.Tags(
+		newDb,
+		qm.WhereIn("id in ?", in.TagIds),
+	).All()
 
 	for _, tagID := range in.TagIds {
 		found := false
-		for i := 0; i < len(tags); i++ {
-			if tagID == tags[i].ID {
-				found = true
-				res.Tags = append(res.Tags, NewTag(&tags[i]))
+		for _, tag := range tags {
+			if tagID != tag.ID {
+				continue
 			}
+			found = true
+			res.Tags = append(
+				res.Tags,
+				generators.NewTag(tag),
+			)
 		}
 		if found == false {
-			res.Tags = append(res.Tags, &SeppoService.Tag{
-				Id: 0,
-			})
+			res.Tags = append(res.Tags, &SeppoService.Tag{})
 		}
 	}
 

@@ -3,8 +3,10 @@ package services
 import (
 	"golang.org/x/net/context"
 
-	"github.com/koodinikkarit/seppo/db"
+	"github.com/koodinikkarit/seppo/generators"
+	"github.com/koodinikkarit/seppo/models"
 	SeppoService "github.com/koodinikkarit/seppo/seppo_service"
+	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
 func (s *SeppoServiceServer) SearchLogs(
@@ -18,41 +20,71 @@ func (s *SeppoServiceServer) SearchLogs(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	query := newDb.Table("logs")
+	var queryMods []qm.QueryMod
 
 	if in.MessageType > 0 {
-		query = query.Where("log_type = ?", in.MessageType)
+		queryMods = append(
+			queryMods,
+			qm.Where("log_type = ?", in.MessageType),
+		)
 	}
 
 	if in.StartDate > 0 {
-		query = query.Where("message_date > ?", in.StartDate)
+		queryMods = append(
+			queryMods,
+			qm.Where("message_date >= ?", in.StartDate),
+		)
 	}
 
 	if in.EndDate > 0 {
-		query = query.Where("message_date > ?", in.EndDate)
+		queryMods = append(
+			queryMods,
+			qm.Where("message_date <= ?", in.EndDate),
+		)
 	}
 
 	if in.SearchWord != "" {
-		query = query.Where("message LIKE ?", "%"+in.SearchWord+"%")
+		queryMods = append(
+			queryMods,
+			qm.Where("message LIKE ?", "%"+in.SearchWord+"%"),
+		)
 	}
 
-	query.Count(&res.MaxLogs)
+	c, _ := models.Logs(
+		newDb,
+		queryMods...,
+	).Count()
+
+	res.MaxLogs = uint64(c)
 
 	if in.Offset > 0 {
-		query = query.Offset(in.Offset)
+		queryMods = append(
+			queryMods,
+			qm.Offset(int(in.Offset)),
+		)
+	} else {
+		queryMods = append(
+			queryMods,
+			qm.Offset(10000),
+		)
 	}
 
 	if in.Limit > 0 {
-		query = query.Limit(in.Limit)
+		queryMods = append(
+			queryMods,
+			qm.Limit(int(in.Limit)),
+		)
 	}
 
-	logs := []db.Log{}
-	query.Find(&logs)
+	logs, _ := models.Logs(
+		newDb,
+		queryMods...,
+	).All()
 
-	for i := 0; i < len(logs); i++ {
+	for _, log := range logs {
 		res.Logs = append(
 			res.Logs,
-			NewLog(&logs[i]),
+			generators.NewLog(log),
 		)
 	}
 

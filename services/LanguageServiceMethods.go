@@ -3,8 +3,10 @@ package services
 import (
 	"golang.org/x/net/context"
 
-	"github.com/koodinikkarit/seppo/db"
+	"github.com/koodinikkarit/seppo/generators"
+	"github.com/koodinikkarit/seppo/models"
 	SeppoService "github.com/koodinikkarit/seppo/seppo_service"
+	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
 func (s SeppoServiceServer) CreateLanguage(
@@ -18,14 +20,12 @@ func (s SeppoServiceServer) CreateLanguage(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	language := db.Language{
+	language := models.Language{
 		Name: in.Name,
 	}
 
-	newDb.Create(&language)
-
-	res.Language = NewLanguage(&language)
-
+	language.Insert(newDb)
+	res.Language = generators.NewLanguage(&language)
 	return res, nil
 }
 
@@ -40,21 +40,22 @@ func (s SeppoServiceServer) UpdateLanguage(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	var language db.Language
+	language, _ := models.FindLanguage(
+		newDb,
+		in.LanguageId,
+	)
 
-	newDb.First(&language, in.LanguageId)
-
-	if language.ID > 0 {
-		if in.Name != "" {
-			language.Name = in.Name
-		}
-		newDb.Save(&language)
-		res.Language = NewLanguage(&language)
-		res.Success = true
-	} else {
+	if language == nil {
 		res.Success = false
+		return res, nil
 	}
 
+	if in.Name != "" {
+		language.Name = in.Name
+	}
+	language.Update(newDb)
+	res.Language = generators.NewLanguage(language)
+	res.Success = true
 	return res, nil
 }
 
@@ -69,17 +70,18 @@ func (s SeppoServiceServer) RemoveLanguage(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	var language db.Language
+	language, _ := models.FindLanguage(
+		newDb,
+		in.LanguageId,
+	)
 
-	newDb.Select("id").First(&language, in.LanguageId)
-
-	if language.ID > 0 {
-		newDb.Delete(&language)
-		res.Success = true
-	} else {
+	if language == nil {
 		res.Success = false
+		return res, nil
 	}
 
+	language.Delete(newDb)
+	res.Success = true
 	return res, nil
 }
 
@@ -94,31 +96,45 @@ func (s *SeppoServiceServer) SearchLanguages(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	languages := []db.Language{}
+	var queryMods []qm.QueryMod
 
-	query := newDb.Table("languages")
-
-	query.Count(&res.MaxLanguages)
+	c, _ := models.Languages(newDb).Count()
+	res.MaxLanguages = uint64(c)
 
 	if in.SearchWord != "" {
-		query = query.Where("languages.name LIKE ?", "%"+in.SearchWord+"%")
+		queryMods = append(
+			queryMods,
+			qm.Where("languages.name LIKE ?", "%"+in.SearchWord+"%"),
+		)
 	}
-
-	query = query.Limit(5000)
 
 	if in.Offset > 0 {
-		query = query.Offset(in.Offset)
+		queryMods = append(
+			queryMods,
+			qm.Offset(int(in.Offset)),
+		)
+	} else {
+		queryMods = append(
+			queryMods,
+			qm.Offset(10000),
+		)
 	}
 	if in.Limit > 0 {
-		query = query.Limit(in.Limit)
+		queryMods = append(
+			queryMods,
+			qm.Limit(int(in.Limit)),
+		)
 	}
 
-	query.Find(&languages)
+	languages, _ := models.Languages(
+		newDb,
+		queryMods...,
+	).All()
 
-	for i := 0; i < len(languages); i++ {
+	for _, language := range languages {
 		res.Languages = append(
 			res.Languages,
-			NewLanguage(&languages[i]),
+			generators.NewLanguage(language),
 		)
 	}
 
@@ -136,18 +152,19 @@ func (s *SeppoServiceServer) FetchLanguageById(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	languages := []db.Language{}
-
-	newDb.Where("id in (?)", in.LanguageIds).Find(&languages)
+	languages, _ := models.Languages(
+		newDb,
+		qm.WhereIn("id in ?", in.LanguageIds),
+	).All()
 
 	for _, languageID := range in.LanguageIds {
 		found := false
-		for i := 0; i < len(languages); i++ {
-			if languageID == languages[i].ID {
+		for _, language := range languages {
+			if languageID == language.ID {
 				found = true
 				res.Languages = append(
 					res.Languages,
-					NewLanguage(&languages[i]),
+					generators.NewLanguage(language),
 				)
 			}
 		}

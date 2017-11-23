@@ -1,10 +1,16 @@
 package services
 
 import (
+	"time"
+
+	null "gopkg.in/volatiletech/null.v6"
+
 	"golang.org/x/net/context"
 
-	"github.com/koodinikkarit/seppo/db"
+	"github.com/koodinikkarit/seppo/generators"
+	"github.com/koodinikkarit/seppo/models"
 	SeppoService "github.com/koodinikkarit/seppo/seppo_service"
+	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
 func (s *SeppoServiceServer) CreateSongDatabase(
@@ -15,19 +21,14 @@ func (s *SeppoServiceServer) CreateSongDatabase(
 	error,
 ) {
 	res := &SeppoService.CreateSongDatabaseResponse{}
-	tx := s.getDB().Begin()
-	defer tx.Close()
+	newDb := s.getDB()
+	defer newDb.Close()
 
-	newSongdatabase := db.SongDatabase{
+	newSongDatabase := models.SongDatabase{
 		Name: in.Name,
 	}
-
-	tx.Create(&newSongdatabase)
-
-	tx.Commit()
-
-	res.SongDatabase = NewSongDatabase(&newSongdatabase)
-
+	newSongDatabase.Insert(newDb)
+	res.SongDatabase = generators.NewSongDatabase(&newSongDatabase)
 	return res, nil
 }
 
@@ -39,34 +40,45 @@ func (s *SeppoServiceServer) UpdateSongDatabase(
 	error,
 ) {
 	res := &SeppoService.UpdateSongDatabaseResponse{}
-	tx := s.getDB().Begin()
-	defer tx.Close()
+	newDb := s.getDB()
+	defer newDb.Close()
+	tx, _ := newDb.Begin()
 
-	var songDatabase db.SongDatabase
-	tx.First(&songDatabase, in.SongDatabaseId)
-	if songDatabase.ID > 0 {
-		res.Success = true
+	songDatabase, _ := models.FindSongDatabase(
+		tx,
+		in.SongDatabaseId,
+	)
 
-		if in.Name != "" {
-			songDatabase.Name = in.Name
-		}
-
-		for i := 0; i < len(in.AddTagIds); i++ {
-			tx.Create(&db.SongDatabaseTag{
-				TagID:          in.AddTagIds[i],
-				SongDatabaseID: songDatabase.ID,
-			})
-		}
-		if len(in.RemoveTagIds) > 0 {
-			tx.Where("tag_id in (?)", in.RemoveTagIds).Delete(&db.SongDatabaseTag{})
-		}
-
-		tx.Save(&songDatabase)
-		tx.Commit()
-	} else {
+	if songDatabase == nil {
 		res.Success = false
+		return res, nil
 	}
 
+	if in.Name != "" {
+		songDatabase.Name = in.Name
+	}
+	songDatabase.Update(tx)
+
+	for _, newTagID := range in.AddTagIds {
+		songDatabaseTag := models.SongDatabaseTag{
+			TagID: newTagID,
+		}
+		songDatabase.AddSongDatabaseTags(
+			tx,
+			true,
+			&songDatabaseTag,
+		)
+	}
+
+	if len(in.RemoveTagIds) > 0 {
+		songDatabase.SongDatabaseTags(
+			tx,
+			qm.WhereIn("song_database_tags.tag_id = ?", in.RemoveTagIds),
+		).DeleteAll()
+	}
+
+	tx.Commit()
+	res.Success = true
 	return res, nil
 }
 
@@ -78,20 +90,22 @@ func (s *SeppoServiceServer) RemoveSongDatabase(
 	error,
 ) {
 	res := &SeppoService.RemoveSongDatabaseResponse{}
-	tx := s.getDB().Begin()
-	defer tx.Close()
+	newDb := s.getDB()
+	defer newDb.Close()
 
-	var songDatabase db.SongDatabase
-	tx.First(&songDatabase, in.SongDatabaseId)
+	songDatabase, _ := models.FindSongDatabase(
+		newDb,
+		in.SongDatabaseId,
+	)
 
-	if songDatabase.ID > 0 {
-		res.Success = true
-		tx.Delete(&songDatabase)
-		tx.Commit()
-	} else {
+	if songDatabase == nil {
 		res.Success = false
+		return res, nil
 	}
 
+	songDatabase.DeletedAt = null.NewTime(time.Now(), true)
+	songDatabase.Update(newDb)
+	res.Success = true
 	return res, nil
 }
 
@@ -106,27 +120,38 @@ func (s *SeppoServiceServer) SearchSongDatabases(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	songDatabases := []db.SongDatabase{}
-
-	query := newDb.Table("song_databases")
+	var queryMods []qm.QueryMod
 
 	if in.VariationId > 0 {
-		query = query.Joins("JOIN song_database_variations on song_database_variations.song_database_id = song_databases.id").
-			Where("song_database_variations.variation_id = ?", in.VariationId)
+		queryMods = append(
+			queryMods,
+			qm.InnerJoin("song_database_variations sdv on sdv.song_database_id = song_databases.id"),
+			qm.Where("sdv.variation_id = ?", in.VariationId),
+		)
 	}
 
-	query.Count(&res.MaxSongDatabases)
+	c, _ := models.SongDatabases(
+		newDb,
+		queryMods...,
+	).Count()
+	res.MaxSongDatabases = uint64(c)
 
 	if in.SearchWord != "" {
-		query = query.Where("song_databases.name LIKE ?", "%"+in.SearchWord+"%")
+		queryMods = append(
+			queryMods,
+			qm.Where("song_databases.name LIKE ?", "%"+in.SearchWord+"%"),
+		)
 	}
 
-	query = query.Find(&songDatabases)
+	songDatabases, _ := models.SongDatabases(
+		newDb,
+		queryMods...,
+	).All()
 
 	for _, songDatabase := range songDatabases {
 		res.SongDatabases = append(
 			res.SongDatabases,
-			NewSongDatabase(&songDatabase),
+			generators.NewSongDatabase(songDatabase),
 		)
 	}
 	return res, nil
@@ -143,27 +168,27 @@ func (s *SeppoServiceServer) FetchSongDatabaseById(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	songDatabases := []db.SongDatabase{}
-	newDb.Where("id in (?)", in.SongDatabaseIds).
-		Find(&songDatabases)
+	songDatabases, _ := models.SongDatabases(
+		newDb,
+		qm.WhereIn("id in (?)", in.SongDatabaseIds),
+	).All()
 
-	for _, songDatabaseId := range in.SongDatabaseIds {
+	for _, songDatabaseID := range in.SongDatabaseIds {
 		found := false
 		for _, songDatabase := range songDatabases {
-			if songDatabase.ID == songDatabaseId {
-				found = true
-				res.SongDatabases = append(
-					res.SongDatabases,
-					NewSongDatabase(&songDatabase),
-				)
+			if songDatabase.ID != songDatabaseID {
+				continue
 			}
+			found = true
+			res.SongDatabases = append(
+				res.SongDatabases,
+				generators.NewSongDatabase(songDatabase),
+			)
 		}
 		if found == false {
 			res.SongDatabases = append(
 				res.SongDatabases,
-				&SeppoService.SongDatabase{
-					Id: 0,
-				},
+				&SeppoService.SongDatabase{},
 			)
 		}
 	}

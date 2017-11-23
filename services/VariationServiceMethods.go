@@ -1,14 +1,20 @@
 package services
 
 import (
+	"database/sql"
+	"fmt"
 	"time"
+
+	null "gopkg.in/volatiletech/null.v6"
 
 	"golang.org/x/net/context"
 
-	"github.com/jinzhu/gorm"
-	"github.com/koodinikkarit/seppo/db"
+	"github.com/koodinikkarit/seppo/generators"
 	"github.com/koodinikkarit/seppo/managers"
+	"github.com/koodinikkarit/seppo/models"
 	SeppoService "github.com/koodinikkarit/seppo/seppo_service"
+	"github.com/volatiletech/sqlboiler/boil"
+	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
 func (s *SeppoServiceServer) CreateVariation(
@@ -19,116 +25,110 @@ func (s *SeppoServiceServer) CreateVariation(
 	error,
 ) {
 	res := &SeppoService.CreateVariationResponse{}
-	tx := s.getDB().Begin()
-	defer tx.Close()
+	newDb := s.getDB()
+	defer newDb.Close()
+	tx, _ := newDb.Begin()
 
-	var sameVariation db.Variation
+	sameVariation, _ := models.Variations(
+		tx,
+		qm.InnerJoin("variation_versions on variations.id = variation_versions.variation_id"),
+		qm.Where("variation_Versions.name = ?", in.Name),
+		qm.Where("variation_versions.text = ?", in.Text),
+		qm.Load("variation_versions"),
+	).One()
 
-	tx.Table("variations").
-		Joins("left join variation_versions on variations.id = variation_versions.variation_id").
-		Preload("VariationVersions").
-		Where("variation_versions.name = ?", in.Name).
-		Where("variation_versions.text = ?", in.Text).
-		First(&sameVariation)
-
-	if sameVariation.ID > 0 {
-		sameVariationVersion := sameVariation.FindVariationVersionByNameAndText(
+	if sameVariation == nil {
+		newVariation, _ := managers.CreateNewVariation(
+			tx,
 			in.Name,
 			in.Text,
 		)
-		newestVariationVersion := sameVariation.FindNewestVersion()
-
-		if sameVariationVersion.ID == newestVariationVersion.ID {
-			if sameVariationVersion.DisabledAt != nil {
-				tx.Model(&sameVariationVersion).Update("disabled_at", nil)
-			}
-			res.Variation = NewVariation(&sameVariation)
-		} else {
-			newVariation := db.CreateNewVariationAndVersion(
-				in.Name,
-				in.Text,
-			)
-			tx.Create(&newVariation)
-			newBranch := db.Branch{
-				SourceVariationVersionID:      sameVariationVersion.ID,
-				DestinationVariationVersionID: newVariation.VariationVersions[0].ID,
-			}
-			tx.Create(&newBranch)
-			res.Variation = NewVariation(&newVariation)
-		}
-
-	} else {
-		newVariation := db.CreateNewVariationAndVersion(
-			in.Name,
-			in.Text,
-		)
-		tx.Create(&newVariation)
-		res.Variation = NewVariation(&newVariation)
+		res.Variation = generators.NewVariation(newVariation)
+		tx.Commit()
+		return res, nil
 	}
+
+	sameVariationVersions, _ := sameVariation.VariationVersions(tx).All()
+	sameVariationVersion := managers.FindVariationVersionByNameAndText(
+		sameVariationVersions,
+		in.Name,
+		in.Text,
+	)
+	newestVariationVersion := managers.FindNewestVariationVersion(
+		sameVariationVersions,
+	)
+
+	if sameVariationVersion.ID == newestVariationVersion.ID {
+		if sameVariationVersion.DisabledAt.Valid == false {
+			res.Variation = generators.NewVariation(sameVariation)
+			return res, nil
+		}
+		newVariation, _ := managers.CreateBranchAndVariation(
+			tx,
+			sameVariationVersion.ID,
+			in.Name,
+			in.Text,
+		)
+		res.Variation = generators.NewVariation(newVariation)
+		tx.Commit()
+		return res, nil
+	}
+
+	newVariation, _ := managers.CreateBranchAndVariation(
+		tx,
+		sameVariationVersion.ID,
+		in.Name,
+		in.Text,
+	)
 	tx.Commit()
+	res.Variation = generators.NewVariation(newVariation)
 	return res, nil
 }
 
 func HandleVariationUpdateIds(
-	tx *gorm.DB,
+	tx *sql.Tx,
 	in *SeppoService.UpdateVariationRequest,
-	variation db.Variation,
+	variation *models.Variation,
 ) {
-	if len(in.AddTagIds) > 0 {
-		var tagVariations []db.TagVariation
-		for _, id := range in.AddTagIds {
-			tagVariations = append(
-				tagVariations,
-				db.TagVariation{
-					VariationID: in.VariationId,
-					TagID:       id,
-				},
-			)
+	for _, id := range in.AddTagIds {
+		tagVariation := models.TagVariation{
+			VariationID: in.VariationId,
+			TagID:       id,
 		}
-		managers.BatchAddTagsToVariation(
-			tx,
-			tagVariations,
-		)
+		tagVariation.Insert(tx)
 	}
 	if len(in.RemoveTagIds) > 0 {
-		tx.Where("variation_id = ?", in.VariationId).
-			Where("tag_id in (?)", in.RemoveTagIds).
-			Delete(&db.TagVariation{})
-	}
-	if len(in.AddSongDatabaseIds) > 0 {
-		var songDatabaseVariations []db.SongDatabaseVariation
-		for _, id := range in.AddSongDatabaseIds {
-			songDatabaseVariations = append(
-				songDatabaseVariations,
-				db.SongDatabaseVariation{
-					VariationID:    in.VariationId,
-					SongDatabaseID: id,
-				},
-			)
-		}
-		managers.BatchAddVariationsToSongDatabase(
+		models.TagVariations(
 			tx,
-			songDatabaseVariations,
-		)
+			qm.WhereIn("variation_id = ?", in.VariationId),
+			qm.Where("tag_id in ?", in.RemoveTagIds),
+		).DeleteAll()
+	}
+	for _, id := range in.AddSongDatabaseIds {
+		songDatabaseVariation := models.SongDatabaseVariation{
+			VariationID:    in.VariationId,
+			SongDatabaseID: id,
+		}
+		songDatabaseVariation.Insert(tx)
 	}
 	if len(in.RemoveSongDatabaseIds) > 0 {
-		tx.Where("variation_id = (?)", in.VariationId).
-			Where("song_database_id in (?)", in.RemoveSongDatabaseIds).
-			Delete(&db.SongDatabaseVariation{})
+		models.SongDatabaseVariations(
+			tx,
+			qm.Where("variation_id = ?", in.VariationId),
+			qm.WhereIn("song_database_id in ?", in.RemoveSongDatabaseIds),
+		)
 	}
 
-	variationUpdateMap := make(map[string]interface{})
-
 	if in.SongId > 0 {
-		variationUpdateMap["song_id"] = in.SongId
+		variation.SongID = null.NewUint64(in.SongId, true)
 	}
 
 	if in.LanguageId > 0 {
-		variationUpdateMap["language_id"] = in.LanguageId
+		variation.LanguageID = null.NewUint64(in.LanguageId, true)
 	}
-
-	if len(variationUpdateMap) > 0 {
-		tx.Model(&variation).Updates(variationUpdateMap)
+	if in.SongId > 0 &&
+		in.LanguageId > 0 {
+		variation.Update(tx, "song_id", "language_id")
 	}
 }
 
@@ -140,14 +140,16 @@ func (s *SeppoServiceServer) UpdateVariation(
 	error,
 ) {
 	res := &SeppoService.UpdateVariationResponse{}
-	tx := s.getDB().Begin()
-	defer tx.Close()
+	newDb := s.getDB()
+	defer newDb.Close()
+	tx, _ := newDb.Begin()
+	variation, _ := models.Variations(
+		tx,
+		qm.Load("VariationVersions"),
+		qm.Where("id = ?", in.VariationId),
+	).One()
 
-	var variation db.Variation
-
-	tx.Preload("VariationVersions").First(&variation, in.VariationId)
-
-	if variation.ID == 0 {
+	if variation == nil {
 		res.Success = false
 		return res, nil
 	}
@@ -160,11 +162,15 @@ func (s *SeppoServiceServer) UpdateVariation(
 		)
 		tx.Commit()
 		res.Success = true
-		res.Variation = NewVariation(&variation)
+		res.Variation = generators.NewVariation(variation)
 		return res, nil
 	}
 
-	currentNewestVariationVersion := variation.FindNewestVersion()
+	variationVersions, _ := variation.VariationVersions(tx).All()
+
+	currentNewestVariationVersion := managers.FindNewestVariationVersion(
+		variationVersions,
+	)
 
 	var name string
 	var text string
@@ -190,173 +196,87 @@ func (s *SeppoServiceServer) UpdateVariation(
 		)
 		tx.Commit()
 		res.Success = true
-		res.Variation = NewVariation(&variation)
+		res.Variation = generators.NewVariation(variation)
 		return res, nil
 	}
 
-	var sameVariation db.Variation
+	sameVariation, _ := models.Variations(
+		tx,
+		qm.InnerJoin("variation_versions on variations.id = variation_versions.variation_id"),
+		qm.Where("variation_Versions.name = ?", in.Name),
+		qm.Where("variation_versions.text = ?", in.Text),
+		qm.Load("variation_versions"),
+	).One()
 
-	tx.Table("variations").
-		Joins("left join variation_versions on variations.id = variation_versions.variation_id").
-		Preload("VariationVersions").
-		Where("variation_versions.name = ?", name).
-		Where("variation_versions.text = ?", text).
-		First(&sameVariation)
-
-	if sameVariation.ID > 0 {
-		sameVariationVersion := sameVariation.FindVariationVersionByNameAndText(
-			name,
-			text,
-		)
-		newestVariationVersion := sameVariation.FindNewestVersion()
-		if sameVariationVersion.ID != currentNewestVariationVersion.ID {
-			if sameVariationVersion.ID == newestVariationVersion.ID {
-				tx.Model(&currentNewestVariationVersion).Update(
-					"disabled_at",
-					time.Now(),
-				)
-				newMerge := db.Merge{
-					VariationVersion1ID:           currentNewestVariationVersion.ID,
-					VariationVersion2ID:           sameVariationVersion.ID,
-					DestinationVariationVersionID: sameVariationVersion.ID,
-				}
-				tx.Create(&newMerge)
-				db.MoveVariationReferences(
-					tx,
-					currentNewestVariationVersion.VariationID,
-					sameVariation.ID,
-				)
-			} else {
-				tx.Model(&currentNewestVariationVersion).Update(
-					"disabled_at",
-					time.Now(),
-				)
-				newVariationVersion := db.VariationVersion{
-					VariationID: in.VariationId,
-					Name:        name,
-					Text:        text,
-					Version:     currentNewestVariationVersion.Version + 1,
-				}
-				tx.Create(&newVariationVersion)
-				HandleVariationUpdateIds(
-					tx,
-					in,
-					variation,
-				)
-			}
-		}
-	} else {
-		tx.Model(&currentNewestVariationVersion).Update(
-			"disabled_at",
-			time.Now(),
-		)
-		newVariationVersion := db.VariationVersion{
-			VariationID: in.VariationId,
+	if sameVariation == nil {
+		currentNewestVariationVersion.DisabledAt = null.NewTime(time.Now(), true)
+		currentNewestVariationVersion.Update(tx)
+		newVariationVersion := models.VariationVersion{
+			VariationID: variation.ID,
 			Name:        name,
 			Text:        text,
 			Version:     currentNewestVariationVersion.Version + 1,
 		}
-		tx.Create(&newVariationVersion)
+		newVariationVersion.Insert(tx)
 		HandleVariationUpdateIds(
 			tx,
 			in,
 			variation,
 		)
+		res.Variation = generators.NewVariation(variation)
+		tx.Commit()
+		return res, nil
 	}
 
+	sameVariationVersions, _ := sameVariation.VariationVersions(tx).All()
+	sameVariationVersion := managers.FindVariationVersionByNameAndText(
+		sameVariationVersions,
+		name,
+		text,
+	)
+	newestVariationVersion := managers.FindNewestVariationVersion(
+		sameVariationVersions,
+	)
+
+	if sameVariationVersion.ID == newestVariationVersion.ID {
+		currentNewestVariationVersion.DisabledAt = null.NewTime(time.Now(), true)
+		currentNewestVariationVersion.Update(tx)
+		newMerge := models.Merge{
+			VariationVersion1ID:           currentNewestVariationVersion.ID,
+			VariationVersion2ID:           sameVariationVersion.ID,
+			DestinationVariationVersionID: sameVariationVersion.ID,
+		}
+		newMerge.Insert(tx)
+		managers.MoveVariationReferences(
+			tx,
+			currentNewestVariationVersion.VariationID,
+			sameVariation.ID,
+		)
+
+		res.Variation = generators.NewVariation(sameVariation)
+		res.Success = true
+		tx.Commit()
+		return res, nil
+	}
+
+	currentNewestVariationVersion.DisabledAt = null.NewTime(time.Now(), true)
+	currentNewestVariationVersion.Update(tx)
+
+	newVariationVersion := models.VariationVersion{
+		VariationID: variation.ID,
+		Name:        name,
+		Text:        text,
+		Version:     currentNewestVariationVersion.Version + 1,
+	}
+	newVariationVersion.Insert(tx)
+	HandleVariationUpdateIds(
+		tx,
+		in,
+		variation,
+	)
 	tx.Commit()
-
-	res.Variation = NewVariation(&variation)
+	res.Variation = generators.NewVariation(variation)
 	res.Success = true
-
-	// now := time.Now()
-
-	// var variation db.Variation
-	// tx.First(&variation, in.VariationId)
-
-	// if variation.ID == 0 {
-	// 	res.Success = false
-	// 	return res, nil
-	// }
-
-	// if in.SongId > 0 {
-	// 	variation.SongID = &in.SongId
-	// }
-
-	// if in.LanguageId > 0 {
-	// 	variation.LanguageID = &in.LanguageId
-	// }
-
-	// tx.Save(&variation)
-
-	// var newestVariationVersion db.VariationVersion
-	// tx.Table("variation_versions").
-	// 	Where("variation_versions.variation_id = ?", variation.ID).
-	// 	Where("variation_versions.version = (select max(version) from variation_versions where variation_versions.variation_id = ?)", variation.ID).
-	// 	First(&newestVariationVersion)
-
-	// var name string
-	// var text string
-	// if in.Name != "" {
-	// 	name = in.Name
-	// } else {
-	// 	name = newestVariationVersion.Name
-	// }
-
-	// if in.Text != "" {
-	// 	text = in.Text
-	// } else {
-	// 	text = newestVariationVersion.Text
-	// }
-
-	// sameVariationVersions := []db.VariationVersion{}
-
-	// tx.Where("name = ?", name).Where("text = ?", text).Find(&sameVariationVersions)
-
-	// if len(sameVariationVersions) > 0 {
-	// 	sameVariationVersion := sameVariationVersions[0]
-	// 	if sameVariationVersion.ID == newestVariationVersion.ID {
-	// 		res.Variation = NewVariation(&variation)
-	// 	} else {
-
-	// 		MoveVariationVersionReferences(
-	// 			tx,
-	// 			newestVariationVersion.ID,
-	// 			sameVariationVersion.ID,
-	// 		)
-	// 		newMerge := db.Merge{
-	// 			VariationVersion1ID:           newestVariationVersion.ID,
-	// 			VariationVersion2ID:           sameVariationVersion.ID,
-	// 			DestinationVariationVersionID: sameVariationVersion.ID,
-	// 		}
-	// 		tx.Create(&newMerge)
-	// 		var sameVariation db.Variation
-	// 		tx.First(&sameVariation, sameVariationVersion.VariationID)
-	// 		newestVariationVersion.DisabledAt = &now
-	// 		tx.Save(&newestVariationVersion)
-	// 		res.Variation = NewVariation(&sameVariation)
-	// 	}
-	// } else {
-	// 	newVariationVersion := db.VariationVersion{
-	// 		VariationID: newestVariationVersion.VariationID,
-	// 		Name:        name,
-	// 		Text:        text,
-	// 		Version:     newestVariationVersion.Version + 1,
-	// 	}
-	// 	tx.Create(&newVariationVersion)
-	// 	MoveVariationVersionReferences(
-	// 		tx,
-	// 		newestVariationVersion.ID,
-	// 		newVariationVersion.ID,
-	// 	)
-	// 	newestVariationVersion.DisabledAt = &now
-	// 	tx.Save(&newestVariationVersion)
-	// 	tx.Save(&variation)
-	// 	res.Variation = NewVariation(&variation)
-	// }
-	// tx.Commit()
-	// res.Success = true
-
 	return res, nil
 }
 
@@ -368,35 +288,26 @@ func (s *SeppoServiceServer) RemoveVariation(
 	error,
 ) {
 	res := &SeppoService.RemoveVariationResponse{}
-	tx := s.getDB().Begin()
-	defer tx.Close()
+	newDb := s.getDB()
+	defer newDb.Close()
 
-	var n uint32
-	tx.Table("variations").Where("id = ?", in.VariationId).Count(&n)
-	if n > 0 {
-		tx.Table("variation_versions").
-			Where("variation_id = ?", in.VariationId).
-			Where("disabled_at is null").
-			Update("disabled_at", time.Now())
-		res.Success = true
-		tx.Commit()
+	variation, _ := models.FindVariation(
+		newDb,
+		in.VariationId,
+	)
+
+	if variation == nil {
+		res.Success = false
+		return res, nil
 	}
 
-	// var newestVariationVersion db.VariationVersion
-	// tx.Table("variation_versions").
-	// 	Where("variation_versions.variation_id = ?", in.VariationId).
-	// 	Where("variation_versions.version = (select max(version) from variation_versions where variation_versions.variation_id = ?)", in.VariationId).
-	// 	First(&newestVariationVersion)
-
-	// if newestVariationVersion.ID > 0 {
-	// 	res.Success = true
-	// 	now := time.Now()
-	// 	newestVariationVersion.DisabledAt = &now
-	// 	tx.Save(&newestVariationVersion)
-	// } else {
-	// 	res.Success = false
-	// }
-
+	variation.VariationVersions(
+		newDb,
+		qm.Where("disabled_at is null"),
+	).UpdateAll(models.M{
+		"disabled_at": time.Now(),
+	})
+	res.Success = true
 	return res, nil
 }
 
@@ -411,25 +322,29 @@ func (s *SeppoServiceServer) FetchVariationById(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	variations := []db.Variation{}
-	newDb.Where("id in (?)", in.VariationIds).Find(&variations)
+	variations, _ := models.Variations(
+		newDb,
+		qm.WhereIn("id in ?", in.VariationIds),
+	).All()
 
-	for _, variationId := range in.VariationIds {
+	for _, variationID := range in.VariationIds {
 		var found bool
 		for _, variation := range variations {
-			if variation.ID == variationId {
-				res.Variations = append(
-					res.Variations,
-					NewVariation(&variation),
-				)
-				found = true
-				break
+			if variationID == variation.ID {
+				continue
 			}
+			res.Variations = append(
+				res.Variations,
+				generators.NewVariation(variation),
+			)
+			found = true
+			break
 		}
 		if found == false {
-			res.Variations = append(res.Variations, &SeppoService.Variation{
-				Id: 0,
-			})
+			res.Variations = append(
+				res.Variations,
+				&SeppoService.Variation{},
+			)
 		}
 	}
 
@@ -443,97 +358,151 @@ func (s *SeppoServiceServer) SearchVariations(
 	*SeppoService.SearchVariationsResponse,
 	error,
 ) {
+	boil.DebugMode = true
 	res := &SeppoService.SearchVariationsResponse{}
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	variations := []db.Variation{}
+	var queryMods []qm.QueryMod
 
-	query := newDb.Table("variation_versions").Where("variation_versions.disabled_at is NULL").
-		Joins("left join variations on variations.id = variation_versions.variation_id")
+	queryMods = append(
+		queryMods,
+		qm.InnerJoin("variation_versions on variation_versions.variation_id = variations.id"),
+		qm.Where("variation_versions.disabled_at is null"),
+	)
 
-	if in.OrderBy > 0 {
-		switch in.OrderBy {
-		case 1:
-			query = query.Order("name")
-		case 2:
-			query = query.Order("name desc")
-		}
+	// if in.OrderBy > 0 {
+	// 	switch in.OrderBy {
+	// 	case 1:
+	// 		queryMods = append(
+	// 			queryMods,
+	// 			qm.Order("name"),
+	// 		)
+	// 	case 2:
+	// 		queryMods = append(
+	// 			queryMods,
+	// 			qm.Order("name desc"),
+	// 		)
+	// 	}
 
-	}
+	// }
 
 	if in.TagId > 0 {
-		query = query.Joins("left join tag_variations on tag_variations.variation_id = variations.id").
-			Where("tag_variations.tag_id = ?", in.TagId)
+		queryMods = append(
+			queryMods,
+			qm.InnerJoin("tag_variations tv on tv.variation_id = variations.id"),
+			qm.Where("tag_variations.tag_id = ?", in.TagId),
+		)
 	}
 
 	if in.SongDatabaseId > 0 {
-		query = query.Joins("left join song_database_variations on song_database_variations.variation_id = variations.id").
-			Where("song_database_variations.song_database_id = ?", in.SongDatabaseId)
+		queryMods = append(
+			queryMods,
+			qm.InnerJoin("song_database_variations sdv on sdv.variation_id = variations.id"),
+			qm.Where("sdv.song_database_id = ?", in.SongDatabaseId),
+		)
 	}
 
 	if in.ScheduleId > 0 {
-		query = query.Joins("left join schedule_variations on schedule_variations.variation_id = variations.id").
-			Where("schedule_variations.schedule_id = ?", in.ScheduleId)
+		queryMods = append(
+			queryMods,
+			qm.InnerJoin("schedule_variations sv on sv.variation_id = variations.id"),
+			qm.Where("sv.schedule_id = ?", in.ScheduleId),
+		)
 	}
 
 	if in.LanguageId > 0 {
-		query = query.Where("variations.language_id = ?", in.LanguageId)
+		queryMods = append(
+			queryMods,
+			qm.Where("variations.language_id = ?", in.LanguageId),
+		)
 	}
 
-	if len(in.SkipVariationIds) > 0 {
-		query = query.Not("id", in.SkipVariationIds)
-	}
+	// if len(in.SkipVariationIds) > 0 {
+	// 	query = query.Not("id", in.SkipVariationIds)
+	// }
 
 	if in.SongDatabaseFilterId > 0 {
-		var filterSongDatabaseVariationVersionIds []uint32
-		filterSongDatabaseVariations := []db.SongDatabaseVariation{}
-		newDb.Where("song_database_id = ?", in.SongDatabaseFilterId).
-			Select("variation_version_id").Find(&filterSongDatabaseVariations)
-		for _, v := range filterSongDatabaseVariations {
-			filterSongDatabaseVariationVersionIds = append(
-				filterSongDatabaseVariationVersionIds,
-				v.VariationID,
-			)
-		}
-		if filterSongDatabaseVariationVersionIds != nil {
-			query = query.Not(
-				"variation_versions.id",
-				filterSongDatabaseVariationVersionIds,
-			)
-		}
+		queryMods = append(
+			queryMods,
+			qm.InnerJoin("song_database_variations sdv2 on sdv2.variation_id = variations.id"),
+			qm.Where("sdv2.song_database_id != ?", in.SongDatabaseId),
+		)
+
+		// var filterSongDatabaseVariationVersionIds []uint32
+		// filterSongDatabaseVariations := []db.SongDatabaseVariation{}
+		// newDb.Where("song_database_id = ?", in.SongDatabaseFilterId).
+		// 	Select("variation_version_id").Find(&filterSongDatabaseVariations)
+		// for _, v := range filterSongDatabaseVariations {
+		// 	filterSongDatabaseVariationVersionIds = append(
+		// 		filterSongDatabaseVariationVersionIds,
+		// 		v.VariationID,
+		// 	)
+		// }
+		// if filterSongDatabaseVariationVersionIds != nil {
+		// 	query = query.Not(
+		// 		"variation_versions.id",
+		// 		filterSongDatabaseVariationVersionIds,
+		// 	)
+		// }
 	}
 
-	query.Count(&res.MaxVariations)
+	c, _ := models.VariationVersions(
+		newDb,
+		queryMods...,
+	).Count()
+	res.MaxVariations = uint64(c)
 
 	if in.SearchWord != "" {
 		if in.SearchFrom > 0 {
 			switch in.SearchFrom {
 			case 1:
-				query = query.Where("variation_versions.name LIKE ?", "%"+in.SearchWord+"%")
+				queryMods = append(
+					queryMods,
+					qm.Where("variation_versions.name LIKE ?", "%"+in.SearchWord+"%"),
+				)
 			case 2:
-				query = query.
-					Where("variations.name LIKE ? or variation_texts.text LIKE ?", "%"+in.SearchWord+"%", "%"+in.SearchWord+"%")
+				queryMods = append(
+					queryMods,
+					qm.Where("variations.name LIKE ? or variation_texts.text LIKE ?", "%"+in.SearchWord+"%", "%"+in.SearchWord+"%"),
+				)
 			}
 		} else {
-			query = query.Where("variation_versions.name LIKE ? OR variation_versions.text LIKE ?", "%"+in.SearchWord+"%", "%"+in.SearchWord+"%")
+			queryMods = append(
+				queryMods,
+				qm.Where("variation_versions.name LIKE ? OR variation_versions.text LIKE ?", "%"+in.SearchWord+"%", "%"+in.SearchWord+"%"),
+			)
 		}
 	}
 
 	if in.Offset > 0 {
-		query = query.Offset(in.Offset)
+		queryMods = append(
+			queryMods,
+			qm.Offset(int(in.Offset)),
+		)
 	}
 
 	if in.Limit > 0 {
-		query = query.Limit(in.Limit)
+		queryMods = append(
+			queryMods,
+			qm.Limit(int(in.Limit)),
+		)
+	} else {
+		queryMods = append(
+			queryMods,
+			qm.Limit(10000),
+		)
 	}
 
-	query = query.Select("variations.id, variations.song_id, variations.language_id").Scan(&variations)
+	variations, _ := models.Variations(
+		newDb,
+		queryMods...,
+	).All()
 
-	for i := 0; i < len(variations); i++ {
+	for _, variation := range variations {
 		res.Variations = append(
 			res.Variations,
-			NewVariation(&variations[i]),
+			generators.NewVariation(variation),
 		)
 	}
 
@@ -551,8 +520,6 @@ func (s *SeppoServiceServer) FetchNewestVariationVersionByVariationId(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	variationVersions := []db.VariationVersion{}
-
 	// select v1.id,v1.name,v1.version,v2.id,v2.name,v2.version
 	// from variation_versions v1
 	// left join variation_versions v2
@@ -568,20 +535,31 @@ func (s *SeppoServiceServer) FetchNewestVariationVersionByVariationId(
 	// 	Select("vv1.*").
 	// 	Find(&variationVersions)
 
-	newDb.Where("variation_id in (?)", in.VariationIds).
-		Where("disabled_at is null").
-		Find(&variationVersions)
+	variationVersions, err := models.VariationVersions(
+		newDb,
+		qm.Where("disabled_at is null"),
+		qm.WhereIn("variation_id in ?", in.VariationIds),
+		// qm.InnerJoin("left join variation_versions vv on (vv.variation_id = variation_versions.variation_id and variation_versions.version < vv.versions"),
+		// qm.Where("vv.id is null"),
+		// qm.Where("variation_versions.variation_id in ?", in.VariationIds),
+	).All()
+
+	if err != nil {
+		fmt.Println("err", err)
+	}
 
 	for _, variationID := range in.VariationIds {
 		found := false
 		for _, variationVersion := range variationVersions {
-			if variationVersion.VariationID == variationID {
-				found = true
-				res.VariationVersions = append(
-					res.VariationVersions,
-					NewVariationVersion(&variationVersion),
-				)
+			if variationVersion.VariationID != variationID {
+				continue
 			}
+			found = true
+			res.VariationVersions = append(
+				res.VariationVersions,
+				generators.NewVariationVersion(variationVersion),
+			)
+			break
 		}
 		if found == false {
 			res.VariationVersions = append(
@@ -605,19 +583,23 @@ func (s *SeppoServiceServer) FetchVariationVersionById(
 	newDb := s.getDB()
 	defer newDb.Close()
 
-	variationVersions := []db.VariationVersion{}
-	newDb.Where("id in (?)", in.VariationVersionIds).Find(&variationVersions)
+	variationVersions, _ := models.VariationVersions(
+		newDb,
+		qm.WhereIn("id in ?", in.VariationVersionIds),
+	).All()
 
-	for i := 0; i < len(in.VariationVersionIds); i++ {
+	for _, variationVersionID := range in.VariationVersionIds {
 		found := false
-		for j := 0; j < len(variationVersions); j++ {
-			if in.VariationVersionIds[i] == variationVersions[j].ID {
-				found = true
-				res.VariationVersions = append(
-					res.VariationVersions,
-					NewVariationVersion(&variationVersions[j]),
-				)
+		for _, variationVersion := range variationVersions {
+			if variationVersion.ID != variationVersionID {
+				continue
 			}
+			found = true
+			res.VariationVersions = append(
+				res.VariationVersions,
+				generators.NewVariationVersion(variationVersion),
+			)
+			break
 		}
 		if found == false {
 			res.VariationVersions = append(
