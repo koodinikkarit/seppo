@@ -1,6 +1,6 @@
 
 boiler:
-	sqlboiler mysql
+	sqlboiler mysql --wipe
 
 install:
 	go get -d -v ./...
