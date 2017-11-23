@@ -144,7 +144,7 @@ func ewSyncRemoveSongsFromEwDatabase(
 	ewDatabaseLink *models.EwDatabaseLink,
 	ewSong *MatiasService.EwSong,
 ) {
-	if ewDatabase.RemoveSongsFromEwDatabase == null.NewInt8(1, true) {
+	if ewDatabase.RemoveSongsFromEwDatabase == 1 {
 		res.RemoveEwSongIds = append(
 			res.RemoveEwSongIds,
 			ewSong.Id,
@@ -777,6 +777,7 @@ func (s *MatiasServiceServer) SyncEwDatabase(
 		"mysql",
 		"root:asdf321@tcp(localhost:3306)/seppo2?parseTime=True&loc=Local",
 	)
+
 	defer db.Close()
 	tx, _ := db.Begin()
 
