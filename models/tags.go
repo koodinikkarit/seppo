@@ -22,10 +22,11 @@ import (
 
 // Tag is an object representing the database table.
 type Tag struct {
-	ID        uint64      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name      null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	CreatedAt null.Time   `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
-	UpdatedAt null.Time   `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
+	ID        uint64    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name      string    `boil:"name" json:"name" toml:"name" yaml:"name"`
+	CreatedAt null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
+	UpdatedAt null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
+	DeletedAt null.Time `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 
 	R *tagR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L tagL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -36,11 +37,13 @@ var TagColumns = struct {
 	Name      string
 	CreatedAt string
 	UpdatedAt string
+	DeletedAt string
 }{
 	ID:        "id",
 	Name:      "name",
 	CreatedAt: "created_at",
 	UpdatedAt: "updated_at",
+	DeletedAt: "deleted_at",
 }
 
 // tagR is where relationships are stored.
@@ -53,8 +56,8 @@ type tagR struct {
 type tagL struct{}
 
 var (
-	tagColumns               = []string{"id", "name", "created_at", "updated_at"}
-	tagColumnsWithoutDefault = []string{"name", "created_at", "updated_at"}
+	tagColumns               = []string{"id", "name", "created_at", "updated_at", "deleted_at"}
+	tagColumnsWithoutDefault = []string{"name", "created_at", "updated_at", "deleted_at"}
 	tagColumnsWithDefault    = []string{"id"}
 	tagPrimaryKeyColumns     = []string{"id"}
 )

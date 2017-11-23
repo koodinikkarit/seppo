@@ -22,10 +22,10 @@ import (
 
 // Log is an object representing the database table.
 type Log struct {
-	ID          uint64      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	LogType     int         `boil:"log_type" json:"log_type" toml:"log_type" yaml:"log_type"`
-	Message     null.String `boil:"message" json:"message,omitempty" toml:"message" yaml:"message,omitempty"`
-	MessageDate null.Time   `boil:"message_date" json:"message_date,omitempty" toml:"message_date" yaml:"message_date,omitempty"`
+	ID          uint64    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	LogType     int       `boil:"log_type" json:"log_type" toml:"log_type" yaml:"log_type"`
+	Message     string    `boil:"message" json:"message" toml:"message" yaml:"message"`
+	MessageDate null.Time `boil:"message_date" json:"message_date,omitempty" toml:"message_date" yaml:"message_date,omitempty"`
 
 	R *logR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L logL  `boil:"-" json:"-" toml:"-" yaml:"-"`

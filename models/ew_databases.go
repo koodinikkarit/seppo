@@ -23,14 +23,14 @@ import (
 // EwDatabase is an object representing the database table.
 type EwDatabase struct {
 	ID                             uint64      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name                           null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
+	Name                           string      `boil:"name" json:"name" toml:"name" yaml:"name"`
 	SongDatabaseID                 uint64      `boil:"song_database_id" json:"song_database_id" toml:"song_database_id" yaml:"song_database_id"`
-	EwDatabaseKey                  null.String `boil:"ew_database_key" json:"ew_database_key,omitempty" toml:"ew_database_key" yaml:"ew_database_key,omitempty"`
+	EwDatabaseKey                  string      `boil:"ew_database_key" json:"ew_database_key" toml:"ew_database_key" yaml:"ew_database_key"`
 	UseNewestVersion               null.Int8   `boil:"use_newest_version" json:"use_newest_version,omitempty" toml:"use_newest_version" yaml:"use_newest_version,omitempty"`
 	MatiasClientID                 null.Uint64 `boil:"matias_client_id" json:"matias_client_id,omitempty" toml:"matias_client_id" yaml:"matias_client_id,omitempty"`
-	RemoveSongsFromEwDatabase      null.Int8   `boil:"remove_songs_from_ew_database" json:"remove_songs_from_ew_database,omitempty" toml:"remove_songs_from_ew_database" yaml:"remove_songs_from_ew_database,omitempty"`
-	RemoveSongsFromSongDatabase    null.Int8   `boil:"remove_songs_from_song_database" json:"remove_songs_from_song_database,omitempty" toml:"remove_songs_from_song_database" yaml:"remove_songs_from_song_database,omitempty"`
-	VariationVersionConflictAction int         `boil:"variation_version_conflict_action" json:"variation_version_conflict_action" toml:"variation_version_conflict_action" yaml:"variation_version_conflict_action"`
+	RemoveSongsFromEwDatabase      int8        `boil:"remove_songs_from_ew_database" json:"remove_songs_from_ew_database" toml:"remove_songs_from_ew_database" yaml:"remove_songs_from_ew_database"`
+	RemoveSongsFromSongDatabase    int8        `boil:"remove_songs_from_song_database" json:"remove_songs_from_song_database" toml:"remove_songs_from_song_database" yaml:"remove_songs_from_song_database"`
+	VariationVersionConflictAction uint        `boil:"variation_version_conflict_action" json:"variation_version_conflict_action" toml:"variation_version_conflict_action" yaml:"variation_version_conflict_action"`
 	CreatedAt                      null.Time   `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
 	UpdatedAt                      null.Time   `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
 	DeletedAt                      null.Time   `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`

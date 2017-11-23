@@ -22,13 +22,13 @@ import (
 
 // Schedule is an object representing the database table.
 type Schedule struct {
-	ID        uint64      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Name      null.String `boil:"name" json:"name,omitempty" toml:"name" yaml:"name,omitempty"`
-	Start     null.Time   `boil:"start" json:"start,omitempty" toml:"start" yaml:"start,omitempty"`
-	End       null.Time   `boil:"end" json:"end,omitempty" toml:"end" yaml:"end,omitempty"`
-	CreatedAt null.Time   `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
-	UpdatedAt null.Time   `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
-	DeletedAt null.Time   `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	ID        uint64    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Name      string    `boil:"name" json:"name" toml:"name" yaml:"name"`
+	Start     null.Time `boil:"start" json:"start,omitempty" toml:"start" yaml:"start,omitempty"`
+	End       null.Time `boil:"end" json:"end,omitempty" toml:"end" yaml:"end,omitempty"`
+	CreatedAt null.Time `boil:"created_at" json:"created_at,omitempty" toml:"created_at" yaml:"created_at,omitempty"`
+	UpdatedAt null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
+	DeletedAt null.Time `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
 
 	R *scheduleR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L scheduleL  `boil:"-" json:"-" toml:"-" yaml:"-"`

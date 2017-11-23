@@ -825,7 +825,7 @@ func testTagsSelect(t *testing.T) {
 }
 
 var (
-	tagDBTypes = map[string]string{`CreatedAt`: `datetime`, `ID`: `bigint`, `Name`: `varchar`, `UpdatedAt`: `datetime`}
+	tagDBTypes = map[string]string{`CreatedAt`: `datetime`, `DeletedAt`: `datetime`, `ID`: `bigint`, `Name`: `varchar`, `UpdatedAt`: `datetime`}
 	_          = bytes.MinRead
 )
 
