@@ -1,6 +1,7 @@
 package services
 
 import (
+	"database/sql"
 	"log"
 	"net"
 
@@ -9,17 +10,16 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
 	"github.com/koodinikkarit/seppo/seppo_service"
 )
 
 type SeppoServiceServer struct {
-	getDB func() *gorm.DB
+	getDB func() *sql.DB
 }
 
 func StartSeppoService(
 	port string,
-	getDB func() *gorm.DB,
+	getDB func() *sql.DB,
 ) {
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {

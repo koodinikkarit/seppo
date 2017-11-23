@@ -1,14 +1,15 @@
 package services
 
 import (
+	"database/sql"
 	"log"
 	"net"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/jinzhu/gorm"
-	"github.com/koodinikkarit/seppo/db"
 	"github.com/koodinikkarit/seppo/managers"
 	"github.com/koodinikkarit/seppo/matias_service"
+	"github.com/koodinikkarit/seppo/models"
+	"github.com/volatiletech/sqlboiler/queries/qm"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
@@ -16,12 +17,12 @@ import (
 )
 
 type MatiasServiceServer struct {
-	getDB func() *gorm.DB
+	getDB func() *sql.DB
 }
 
 func StartMatiasService(
 	port string,
-	getDB func() *gorm.DB,
+	getDB func() *sql.DB,
 ) {
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
@@ -47,17 +48,17 @@ func (s *MatiasServiceServer) RequestMatiasKey(
 	error,
 ) {
 	res := &MatiasService.RequestMatiasKeyResponse{}
-	newDb := s.getDB()
+	//newDb := s.getDB()
 
-	randString, _ := GenerateRandomString(10)
+	// randString, _ := GenerateRandomString(10)
 
-	newMatiasClient := db.MatiasClient{
-		ClientKey: randString,
-	}
+	// newMatiasClient := db.MatiasClient{
+	// 	ClientKey: randString,
+	// }
 
-	newDb.Create(&newMatiasClient)
+	// newDb.Create(&newMatiasClient)
 
-	res.Key = newMatiasClient.ClientKey
+	// res.Key = newMatiasClient.ClientKey
 
 	return res, nil
 }
@@ -70,13 +71,16 @@ func (s *MatiasServiceServer) InsertEwSongIds(
 	error,
 ) {
 	res := &MatiasService.InsertEwSongIdsResponse{}
-	tx := s.getDB().Begin()
+	newDb := s.getDB()
+	defer newDb.Close()
+	tx, _ := newDb.Begin()
 
-	var ewDatabase db.EwDatabase
-	tx.Where("ew_databases.ew_database_key = ?", in.EwDatabaseKey).
-		First(&ewDatabase)
+	ewDatabase, _ := models.EwDatabases(
+		tx,
+		qm.Where("ew_databases.ew_database_key = ?", in.EwDatabaseKey),
+	).One()
 
-	if ewDatabase.ID == 0 {
+	if ewDatabase == nil {
 		res.EwDatabaseFound = false
 		return res, nil
 	}
@@ -89,56 +93,52 @@ func (s *MatiasServiceServer) InsertEwSongIds(
 		)
 	}
 
-	variations := []db.Variation{}
-	tx.Where("id in (?)", variationIds).
-		Preload("VariationVersions").
-		Find(&variations)
-
-	var newEwDatabaseLinks []db.EwDatabaseLink
+	variations, _ := models.Variations(
+		tx,
+		qm.Where("id in ?", variationIds),
+		qm.Load("VariationVersions"),
+	).All()
 
 	for _, variationIdEwSongId := range in.VariationIdEwSongIds {
 		for _, variation := range variations {
-			newestVersion := variation.FindNewestVersion()
-			if newestVersion.ID > 0 {
-				if variationIdEwSongId.VariationId == variation.ID {
-					newEwDatabaseLinks = append(
-						newEwDatabaseLinks,
-						db.EwDatabaseLink{
-							EwDatabaseID:     ewDatabase.ID,
-							EwDatabaseSongID: variationIdEwSongId.EwSongId,
-							VariationID:      variationIdEwSongId.VariationId,
-							Version:          newestVersion.Version,
-						},
-					)
-				}
+			if uint64(variationIdEwSongId.VariationId) != variation.ID {
+				continue
 			}
+			variationVersions, _ := variation.VariationVersions(tx).All()
+			newestVariationVersion := managers.FindNewestVariationVersion(
+				variationVersions,
+			)
+			if newestVariationVersion == nil {
+				break
+			}
+			ewDatabaseLink := models.EwDatabaseLink{
+				EwDatabaseID:     ewDatabase.ID,
+				EwDatabaseSongID: uint64(variationIdEwSongId.EwSongId),
+				VariationID:      uint64(variationIdEwSongId.VariationId),
+				Version:          newestVariationVersion.Version,
+			}
+			ewDatabaseLink.Insert(tx)
+			break
 		}
 	}
 
-	//tx.Model(&ewDatabaseLink).UpdateColumn("version", newestVariationVersion.Version)
-
-	managers.BatchAddVariationsToEwDatabase(
-		tx,
-		newEwDatabaseLinks,
-	)
-
 	var ewSongIDs []uint32
-	ewDatabaseLinks := []db.EwDatabaseLink{}
-
 	for _, link := range in.NewSongIds {
 		ewSongIDs = append(ewSongIDs, link.OldEwSongId)
 	}
 
-	tx.Where("ew_database_song_id in (?)", ewSongIDs).
-		Find(&ewDatabaseLinks)
+	ewDatabaseLinks, _ := models.EwDatabaseLinks(
+		tx,
+		qm.Where("ew_database_song_id in ?", ewSongIDs),
+	).All()
 
 	for _, ewDatabaseLink := range ewDatabaseLinks {
 		for _, newSongId := range in.NewSongIds {
-			if ewDatabaseLink.EwDatabaseSongID != newSongId.OldEwSongId {
+			if ewDatabaseLink.EwDatabaseSongID != uint64(newSongId.OldEwSongId) {
 				continue
 			}
-			tx.Model(&ewDatabaseLink).
-				Update("ew_database_song_id", newSongId.NewEwSongId)
+			ewDatabaseLink.EwDatabaseSongID = uint64(newSongId.NewEwSongId)
+			ewDatabaseLink.Update(tx, "ew_database_song_id")
 		}
 	}
 
