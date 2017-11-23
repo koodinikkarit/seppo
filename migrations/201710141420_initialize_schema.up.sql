@@ -1,14 +1,15 @@
 
 create table if not exists tags (
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(50),
+	name VARCHAR(50) DEFAULT "" NOT NULL,
 	created_at DATETIME,
-	updated_at DATETIME NULL
+	updated_at DATETIME NULL,
+	deleted_at DATETIME NULL
 );
 
 create table if not exists languages (
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(50),
+	name VARCHAR(50) DEFAULT "" NOT NULL,
 	created_at DATETIME,
 	updated_at DATETIME NULL
 );
@@ -16,7 +17,7 @@ create table if not exists languages (
 create table if not exists logs (
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 	log_type INT NOT NULL,
-	message TEXT,
+	message TEXT NOT NULL,
 	message_date DATETIME
 );
 
@@ -26,7 +27,7 @@ create table if not exists songs(
 
 create table if not exists schedules(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(50),
+	name VARCHAR(50) DEFAULT "" NOT NULL,
 	start DATETIME NULL,
 	end DATETIME NULL,
 	created_at DATETIME,
@@ -143,7 +144,7 @@ create table if not exists merges (
 
 create table if not exists song_databases (
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(50),
+	name VARCHAR(50) DEFAULT "" NOT NULL,
 	created_at DATETIME,
 	updated_at DATETIME NULL,
 	deleted_at DATETIME NULL
@@ -159,14 +160,14 @@ create table if not exists matias_client (
 
 create table if not exists ew_databases(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(50),
+	name VARCHAR(50) DEFAULT "" NOT NULL,
 	song_database_id INT8 UNSIGNED NOT NULL,
-	ew_database_key VARCHAR(10),
+	ew_database_key VARCHAR(10) DEFAULT "" NOT NULL,
 	use_newest_version BOOLEAN,
 	matias_client_id INT8 UNSIGNED NULL,
-	remove_songs_from_ew_database BOOLEAN DEFAULT false,
-	remove_songs_from_song_database BOOLEAN DEFAULT false,
-	variation_version_conflict_action INT DEFAULT 0 NOT NULL, 
+	remove_songs_from_ew_database BOOLEAN DEFAULT false NOT NULL,
+	remove_songs_from_song_database BOOLEAN DEFAULT false NOT NULL,
+	variation_version_conflict_action INT UNSIGNED DEFAULT 0 NOT NULL, 
 	created_at DATETIME,
 	updated_at DATETIME NULL,
 	deleted_at DATETIME NULL,
