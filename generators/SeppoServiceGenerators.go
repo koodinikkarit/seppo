@@ -1,11 +1,12 @@
 package generators
 
 import (
+	"github.com/koodinikkarit/seppo/db"
 	"github.com/koodinikkarit/seppo/models"
 	"github.com/koodinikkarit/seppo/seppo_service"
 )
 
-func NewEwDatabase(in *models.EwDatabase) *SeppoService.EwDatabase {
+func NewEwDatabase(in *db.EwDatabase) *SeppoService.EwDatabase {
 	newEwDatabase := SeppoService.EwDatabase{
 		Id:                             in.ID,
 		Name:                           in.Name,
@@ -14,13 +15,13 @@ func NewEwDatabase(in *models.EwDatabase) *SeppoService.EwDatabase {
 		VariationVersionConflictAction: uint32(in.VariationVersionConflictAction),
 	}
 
-	if in.RemoveSongsFromEwDatabase == 1 {
+	if in.RemoveSongsFromEwDatabase == true {
 		newEwDatabase.RemoveSongsFromEwDatabase = 1
 	} else {
 		newEwDatabase.RemoveSongsFromEwDatabase = 2
 	}
 
-	if in.RemoveSongsFromSongDatabase == 1 {
+	if in.RemoveSongsFromSongDatabase == true {
 		newEwDatabase.RemoveSongsFromSongDatabase = 1
 	} else {
 		newEwDatabase.RemoveSongsFromSongDatabase = 2
@@ -29,21 +30,21 @@ func NewEwDatabase(in *models.EwDatabase) *SeppoService.EwDatabase {
 	return &newEwDatabase
 }
 
-func NewTag(in *models.Tag) *SeppoService.Tag {
+func NewTag(in *db.Tag) *SeppoService.Tag {
 	return &SeppoService.Tag{
 		Id:   in.ID,
 		Name: in.Name,
 	}
 }
 
-func NewLanguage(in *models.Language) *SeppoService.Language {
+func NewLanguage(in *db.Language) *SeppoService.Language {
 	return &SeppoService.Language{
 		Id:   in.ID,
 		Name: in.Name,
 	}
 }
 
-func NewAuthor(in *models.Author) *SeppoService.Author {
+func NewAuthor(in *db.Author) *SeppoService.Author {
 	newAuthor := SeppoService.Author{
 		Id:   in.ID,
 		Name: in.Name,
@@ -51,7 +52,7 @@ func NewAuthor(in *models.Author) *SeppoService.Author {
 	return &newAuthor
 }
 
-func NewCopyright(in *models.Copyright) *SeppoService.Copyright {
+func NewCopyright(in *db.Copyright) *SeppoService.Copyright {
 	newCopyright := SeppoService.Copyright{
 		Id:   in.ID,
 		Name: in.Name,
@@ -68,50 +69,50 @@ func NewLog(in *models.Log) *SeppoService.Log {
 	}
 }
 
-func NewSchedule(in *models.Schedule) *SeppoService.Schedule {
+func NewSchedule(in *db.Schedule) *SeppoService.Schedule {
 	newSchedule := SeppoService.Schedule{
 		Id:   in.ID,
 		Name: in.Name,
 	}
 
-	if in.Start.Valid == true {
-		newSchedule.Start = in.Start.Time.Unix() * 1000
+	if in.Start != nil {
+		newSchedule.Start = in.Start.Unix() * 1000
 	}
 
-	if in.End.Valid == true {
-		newSchedule.End = in.End.Time.Unix() * 1000
+	if in.End != nil {
+		newSchedule.End = in.End.Unix() * 1000
 	}
 
 	return &newSchedule
 }
 
-func NewSongDatabase(in *models.SongDatabase) *SeppoService.SongDatabase {
+func NewSongDatabase(in *db.SongDatabase) *SeppoService.SongDatabase {
 	return &SeppoService.SongDatabase{
 		Id:   in.ID,
 		Name: in.Name,
 	}
 }
 
-func NewVariation(in *models.Variation) *SeppoService.Variation {
+func NewVariation(in *db.Variation) *SeppoService.Variation {
 	newVariation := SeppoService.Variation{
 		Id: in.ID,
 	}
-	if in.SongID.Valid == true {
-		newVariation.SongId = in.SongID.Uint64
+	if in.SongID != nil {
+		newVariation.SongId = *in.SongID
 	}
-	if in.LanguageID.Valid == true {
-		newVariation.LanguageId = in.LanguageID.Uint64
+	if in.LanguageID != nil {
+		newVariation.LanguageId = *in.LanguageID
 	}
-	if in.AuthorID.Valid == true {
-		newVariation.AuthorId = in.AuthorID.Uint64
+	if in.AuthorID != nil {
+		newVariation.AuthorId = *in.AuthorID
 	}
-	if in.CopyrightID.Valid == true {
-		newVariation.CopyrightId = in.CopyrightID.Uint64
+	if in.CopyrightID != nil {
+		newVariation.CopyrightId = *in.CopyrightID
 	}
 	return &newVariation
 }
 
-func NewVariationVersion(in *models.VariationVersion) *SeppoService.VariationVersion {
+func NewVariationVersion(in *db.VariationVersion) *SeppoService.VariationVersion {
 	newVariationVersion := SeppoService.VariationVersion{
 		Id:          in.ID,
 		VariationId: in.VariationID,
