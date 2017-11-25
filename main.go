@@ -34,12 +34,21 @@ func main() {
 		dbName,
 	)
 
+	getGormDB := db.CreateGetGormDB(
+		dbUser,
+		dbPassword,
+		dbIP,
+		dbPort,
+		dbName,
+	)
+
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 	go func() {
 		go services.StartSeppoService(
 			seppoPort,
 			getDb,
+			getGormDB,
 		)
 	}()
 	wg.Add(1)
@@ -47,6 +56,7 @@ func main() {
 		go services.StartMatiasService(
 			matiasPort,
 			getDb,
+			getGormDB,
 		)
 	}()
 	wg.Wait()
