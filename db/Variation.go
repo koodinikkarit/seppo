@@ -41,7 +41,8 @@ func (v *Variation) FindSongDatabaseByID(
 func (v *Variation) FindNewestVersion() VariationVersion {
 	var newest VariationVersion
 	for _, variationVersion := range v.VariationVersions {
-		if newest.ID == 0 || variationVersion.Version > newest.Version {
+		if newest.ID == 0 ||
+			variationVersion.Version > newest.Version {
 			newest = variationVersion
 		}
 	}
@@ -54,7 +55,8 @@ func (v *Variation) FindVariationVersionByNameAndText(
 	text string,
 ) *VariationVersion {
 	for _, variation := range v.VariationVersions {
-		if variation.Name == name && variation.Text == text {
+		if variation.Name == name &&
+			variation.Text == text {
 			return &variation
 		}
 	}
