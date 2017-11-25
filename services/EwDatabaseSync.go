@@ -773,10 +773,7 @@ func (s *MatiasServiceServer) SyncEwDatabase(
 	error,
 ) {
 	res := &MatiasService.SyncEwDatabaseResponse{}
-	db, _ := sql.Open(
-		"mysql",
-		"root:asdf321@tcp(localhost:3306)/seppo2?parseTime=True&loc=Local",
-	)
+	db := s.getDB()
 
 	defer db.Close()
 	tx, _ := db.Begin()
