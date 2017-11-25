@@ -1,30 +1,28 @@
 package managers
 
 import (
-	"database/sql"
-
-	"github.com/koodinikkarit/seppo/models"
+	"github.com/jinzhu/gorm"
+	"github.com/koodinikkarit/seppo/db"
 )
 
 func CreateNewVariation(
-	tx *sql.Tx,
+	tx *gorm.DB,
 	name string,
 	text string,
 ) (
-	*models.Variation,
-	*models.VariationVersion,
+	db.Variation,
+	db.VariationVersion,
 ) {
-	newVariation := models.Variation{}
-	newVariation.Insert(tx)
-	newVariationVersion := models.VariationVersion{
+	newVariation := db.Variation{}
+	newVariationVersion := db.VariationVersion{
 		Name:    name,
 		Text:    text,
 		Version: 1,
 	}
-	newVariation.AddVariationVersions(
-		tx,
-		true,
-		&newVariationVersion,
+	newVariation.VariationVersions = append(
+		newVariation.VariationVersions,
+		newVariationVersion,
 	)
-	return &newVariation, &newVariationVersion
+	tx.Create(&newVariation)
+	return newVariation, newVariationVersion
 }

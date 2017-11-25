@@ -6,10 +6,10 @@ import (
 	"net"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/jinzhu/gorm"
+	"github.com/koodinikkarit/seppo/db"
 	"github.com/koodinikkarit/seppo/managers"
 	"github.com/koodinikkarit/seppo/matias_service"
-	"github.com/koodinikkarit/seppo/models"
-	"github.com/volatiletech/sqlboiler/queries/qm"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/grpclog"
@@ -17,12 +17,14 @@ import (
 )
 
 type MatiasServiceServer struct {
-	getDB func() *sql.DB
+	getDB     func() *sql.DB
+	getGormDB func() *gorm.DB
 }
 
 func StartMatiasService(
 	port string,
 	getDB func() *sql.DB,
+	getGormDB func() *gorm.DB,
 ) {
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
@@ -31,7 +33,8 @@ func StartMatiasService(
 
 	s := grpc.NewServer()
 	MatiasService.RegisterMatiasServer(s, &MatiasServiceServer{
-		getDB: getDB,
+		getDB:     getDB,
+		getGormDB: getGormDB,
 	})
 
 	reflection.Register(s)
@@ -71,14 +74,12 @@ func (s *MatiasServiceServer) InsertEwSongIds(
 	error,
 ) {
 	res := &MatiasService.InsertEwSongIdsResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
-	tx, _ := newDb.Begin()
+	tx := s.getGormDB().Begin()
+	defer tx.Close()
 
-	ewDatabase, _ := models.EwDatabases(
-		tx,
-		qm.Where("ew_databases.ew_database_key = ?", in.EwDatabaseKey),
-	).One()
+	var ewDatabase *db.EwDatabase
+	tx.Where("ew_databases.ew_database_key = ?", in.EwDatabaseKey).
+		Find(&ewDatabase)
 
 	if ewDatabase == nil {
 		res.EwDatabaseFound = false
@@ -93,52 +94,56 @@ func (s *MatiasServiceServer) InsertEwSongIds(
 		)
 	}
 
-	variations, _ := models.Variations(
-		tx,
-		qm.Where("id in ?", variationIds),
-		qm.Load("VariationVersions"),
-	).All()
+	var variations []db.Variation
+	tx.Where("id in (?)", variationIds).
+		Preload("VariationVersions").
+		Find(&variations)
 
+	var newEwDatabaseLinks []db.EwDatabaseLink
 	for _, variationIdEwSongId := range in.VariationIdEwSongIds {
 		for _, variation := range variations {
-			if uint64(variationIdEwSongId.VariationId) != variation.ID {
+			if variationIdEwSongId.VariationId != variation.ID {
 				continue
 			}
-			variationVersions, _ := variation.VariationVersions(tx).All()
-			newestVariationVersion := managers.FindNewestVariationVersion(
-				variationVersions,
-			)
-			if newestVariationVersion == nil {
+			newestVariationVersion := variation.FindNewestVersion()
+			if newestVariationVersion.ID == 0 {
 				break
 			}
-			ewDatabaseLink := models.EwDatabaseLink{
+			ewDatabaseLink := db.EwDatabaseLink{
 				EwDatabaseID:     ewDatabase.ID,
-				EwDatabaseSongID: uint64(variationIdEwSongId.EwSongId),
-				VariationID:      uint64(variationIdEwSongId.VariationId),
+				EwDatabaseSongID: variationIdEwSongId.EwSongId,
+				VariationID:      variationIdEwSongId.VariationId,
 				Version:          newestVariationVersion.Version,
 			}
-			ewDatabaseLink.Insert(tx)
+
+			newEwDatabaseLinks = append(
+				newEwDatabaseLinks,
+				ewDatabaseLink,
+			)
 			break
 		}
 	}
+
+	managers.BatchAddVariationsToEwDatabase(
+		tx,
+		newEwDatabaseLinks,
+	)
 
 	var ewSongIDs []uint32
 	for _, link := range in.NewSongIds {
 		ewSongIDs = append(ewSongIDs, link.OldEwSongId)
 	}
-
-	ewDatabaseLinks, _ := models.EwDatabaseLinks(
-		tx,
-		qm.Where("ew_database_song_id in ?", ewSongIDs),
-	).All()
+	var ewDatabaseLinks []db.EwDatabaseLink
+	tx.Where("ew_database_song_id in (?)", ewSongIDs).
+		Find(&ewDatabaseLinks)
 
 	for _, ewDatabaseLink := range ewDatabaseLinks {
 		for _, newSongId := range in.NewSongIds {
-			if ewDatabaseLink.EwDatabaseSongID != uint64(newSongId.OldEwSongId) {
+			if ewDatabaseLink.EwDatabaseSongID != newSongId.OldEwSongId {
 				continue
 			}
-			ewDatabaseLink.EwDatabaseSongID = uint64(newSongId.NewEwSongId)
-			ewDatabaseLink.Update(tx, "ew_database_song_id")
+			tx.Model(&ewDatabaseLink).
+				Update("ew_database_song_id", newSongId.NewEwSongId)
 		}
 	}
 
