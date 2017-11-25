@@ -133,3 +133,50 @@ func BatchCreateVariationVersions(
 	}
 	return 0
 }
+
+func BatchCreateScheduleVariations(
+	tx *gorm.DB,
+	scheduleVariations []db.ScheduleVariation,
+) int64 {
+	if len(scheduleVariations) > 0 {
+		sqlStr := "INSERT INTO `schedule_variations` (`schedule_id`,`variation_id`,`order_number`,`created_at`) VALUES "
+		vals := []interface{}{}
+
+		for _, scheduleVariation := range scheduleVariations {
+			sqlStr += "(?, ?, ?, ?), "
+			vals = append(
+				vals,
+				scheduleVariation.ScheduleID,
+				scheduleVariation.VariationID,
+				scheduleVariation.OrderNumber,
+				scheduleVariation.CreatedAt,
+			)
+		}
+		sqlStr = sqlStr[0 : len(sqlStr)-2]
+		tx.Exec(sqlStr, vals...)
+		return tx.RowsAffected
+	}
+	return 0
+}
+
+func BatchCreateSongDatabaseTags(
+	tx *gorm.DB,
+	songDatabaseTags []db.SongDatabaseTag,
+) int64 {
+	if len(songDatabaseTags) > 0 {
+		sqlStr := "INSERT INTO song_database_tags (tag_id, song_database_id) VALUES "
+		vals := []interface{}{}
+		for _, songDatabaseTag := range songDatabaseTags {
+			sqlStr += "(?, ?), "
+			vals = append(
+				vals,
+				songDatabaseTag.TagID,
+				songDatabaseTag.SongDatabaseID,
+			)
+		}
+		sqlStr = sqlStr[0 : len(sqlStr)-2]
+		tx.Exec(sqlStr, vals...)
+		return tx.RowsAffected
+	}
+	return 0
+}
