@@ -1,16 +1,11 @@
 package services
 
 import (
-	"time"
-
-	null "gopkg.in/volatiletech/null.v6"
-
 	"golang.org/x/net/context"
 
+	"github.com/koodinikkarit/seppo/db"
 	"github.com/koodinikkarit/seppo/generators"
-	"github.com/koodinikkarit/seppo/models"
 	SeppoService "github.com/koodinikkarit/seppo/seppo_service"
-	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
 func (s SeppoServiceServer) CreateTag(
@@ -21,15 +16,19 @@ func (s SeppoServiceServer) CreateTag(
 	error,
 ) {
 	res := &SeppoService.CreateTagResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
+	newDB := s.getGormDB()
+	defer newDB.Close()
 
-	tag := models.Tag{
+	tag := db.Tag{
 		Name: in.Name,
 	}
-	tag.Insert(newDb)
 
-	res.Tag = generators.NewTag(&tag)
+	newDB.Create(&tag)
+
+	res.Tag = &SeppoService.Tag{
+		Id:   tag.ID,
+		Name: tag.Name,
+	}
 
 	return res, nil
 }
@@ -42,15 +41,14 @@ func (s SeppoServiceServer) UpdateTag(
 	error,
 ) {
 	res := &SeppoService.UpdateTagResponse{}
-	newDb := s.getDB()
+	newDb := s.getGormDB()
 	defer newDb.Close()
 
-	tag, _ := models.FindTag(
-		newDb,
-		in.TagId,
-	)
+	tag := db.Tag{}
 
-	if tag == nil {
+	newDb.First(&tag, in.TagId)
+
+	if tag.ID == 0 {
 		res.Success = false
 		return res, nil
 	}
@@ -58,8 +56,14 @@ func (s SeppoServiceServer) UpdateTag(
 	if in.Name != "" {
 		tag.Name = in.Name
 	}
-	tag.Update(newDb)
+
+	newDb.Save(&tag)
+	res.Tag = &SeppoService.Tag{
+		Id:   tag.ID,
+		Name: tag.Name,
+	}
 	res.Success = true
+
 	return res, nil
 }
 
@@ -71,22 +75,21 @@ func (s SeppoServiceServer) RemoveTag(
 	error,
 ) {
 	res := &SeppoService.RemoveTagResponse{}
-	newDb := s.getDB()
+	newDb := s.getGormDB()
 	defer newDb.Close()
 
-	tag, _ := models.FindTag(
-		newDb,
-		in.TagId,
-	)
+	tag := db.Tag{}
 
-	if tag == nil {
+	newDb.Select("id").First(&tag, in.TagId)
+
+	if tag.ID == 0 {
 		res.Success = false
 		return res, nil
 	}
 
-	tag.DeletedAt = null.NewTime(time.Now(), true)
-	tag.Update(newDb)
+	newDb.Delete(&tag)
 	res.Success = true
+
 	return res, nil
 }
 
@@ -98,68 +101,45 @@ func (s *SeppoServiceServer) SearchTags(
 	error,
 ) {
 	res := &SeppoService.SearchTagsResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
+	newDB := s.getGormDB()
+	defer newDB.Close()
 
-	var queryMods []qm.QueryMod
+	query := newDB.Select("tags.id, tags.name").Table("tags")
 
 	if in.SongDatabaseId > 0 {
-		queryMods = append(
-			queryMods,
-			qm.InnerJoin("song_database_tags sdt on sdt.tag_id = tags.id"),
-			qm.Where("sdt.song_database_id = ?", in.SongDatabaseId),
-		)
+		query = query.Joins("left join song_database_tags on song_database_tags.tag_id = tags.id").
+			Where("song_database_tags.song_database_id = ?", in.SongDatabaseId)
 	}
 
 	if in.VariationId > 0 {
-		queryMods = append(
-			queryMods,
-			qm.InnerJoin("tag_variations tv on tags.id = tv.tag_id"),
-			qm.Where("tv.variation_id = ?", in.VariationId),
-		)
+		query = query.Joins("left join tag_variations on tags.id = tag_variations.tag_id").
+			Where("tag_variations.variation_id = ?", in.VariationId)
 	}
-
-	c, _ := models.Tags(
-		newDb,
-		queryMods...,
-	).Count()
-	res.MaxTags = uint64(c)
 
 	if in.SearchWord != "" {
-		queryMods = append(
-			queryMods,
-			qm.Where("tags.name LIKE ?", "%"+in.SearchWord+"%"),
-		)
+		query = query.Where("tags.name LIKE ?", "%"+in.SearchWord+"%")
 	}
 
+	query.Count(&res.MaxTags)
+
+	query = query.Limit(5000)
+
 	if in.Offset > 0 {
-		queryMods = append(
-			queryMods,
-			qm.Offset(int(in.Offset)),
-		)
-	} else {
-		queryMods = append(
-			queryMods,
-			qm.Offset(10000),
-		)
+		query = query.Offset(in.Offset)
 	}
 
 	if in.Limit > 0 {
-		queryMods = append(
-			queryMods,
-			qm.Limit(int(in.Offset)),
-		)
+		query = query.Limit(in.Limit)
 	}
 
-	tags, _ := models.Tags(
-		newDb,
-		queryMods...,
-	).All()
+	tags := []db.Tag{}
+
+	query.Find(&tags)
 
 	for _, tag := range tags {
 		res.Tags = append(
 			res.Tags,
-			generators.NewTag(tag),
+			generators.NewTag(&tag),
 		)
 	}
 
@@ -174,13 +154,12 @@ func (s *SeppoServiceServer) FetchTagById(
 	error,
 ) {
 	res := &SeppoService.FetchTagByIdResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
+	newDB := s.getGormDB()
+	defer newDB.Close()
 
-	tags, _ := models.Tags(
-		newDb,
-		qm.WhereIn("id in ?", in.TagIds),
-	).All()
+	var tags []db.Tag
+	newDB.Where("id in (?)", in.TagIds).
+		Find(&tags)
 
 	for _, tagID := range in.TagIds {
 		found := false
@@ -191,8 +170,9 @@ func (s *SeppoServiceServer) FetchTagById(
 			found = true
 			res.Tags = append(
 				res.Tags,
-				generators.NewTag(tag),
+				generators.NewTag(&tag),
 			)
+			break
 		}
 		if found == false {
 			res.Tags = append(res.Tags, &SeppoService.Tag{})

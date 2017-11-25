@@ -3,14 +3,12 @@ package services
 import (
 	"time"
 
-	null "gopkg.in/volatiletech/null.v6"
-
 	"golang.org/x/net/context"
 
+	"github.com/koodinikkarit/seppo/db"
 	"github.com/koodinikkarit/seppo/generators"
-	"github.com/koodinikkarit/seppo/models"
+	"github.com/koodinikkarit/seppo/managers"
 	SeppoService "github.com/koodinikkarit/seppo/seppo_service"
-	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
 func (s SeppoServiceServer) CreateSchedule(
@@ -21,18 +19,18 @@ func (s SeppoServiceServer) CreateSchedule(
 	error,
 ) {
 	res := &SeppoService.CreateScheduleResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
+	newDB := s.getGormDB()
+	defer newDB.Close()
 
 	d1 := time.Unix(in.Start, 0)
 	d2 := time.Unix(in.End, 0)
 
-	newSchedule := models.Schedule{
+	newSchedule := db.Schedule{
 		Name:  in.Name,
-		Start: null.NewTime(d1, true),
-		End:   null.NewTime(d2, true),
+		Start: &d1,
+		End:   &d2,
 	}
-	newSchedule.Insert(newDb)
+	newDB.Create(&newSchedule)
 	res.Schedule = generators.NewSchedule(&newSchedule)
 
 	return res, nil
@@ -46,16 +44,13 @@ func (s SeppoServiceServer) UpdateSchedule(
 	error,
 ) {
 	res := &SeppoService.UpdateScheduleResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
-	tx, _ := newDb.Begin()
+	tx := s.getGormDB()
+	defer tx.Close()
 
-	schedule, _ := models.FindSchedule(
-		newDb,
-		in.ScheduleId,
-	)
+	var schedule db.Schedule
+	tx.First(&schedule, in.ScheduleId)
 
-	if schedule == nil {
+	if schedule.ID == 0 {
 		res.Success = true
 		return res, nil
 	}
@@ -64,27 +59,30 @@ func (s SeppoServiceServer) UpdateSchedule(
 		schedule.Name = in.Name
 	}
 
-	if len(in.AddSongIds) > 0 {
-		for _, newSongID := range in.AddSongIds {
-			newScheduleVariation := models.ScheduleVariation{
-				VariationID: newSongID,
-			}
+	tx.Save(&schedule)
 
-			schedule.AddScheduleVariations(
-				tx,
-				true,
-				&newScheduleVariation,
+	if len(in.AddSongIds) > 0 {
+		var newScheduleVariations []db.ScheduleVariation
+		for _, newSongID := range in.AddSongIds {
+			newScheduleVariations = append(
+				newScheduleVariations,
+				db.ScheduleVariation{
+					VariationID: newSongID,
+					ScheduleID:  schedule.ID,
+				},
 			)
 		}
+		managers.BatchCreateScheduleVariations(
+			tx,
+			newScheduleVariations,
+		)
 	}
 
 	if len(in.RemoveSongIds) > 0 {
-		schedule.ScheduleVariations(
-			tx,
-			qm.WhereIn("schedule_variations.variation_id in ?", in.RemoveSongIds),
-		).DeleteAll()
+		tx.Where("schedule_variations.variation_id in (?)", in.RemoveSongIds).
+			Delete(&db.ScheduleVariation{})
 	}
-	res.Schedule = generators.NewSchedule(schedule)
+	res.Schedule = generators.NewSchedule(&schedule)
 	res.Success = true
 	tx.Commit()
 	return res, nil
@@ -98,21 +96,18 @@ func (s SeppoServiceServer) RemoveSchedule(
 	error,
 ) {
 	res := &SeppoService.RemoveScheduleResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
+	newDB := s.getGormDB()
+	defer newDB.Close()
 
-	schedule, _ := models.FindSchedule(
-		newDb,
-		in.ScheduleId,
-	)
+	var schedule db.Schedule
+	newDB.First(&schedule, in.ScheduleId)
 
-	if schedule == nil {
+	if schedule.ID == 0 {
 		res.Success = false
 		return res, nil
 	}
 
-	schedule.DeletedAt = null.NewTime(time.Now(), true)
-	schedule.Update(newDb)
+	newDB.Delete(&schedule)
 	res.Success = true
 	return res, nil
 }
@@ -125,40 +120,27 @@ func (s *SeppoServiceServer) SearchSchedules(
 	error,
 ) {
 	res := &SeppoService.SearchSchedulesResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
+	newDB := s.getGormDB()
+	defer newDB.Close()
 
-	var queryMods []qm.QueryMod
+	schedules := []db.Schedule{}
+
+	query := newDB.Table("schedules")
 
 	if in.Offset > 0 {
-		queryMods = append(
-			queryMods,
-			qm.Offset(int(in.Offset)),
-		)
+		query = query.Offset(in.Offset)
 	}
-
 	if in.Limit > 0 {
-		queryMods = append(
-			queryMods,
-			qm.Limit(int(in.Limit)),
-		)
+		query = query.Limit(in.Limit)
 	}
 
-	c, _ := models.Schedules(
-		newDb,
-		queryMods...,
-	).Count()
-	res.MaxSchedules = uint64(c)
-
-	schedules, _ := models.Schedules(
-		newDb,
-		queryMods...,
-	).All()
+	query.Count(&res.MaxSchedules)
+	query.Find(&schedules)
 
 	for _, schedule := range schedules {
 		res.Schedules = append(
 			res.Schedules,
-			generators.NewSchedule(schedule),
+			generators.NewSchedule(&schedule),
 		)
 	}
 
@@ -173,13 +155,13 @@ func (s *SeppoServiceServer) FetchScheduleById(
 	error,
 ) {
 	res := &SeppoService.FetchScheduleByIdResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
+	newDB := s.getGormDB()
+	defer newDB.Close()
 
-	schedules, _ := models.Schedules(
-		newDb,
-		qm.WhereIn("id in ?", in.ScheduleIds),
-	).All()
+	var schedules []db.Schedule
+
+	newDB.Where("id in (?)", in.ScheduleIds).
+		Find(&schedules)
 
 	for _, scheduleID := range in.ScheduleIds {
 		found := false
@@ -190,7 +172,7 @@ func (s *SeppoServiceServer) FetchScheduleById(
 			found = true
 			res.Schedules = append(
 				res.Schedules,
-				generators.NewSchedule(schedule),
+				generators.NewSchedule(&schedule),
 			)
 		}
 		if found == false {

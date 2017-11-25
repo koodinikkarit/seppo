@@ -3,10 +3,9 @@ package services
 import (
 	"golang.org/x/net/context"
 
+	"github.com/koodinikkarit/seppo/db"
 	"github.com/koodinikkarit/seppo/generators"
-	"github.com/koodinikkarit/seppo/models"
 	SeppoService "github.com/koodinikkarit/seppo/seppo_service"
-	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
 func (s *SeppoServiceServer) CreateCopyright(
@@ -17,13 +16,14 @@ func (s *SeppoServiceServer) CreateCopyright(
 	error,
 ) {
 	res := &SeppoService.CreateCopyrightResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
+	newDB := s.getGormDB()
+	defer newDB.Close()
 
-	copyright := models.Copyright{
+	copyright := db.Copyright{
 		Name: in.Name,
 	}
-	copyright.Insert(newDb)
+
+	newDB.Create(&copyright)
 
 	res.Copyright = generators.NewCopyright(&copyright)
 
@@ -38,23 +38,23 @@ func (s *SeppoServiceServer) UpdateCopyright(
 	error,
 ) {
 	res := &SeppoService.UpdateCopyrightResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
+	newDB := s.getGormDB()
+	defer newDB.Close()
 
-	copyright, _ := models.FindCopyright(
-		newDb,
-		in.CopyrightId,
-	)
+	var copyright db.Copyright
+	newDB.First(&copyright, in.CopyrightId)
 
-	if copyright == nil {
+	if copyright.ID == 0 {
 		res.Success = true
 		return res, nil
 	}
 
-	copyright.Name = in.Name
-	copyright.Update(newDb)
+	if in.Name != "" {
+		copyright.Name = in.Name
+	}
+	newDB.Save(&copyright)
 	res.Success = true
-	res.Copyright = generators.NewCopyright(copyright)
+	res.Copyright = generators.NewCopyright(&copyright)
 
 	return res, nil
 }
@@ -67,20 +67,18 @@ func (s *SeppoServiceServer) RemoveCopyright(
 	error,
 ) {
 	res := &SeppoService.RemoveCopyrightResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
+	newDB := s.getGormDB()
+	defer newDB.Close()
 
-	copyright, _ := models.FindCopyright(
-		newDb,
-		in.CopyrightId,
-	)
+	var copyright db.Copyright
+	newDB.First(&copyright, in.CopyrightId)
 
-	if copyright == nil {
+	if copyright.ID == 0 {
 		res.Success = false
 		return res, nil
 	}
 
-	copyright.Delete(newDb)
+	newDB.Delete(&copyright)
 	res.Success = true
 
 	return res, nil
@@ -94,44 +92,28 @@ func (s *SeppoServiceServer) SearchCopyrights(
 	error,
 ) {
 	res := &SeppoService.SearchCopyrightsResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
+	newDB := s.getGormDB()
+	defer newDB.Close()
 
-	var queryMods []qm.QueryMod
-
-	queryMods = append(
-		queryMods,
-		qm.From("copyrights"),
-	)
+	query := newDB.Table("copyrights")
 
 	if in.Limit > 0 {
-		queryMods = append(
-			queryMods,
-			qm.Limit(int(in.Limit)),
-		)
+		query = query.Limit(in.Limit)
 	} else {
-		queryMods = append(
-			queryMods,
-			qm.Limit(10000),
-		)
+		query = query.Limit(10000)
 	}
 
 	if in.Offset > 0 {
-		queryMods = append(
-			queryMods,
-			qm.Offset(int(in.Offset)),
-		)
+		query = query.Offset(in.Offset)
 	}
 
-	copyrights, _ := models.Copyrights(
-		newDb,
-		queryMods...,
-	).All()
+	var copyrights []db.Copyright
+	query.Find(&copyrights)
 
 	for _, copyright := range copyrights {
 		res.Copyrights = append(
 			res.Copyrights,
-			generators.NewCopyright(copyright),
+			generators.NewCopyright(&copyright),
 		)
 	}
 
@@ -146,25 +128,25 @@ func (s *SeppoServiceServer) FetchCopyrightById(
 	error,
 ) {
 	res := &SeppoService.FetchCopyrightByIdResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
+	newDB := s.getGormDB()
+	defer newDB.Close()
 
-	copyrights, _ := models.Copyrights(
-		newDb,
-		qm.WhereIn("id in ?", in.CopyrightIds),
-	).All()
+	var copyrights []db.Copyright
+	newDB.Where("id in (?)", in.CopyrightIds).
+		Find(&copyrights)
 
 	for _, copyrightID := range in.CopyrightIds {
 		found := false
 		for _, copyright := range copyrights {
-			if copyrightID == copyright.ID {
-				found = true
-				res.Copyrights = append(
-					res.Copyrights,
-					generators.NewCopyright(copyright),
-				)
-				break
+			if copyrightID != copyright.ID {
+				continue
 			}
+			found = true
+			res.Copyrights = append(
+				res.Copyrights,
+				generators.NewCopyright(&copyright),
+			)
+			break
 		}
 		if found == false {
 			res.Copyrights = append(

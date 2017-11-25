@@ -10,16 +10,19 @@ import (
 	"google.golang.org/grpc/reflection"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/jinzhu/gorm"
 	"github.com/koodinikkarit/seppo/seppo_service"
 )
 
 type SeppoServiceServer struct {
-	getDB func() *sql.DB
+	getDB     func() *sql.DB
+	getGormDB func() *gorm.DB
 }
 
 func StartSeppoService(
 	port string,
 	getDB func() *sql.DB,
+	getGormDB func() *gorm.DB,
 ) {
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
@@ -33,7 +36,8 @@ func StartSeppoService(
 
 	s := grpc.NewServer()
 	SeppoService.RegisterSeppoServer(s, &SeppoServiceServer{
-		getDB: getDB,
+		getDB:     getDB,
+		getGormDB: getGormDB,
 	})
 
 	reflection.Register(s)

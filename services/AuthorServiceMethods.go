@@ -3,10 +3,9 @@ package services
 import (
 	"golang.org/x/net/context"
 
+	"github.com/koodinikkarit/seppo/db"
 	"github.com/koodinikkarit/seppo/generators"
-	"github.com/koodinikkarit/seppo/models"
 	SeppoService "github.com/koodinikkarit/seppo/seppo_service"
-	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
 func (s *SeppoServiceServer) CreateAuthor(
@@ -17,13 +16,13 @@ func (s *SeppoServiceServer) CreateAuthor(
 	error,
 ) {
 	res := &SeppoService.CreateAuthorResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
+	newDB := s.getGormDB()
+	defer newDB.Close()
 
-	author := models.Author{
+	author := db.Author{
 		Name: in.Name,
 	}
-	author.Insert(newDb)
+	newDB.Create(&author)
 
 	res.Author = generators.NewAuthor(&author)
 
@@ -38,18 +37,23 @@ func (s *SeppoServiceServer) UpdateAuthor(
 	error,
 ) {
 	res := &SeppoService.UpdateAuthorResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
+	newDB := s.getGormDB()
+	defer newDB.Close()
 
-	author, _ := models.FindAuthor(newDb, in.AuthorId)
-	if author == nil {
+	var author db.Author
+	newDB.First(&author, in.AuthorId)
+
+	if author.ID == 0 {
 		res.Success = false
 		return res, nil
 	}
-	author.Name = in.Name
-	author.Update(newDb)
+	if in.Name != "" {
+		author.Name = in.Name
+	}
+
+	newDB.Save(&author)
 	res.Success = true
-	res.Author = generators.NewAuthor(author)
+	res.Author = generators.NewAuthor(&author)
 
 	return res, nil
 }
@@ -62,15 +66,18 @@ func (s *SeppoServiceServer) RemoveAuthor(
 	error,
 ) {
 	res := &SeppoService.RemoveAuthorResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
+	newDB := s.getGormDB()
+	defer newDB.Close()
 
-	author, _ := models.FindAuthor(newDb, in.AuthorId)
-	if author == nil {
+	var author db.Author
+	newDB.First(&author, in.AuthorId)
+
+	if author.ID == 0 {
 		res.Success = false
 		return res, nil
 	}
-	author.Delete(newDb)
+
+	newDB.Delete(&author)
 	res.Success = true
 
 	return res, nil
@@ -84,44 +91,28 @@ func (s *SeppoServiceServer) SearchAuthors(
 	error,
 ) {
 	res := &SeppoService.SearchAuthorsResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
+	newDB := s.getGormDB()
+	defer newDB.Close()
 
-	var queryes []qm.QueryMod
-
-	queryes = append(
-		queryes,
-		qm.From("authors"),
-	)
+	query := newDB.Table("authors")
 
 	if in.Limit > 0 {
-		queryes = append(
-			queryes,
-			qm.Limit(int(in.Limit)),
-		)
+		query = query.Limit(in.Limit)
 	} else {
-		queryes = append(
-			queryes,
-			qm.Limit(10000),
-		)
+		query = query.Limit(5000)
 	}
 
 	if in.Offset > 0 {
-		queryes = append(
-			queryes,
-			qm.Offset(int(in.Offset)),
-		)
+		query = query.Offset(in.Offset)
 	}
 
-	authors, _ := models.Authors(
-		newDb,
-		queryes...,
-	).All()
+	var authors []db.Author
+	query.Find(&authors)
 
 	for _, author := range authors {
 		res.Authors = append(
 			res.Authors,
-			generators.NewAuthor(author),
+			generators.NewAuthor(&author),
 		)
 	}
 
@@ -136,25 +127,25 @@ func (s *SeppoServiceServer) FetchAuthorById(
 	error,
 ) {
 	res := &SeppoService.FetchAuthorByIdResponse{}
-	newDb := s.getDB()
-	defer newDb.Close()
+	newDB := s.getGormDB()
+	defer newDB.Close()
 
-	authors, _ := models.Authors(
-		newDb,
-		qm.WhereIn("id in ?", in.AuthorIds),
-	).All()
+	var authors []db.Author
+	newDB.Where("id in (?)", in.AuthorIds).
+		Find(&authors)
 
 	for _, authorID := range in.AuthorIds {
 		found := false
 		for _, author := range authors {
-			if authorID == author.ID {
-				found = true
-				res.Authors = append(
-					res.Authors,
-					generators.NewAuthor(author),
-				)
-				break
+			if authorID != author.ID {
+				continue
 			}
+			found = true
+			res.Authors = append(
+				res.Authors,
+				generators.NewAuthor(&author),
+			)
+			break
 		}
 		if found == false {
 			res.Authors = append(
