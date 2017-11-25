@@ -1,49 +1,64 @@
 package managers
 
 import (
-	"database/sql"
-
-	"github.com/koodinikkarit/seppo/models"
-	"github.com/volatiletech/sqlboiler/queries/qm"
+	"github.com/jinzhu/gorm"
+	"github.com/koodinikkarit/seppo/db"
 )
 
 func MoveVariationReferences(
-	tx *sql.Tx,
-	srcVariationID uint64,
-	dstVariationID uint64,
+	tx *gorm.DB,
+	srcVariationID uint32,
+	dstVariationID uint32,
 ) {
-	tagVariations, _ := models.TagVariations(
-		tx,
-		qm.Where("variation_id = ?", srcVariationID),
-	).All()
-	for _, tagVariation := range tagVariations {
-		newTagVariation := models.TagVariation{
-			TagID:       tagVariation.TagID,
-			VariationID: dstVariationID,
-		}
-		newTagVariation.Insert(tx)
+	tagVariations := []db.TagVariation{}
+	tx.Where("variation_id = ?", srcVariationID).Find(&tagVariations)
+	var newTagVariations []db.TagVariation
+	for i := 0; i < len(tagVariations); i++ {
+		newTagVariations = append(
+			newTagVariations,
+			db.TagVariation{
+				TagID:       tagVariations[i].TagID,
+				VariationID: dstVariationID,
+			},
+		)
 	}
-	songDatabaseVariations, _ := models.SongDatabaseVariations(
+	BatchAddTagsToVariation(
 		tx,
-		qm.Where("variation_id = ?", srcVariationID),
-	).All()
-	for _, songDatabaseVariation := range songDatabaseVariations {
-		newSongDatabaseVariation := models.SongDatabaseVariation{
-			SongDatabaseID: songDatabaseVariation.SongDatabaseID,
-			VariationID:    dstVariationID,
-		}
-		newSongDatabaseVariation.Insert(tx)
+		newTagVariations,
+	)
+
+	songDatabaseVariations := []db.SongDatabaseVariation{}
+	tx.Where("variation_version_id = ?", srcVariationID).Find(&songDatabaseVariations)
+	var newSongDatabaseVariations []db.SongDatabaseVariation
+	for i := 0; i < len(songDatabaseVariations); i++ {
+		newSongDatabaseVariations = append(
+			newSongDatabaseVariations,
+			db.SongDatabaseVariation{
+				SongDatabaseID: songDatabaseVariations[i].SongDatabaseID,
+				VariationID:    dstVariationID,
+			},
+		)
 	}
-	scheduleVariations, _ := models.ScheduleVariations(
+	BatchAddVariationsToSongDatabase(
 		tx,
-		qm.Where("variation_version_id = ?", srcVariationID),
-	).All()
-	for _, scheduleVariation := range scheduleVariations {
-		newScheduleVariation := models.ScheduleVariation{
-			ScheduleID:  scheduleVariation.ScheduleID,
-			VariationID: dstVariationID,
-			OrderNumber: scheduleVariation.OrderNumber,
-		}
-		newScheduleVariation.Insert(tx)
+		newSongDatabaseVariations,
+	)
+
+	scheduleVariations := []db.ScheduleVariation{}
+	tx.Where("variation_version_id = ?", srcVariationID).Find(&scheduleVariations)
+	var newScheduleVariations []db.ScheduleVariation
+	for i := 0; i < len(scheduleVariations); i++ {
+		newScheduleVariations = append(
+			newScheduleVariations,
+			db.ScheduleVariation{
+				ScheduleID:  scheduleVariations[i].ScheduleID,
+				VariationID: dstVariationID,
+				OrderNumber: scheduleVariations[i].OrderNumber,
+			},
+		)
 	}
+	BatchCreateScheduleVariations(
+		tx,
+		newScheduleVariations,
+	)
 }
