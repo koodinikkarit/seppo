@@ -66,10 +66,10 @@ create table if not exists variations (
 	song_id INT8 UNSIGNED DEFAULT NULL,
 	language_id INT8 UNSIGNED DEFAULT NULL,
 	variation_id INT8 UNSIGNED DEFAULT NULL,
-	ew_song_id INT8 UNSIGNED DEFAULT NULL,
-	jyvaskyla_song_id INT8 UNSIGNED DEFAULT NULL,
 	author_id INT8 UNSIGNED NULL,
 	copyright_id INT8 UNSIGNED NULL,
+	other VARCHAR(2048),
+	year INT UNSIGNED,
 	created_at DATETIME,
 	updated_at DATETIME NULL,
 	deleted_at DATETIME DEFAULT NULL,
@@ -79,35 +79,12 @@ create table if not exists variations (
 	FOREIGN KEY(copyright_id) REFERENCES copyrights(id)
 );
 
-create table if not exists jyvaskyla_songs(
+create table if not exists variation_key_values (
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	added_at INT8 UNSIGNED,
-	added_by VARCHAR(50),
-	additional_info VARCHAR(255),
-	arrangement_by VARCHAR(50),
-	composed_by VARCHAR(50),
-	copyright VARCHAR(50),
-	deleted BOOLEAN,
-	global_id INT8 UNSIGNED,
-	lyrics_by VARCHAR(50),
-	modified DATETIME,
-	name VARCHAR(50),
-	orig_name VARCHAR(50),
-	song TEXT,
-	songbook_id INT8 UNSIGNED,
-	translated_by VARCHAR(50),
-	year VARCHAR(50)
-);
-
-create table if not exists ew_songs(
-	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	title VARCHAR(50),
-	author VARCHAR(50),
-	copyright VARCHAR(50),
-	administrator VARCHAR(50),
-	description VARCHAR(50),
-	tags VARCHAR(50),
-	text TEXT
+	variation_id INT8 UNSIGNED NOT NULL,
+	field_key VARCHAR(255) NOT NULL,
+	field_value VARCHAR(255) NOT NULL,
+	FOREIGN KEY(variation_id) REFERENCES variations(id)
 );
 
 create table if not exists variation_versions (
@@ -243,12 +220,11 @@ create table if not exists synchronization_raports(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 	raport_type INT,
 	database_id INT8 UNSIGNED NULL,
-	database_key VARCHAR(10),
-	database_found BOOLEAN,
-	duration_ms INT8,
-	sr_gen_duration_ms INT8,
-	started_at DATETIME,
-	finished_at DATETIME
+	database_key VARCHAR(10) NOT NULL,
+	database_found BOOLEAN NOT NULL,
+	duration_ms INT8 NOT NULL,
+	started_at DATETIME NOT NULL,
+	finished_at DATETIME NOT NULL
 );
 
 create table if not exists sr_ew_conflicts(
