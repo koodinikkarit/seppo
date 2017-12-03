@@ -61,11 +61,16 @@ create table if not exists copyrights(
 	deleted_at DATETIME NULL
 );
 
+create table if not exists external_databases(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(50),
+	db_type INT
+);
+
 create table if not exists variations (
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 	song_id INT8 UNSIGNED DEFAULT NULL,
 	language_id INT8 UNSIGNED DEFAULT NULL,
-	variation_id INT8 UNSIGNED DEFAULT NULL,
 	author_id INT8 UNSIGNED NULL,
 	copyright_id INT8 UNSIGNED NULL,
 	other VARCHAR(2048),
@@ -77,6 +82,15 @@ create table if not exists variations (
 	FOREIGN KEY(language_id) REFERENCES languages(id),
 	FOREIGN KEY(author_id) REFERENCES authors(id),
 	FOREIGN KEY(copyright_id) REFERENCES copyrights(id)
+);
+
+create table if not exists external_variations(
+	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	external_db_id INT8 UNSIGNED NOT NULL,
+	variation_id INT8 UNSIGNED NOT NULL,
+	external_id VARCHAR(255) NOT NULL,
+	FOREIGN KEY(external_db_id) REFERENCES external_databases(id),
+	FOREIGN KEY(variation_id) REFERENCES variations(id)
 );
 
 create table if not exists variation_key_values (
@@ -93,7 +107,6 @@ create table if not exists variation_versions (
 	name VARCHAR(255) NOT NULL,
 	text TEXT NOT NULL,
 	version INT UNSIGNED DEFAULT 1 NOT NULL,
-	newest BOOLEAN,
 	created_at DATETIME,
 	disabled_at DATETIME NULL,
 	FOREIGN KEY(variation_id) REFERENCES variations(id)
@@ -163,7 +176,8 @@ create table if not exists ew_database_links(
 	created_at DATETIME,
 	updated_at DATETIME,
 	FOREIGN KEY(ew_database_id) REFERENCES ew_databases(id),
-	FOREIGN KEY(variation_id) REFERENCES variations(id)
+	FOREIGN KEY(variation_id) REFERENCES variations(id),
+	UNIQUE KEY link_id (ew_database_id, variation_id)
 );
 
 create table if not exists song_database_variations(
@@ -173,7 +187,8 @@ create table if not exists song_database_variations(
 	created_at DATETIME,
 	deleted_at DATETIME NULL,
 	FOREIGN KEY(song_database_id) REFERENCES song_databases(id),
-	FOREIGN KEY(variation_id) REFERENCES variations(id)
+	FOREIGN KEY(variation_id) REFERENCES variations(id),
+	UNIQUE KEY link_id (song_database_id, variation_id)
 );
 
 create table if not exists song_database_tags(
@@ -183,7 +198,8 @@ create table if not exists song_database_tags(
 	created_at DATETIME,
 	deleted_at DATETIME NULL,
 	FOREIGN KEY(tag_id) REFERENCES tags(id),
-	FOREIGN KEY(song_database_id) REFERENCES song_databases(id)
+	FOREIGN KEY(song_database_id) REFERENCES song_databases(id),
+	UNIQUE KEY link_id (tag_id, song_database_id)
 );
 
 create table if not exists tag_variations(
@@ -192,7 +208,8 @@ create table if not exists tag_variations(
 	variation_id INT8 UNSIGNED NOT NULL,
 	created_at DATETIME,
 	FOREIGN KEY(tag_id) REFERENCES tags(id),
-	FOREIGN KEY(variation_id) REFERENCES variations(id)
+	FOREIGN KEY(variation_id) REFERENCES variations(id),
+	UNIQUE KEY link_id (tag_id, variation_id)
 );
 
 create table if not exists schedule_variations(
@@ -214,6 +231,7 @@ create table if not exists event_schedules(
 	deleted_at DATETIME NULL,
 	FOREIGN KEY(schedule_id) REFERENCES schedules(id),
 	FOREIGN KEY(event_id) REFERENCES events(id)
+
 );
 
 create table if not exists synchronization_raports(
