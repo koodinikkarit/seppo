@@ -19,19 +19,4 @@ Seppo uses migrate(https://github.com/mattes/migrate) for migrations and inside 
 
 ### Database models
 
-Seppo uses sqlboiler(https://github.com/volatiletech/sqlboiler) for as database orm. Sql boiler uses db access information from sqlboiler.toml config file to connect to database and fetch its schema. Sqlboiler then uses this schema for generating database models
-
-#### Example databaseconfig file
-
-```
-blacklist=["schema_migrations"]
-schema="schema"
-[mysql]
-	dbname="name"
-	host="host"
-	port=port
-	user="user"
-	pass="pass"
-	sslmode="false"
-```
-Table name in blacklist is used for migrare program so there should not be generated code for it.
+Seppo uses gorm orm library (https://github.com/jinzhu/gorm) and database models are under db folder.
