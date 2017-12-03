@@ -45,7 +45,7 @@ func (s SeppoServiceServer) UpdateLanguage(
 
 	newDB.First(&language, in.LanguageId)
 
-	if language.ID > 0 {
+	if language.ID == 0 {
 		res.Success = false
 		return res, nil
 	}
