@@ -2,7 +2,6 @@ package generators
 
 import (
 	"github.com/koodinikkarit/seppo/db"
-	"github.com/koodinikkarit/seppo/models"
 	"github.com/koodinikkarit/seppo/seppo_service"
 )
 
@@ -60,12 +59,12 @@ func NewCopyright(in *db.Copyright) *SeppoService.Copyright {
 	return &newCopyright
 }
 
-func NewLog(in *models.Log) *SeppoService.Log {
+func NewLog(in *db.Log) *SeppoService.Log {
 	return &SeppoService.Log{
 		Id:          in.ID,
 		LogType:     uint32(in.LogType),
 		Message:     in.Message,
-		MessageDate: in.MessageDate.Time.Unix() * 1000,
+		MessageDate: in.MessageDate.Unix() * 1000,
 	}
 }
 

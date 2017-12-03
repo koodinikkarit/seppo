@@ -1,13 +1,15 @@
 package managers
 
-import "github.com/koodinikkarit/seppo/models"
+import (
+	"github.com/koodinikkarit/seppo/db"
+)
 
 func FindNewestVariationVersion(
-	variationVersions []*models.VariationVersion,
-) *models.VariationVersion {
-	var newest *models.VariationVersion
+	variationVersions []db.VariationVersion,
+) db.VariationVersion {
+	var newest db.VariationVersion
 	for _, variationVersion := range variationVersions {
-		if newest == nil ||
+		if newest.ID == 0 ||
 			variationVersion.Version > newest.Version {
 			newest = variationVersion
 		}

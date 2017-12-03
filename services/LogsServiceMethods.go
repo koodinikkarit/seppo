@@ -3,10 +3,9 @@ package services
 import (
 	"golang.org/x/net/context"
 
+	"github.com/koodinikkarit/seppo/db"
 	"github.com/koodinikkarit/seppo/generators"
-	"github.com/koodinikkarit/seppo/models"
 	SeppoService "github.com/koodinikkarit/seppo/seppo_service"
-	"github.com/volatiletech/sqlboiler/queries/qm"
 )
 
 func (s *SeppoServiceServer) SearchLogs(
@@ -17,74 +16,44 @@ func (s *SeppoServiceServer) SearchLogs(
 	error,
 ) {
 	res := &SeppoService.SearchLogsResponse{}
-	newDb := s.getDB()
+	newDb := s.getGormDB()
 	defer newDb.Close()
 
-	var queryMods []qm.QueryMod
+	query := newDb.Table("logs")
 
 	if in.MessageType > 0 {
-		queryMods = append(
-			queryMods,
-			qm.Where("log_type = ?", in.MessageType),
-		)
+		query = query.Where("log_type = ?", in.MessageType)
 	}
 
 	if in.StartDate > 0 {
-		queryMods = append(
-			queryMods,
-			qm.Where("message_date >= ?", in.StartDate),
-		)
+		query = query.Where("message_date > ?", in.StartDate)
 	}
 
 	if in.EndDate > 0 {
-		queryMods = append(
-			queryMods,
-			qm.Where("message_date <= ?", in.EndDate),
-		)
+		query = query.Where("message_date > ?", in.EndDate)
 	}
 
 	if in.SearchWord != "" {
-		queryMods = append(
-			queryMods,
-			qm.Where("message LIKE ?", "%"+in.SearchWord+"%"),
-		)
+		query = query.Where("message LIKE ?", "%"+in.SearchWord+"%")
 	}
 
-	c, _ := models.Logs(
-		newDb,
-		queryMods...,
-	).Count()
-
-	res.MaxLogs = uint64(c)
+	query.Count(&res.MaxLogs)
 
 	if in.Offset > 0 {
-		queryMods = append(
-			queryMods,
-			qm.Offset(int(in.Offset)),
-		)
-	} else {
-		queryMods = append(
-			queryMods,
-			qm.Offset(10000),
-		)
+		query = query.Offset(in.Offset)
 	}
 
 	if in.Limit > 0 {
-		queryMods = append(
-			queryMods,
-			qm.Limit(int(in.Limit)),
-		)
+		query = query.Limit(in.Limit)
 	}
 
-	logs, _ := models.Logs(
-		newDb,
-		queryMods...,
-	).All()
+	logs := []db.Log{}
+	query.Find(&logs)
 
-	for _, log := range logs {
+	for i := 0; i < len(logs); i++ {
 		res.Logs = append(
 			res.Logs,
-			generators.NewLog(log),
+			generators.NewLog(&logs[i]),
 		)
 	}
 

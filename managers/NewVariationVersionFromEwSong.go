@@ -1,5 +1,0 @@
-package managers
-
-// func NewVariationVersionFromEwSong(
-
-// )

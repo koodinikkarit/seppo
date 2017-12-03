@@ -2,7 +2,6 @@ package main
 
 import (
 	"os"
-	"sync"
 
 	"github.com/koodinikkarit/seppo/db"
 	"github.com/koodinikkarit/seppo/services"
@@ -15,7 +14,6 @@ func main() {
 	dbPort := os.Getenv("SEPPO_DB_PORT")
 	dbName := os.Getenv("SEPPO_DB_NAME")
 	seppoPort := os.Getenv("SEPPO_PORT")
-	matiasPort := os.Getenv("SEPPO_MATIAS_PORT")
 
 	db.Migrate(
 		dbUser,
@@ -26,14 +24,6 @@ func main() {
 		1,
 	)
 
-	getDb := db.CreateGetDB(
-		dbUser,
-		dbPassword,
-		dbIP,
-		dbPort,
-		dbName,
-	)
-
 	getGormDB := db.CreateGetGormDB(
 		dbUser,
 		dbPassword,
@@ -42,22 +32,8 @@ func main() {
 		dbName,
 	)
 
-	wg := &sync.WaitGroup{}
-	wg.Add(1)
-	go func() {
-		go services.StartSeppoService(
-			seppoPort,
-			getDb,
-			getGormDB,
-		)
-	}()
-	wg.Add(1)
-	go func() {
-		go services.StartMatiasService(
-			matiasPort,
-			getDb,
-			getGormDB,
-		)
-	}()
-	wg.Wait()
+	services.StartSeppoService(
+		seppoPort,
+		getGormDB,
+	)
 }

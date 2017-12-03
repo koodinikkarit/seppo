@@ -1,7 +1,6 @@
 package services
 
 import (
-	"database/sql"
 	"log"
 	"net"
 
@@ -15,13 +14,11 @@ import (
 )
 
 type SeppoServiceServer struct {
-	getDB     func() *sql.DB
 	getGormDB func() *gorm.DB
 }
 
 func StartSeppoService(
 	port string,
-	getDB func() *sql.DB,
 	getGormDB func() *gorm.DB,
 ) {
 	lis, err := net.Listen("tcp", ":"+port)
@@ -36,7 +33,6 @@ func StartSeppoService(
 
 	s := grpc.NewServer()
 	SeppoService.RegisterSeppoServer(s, &SeppoServiceServer{
-		getDB:     getDB,
 		getGormDB: getGormDB,
 	})
 

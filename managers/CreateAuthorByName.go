@@ -1,29 +1,23 @@
 package managers
 
 import (
-	"database/sql"
-
-	"github.com/koodinikkarit/seppo/models"
-	. "github.com/volatiletech/sqlboiler/queries/qm"
+	"github.com/jinzhu/gorm"
+	"github.com/koodinikkarit/seppo/db"
 )
 
 func CreateAuthorByName(
-	tx *sql.Tx,
+	tx *gorm.DB,
 	name string,
-) *models.Author {
-	author, _ := models.Authors(
-		tx,
-		Where("authors.name = ?", name),
-	).One()
-
-	if author != nil {
+) db.Author {
+	var author db.Author
+	tx.Where("name = ?", name).
+		First(&author)
+	if author.ID > 0 {
 		return author
 	}
 
-	newAuthor := models.Author{
-		Name: name,
-	}
+	author.Name = name
 
-	newAuthor.Insert(tx)
-	return &newAuthor
+	tx.Create(&author)
+	return author
 }

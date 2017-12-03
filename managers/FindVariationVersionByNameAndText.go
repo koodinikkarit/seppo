@@ -1,12 +1,12 @@
 package managers
 
-import "github.com/koodinikkarit/seppo/models"
+import "github.com/koodinikkarit/seppo/db"
 
 func FindVariationVersionByNameAndText(
-	variationVersions []*models.VariationVersion,
+	variationVersions []*db.VariationVersion,
 	name string,
 	text string,
-) *models.VariationVersion {
+) *db.VariationVersion {
 	for _, variationVersion := range variationVersions {
 		if name != variationVersion.Name ||
 			text != variationVersion.Text {
