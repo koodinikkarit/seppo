@@ -158,7 +158,7 @@ create table if not exists ew_database_links(
 	updated_at DATETIME,
 	FOREIGN KEY(ew_database_id) REFERENCES ew_databases(id),
 	FOREIGN KEY(variation_id) REFERENCES variations(id),
-	UNIQUE KEY link_id (ew_database_id, variation_id)
+	UNIQUE KEY ew_database_link_link_id (ew_database_id, variation_id)
 );
 create table if not exists song_database_variations(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -168,7 +168,7 @@ create table if not exists song_database_variations(
 	deleted_at DATETIME NULL,
 	FOREIGN KEY(song_database_id) REFERENCES song_databases(id),
 	FOREIGN KEY(variation_id) REFERENCES variations(id),
-	UNIQUE KEY link_id (song_database_id, variation_id)
+	UNIQUE KEY song_database_variation_link_id (song_database_id, variation_id)
 );
 create table if not exists song_database_tags(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -178,7 +178,7 @@ create table if not exists song_database_tags(
 	deleted_at DATETIME NULL,
 	FOREIGN KEY(tag_id) REFERENCES tags(id),
 	FOREIGN KEY(song_database_id) REFERENCES song_databases(id),
-	UNIQUE KEY link_id (tag_id, song_database_id)
+	UNIQUE KEY song_database_tag_link_id (tag_id, song_database_id)
 );
 create table if not exists tag_variations(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -187,7 +187,7 @@ create table if not exists tag_variations(
 	created_at DATETIME,
 	FOREIGN KEY(tag_id) REFERENCES tags(id),
 	FOREIGN KEY(variation_id) REFERENCES variations(id),
-	UNIQUE KEY link_id (tag_id, variation_id)
+	UNIQUE KEY tag_variation_link_id (tag_id, variation_id)
 );
 create table if not exists schedule_variations(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
