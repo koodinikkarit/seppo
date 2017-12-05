@@ -5,16 +5,14 @@ import (
 )
 
 type Variation struct {
-	ID              uint32
-	SongID          *uint32
-	LanguageID      *uint32
-	EwSongID        *uint32
-	JyvaskylaSongID *uint32
-	AuthorID        *uint32
-	CopyrightID     *uint32
-	CreatedAt       *time.Time
-	UpdatedAt       *time.Time
-	DeletedAt       *time.Time
+	ID          uint32
+	SongID      *uint32
+	LanguageID  *uint32
+	AuthorID    *uint32
+	CopyrightID *uint32
+	CreatedAt   *time.Time
+	UpdatedAt   *time.Time
+	DeletedAt   *time.Time
 
 	Song              Song
 	Language          Language
