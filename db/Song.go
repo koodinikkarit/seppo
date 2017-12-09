@@ -1,7 +1,7 @@
-package SeppoDB
+package db
 
 type Song struct {
 	ID uint32
 
-	Variation []Variation
+	Variations []Variation
 }

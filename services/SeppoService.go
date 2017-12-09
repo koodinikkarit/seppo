@@ -1,4 +1,4 @@
-package seppo
+package services
 
 import (
 	"log"
@@ -8,16 +8,19 @@ import (
 	"google.golang.org/grpc/grpclog"
 	"google.golang.org/grpc/reflection"
 
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jinzhu/gorm"
 	"github.com/koodinikkarit/seppo/seppo_service"
-
-	"github.com/koodinikkarit/seppo/db"
 )
 
 type SeppoServiceServer struct {
-	databaseService *SeppoDB.DatabaseService
+	getGormDB func() *gorm.DB
 }
 
-func CreateSeppoService(port string, databaseService *SeppoDB.DatabaseService) {
+func StartSeppoService(
+	port string,
+	getGormDB func() *gorm.DB,
+) {
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		grpclog.Fatalf("failed to listen: %v", err)
@@ -30,7 +33,7 @@ func CreateSeppoService(port string, databaseService *SeppoDB.DatabaseService) {
 
 	s := grpc.NewServer()
 	SeppoService.RegisterSeppoServer(s, &SeppoServiceServer{
-		databaseService: databaseService,
+		getGormDB: getGormDB,
 	})
 
 	reflection.Register(s)
