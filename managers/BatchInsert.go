@@ -112,7 +112,7 @@ func BatchCreateVariationVersions(
 	variationVersions []db.VariationVersion,
 ) int64 {
 	if len(variationVersions) > 0 {
-		sqlStr := "INSERT INTO `variation_versions` (`variation_id`,`name`,`text`,`version`,`newest`,`created_at`) VALUES "
+		sqlStr := "INSERT INTO `variation_versions` (`variation_id`,`name`,`text`,`version`,`created_at`) VALUES "
 		vals := []interface{}{}
 
 		for _, variationVersion := range variationVersions {
@@ -123,7 +123,6 @@ func BatchCreateVariationVersions(
 				variationVersion.Name,
 				variationVersion.Text,
 				variationVersion.Version,
-				variationVersion.Newest,
 				time.Now(),
 			)
 		}

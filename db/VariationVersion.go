@@ -8,7 +8,6 @@ type VariationVersion struct {
 	Name        string
 	Text        string
 	Version     uint32
-	Newest      bool
 	CreatedAt   *time.Time
 	DisabledAt  *time.Time
 }
