@@ -5,7 +5,7 @@ drop table if exists song_database_tags;
 drop table if exists song_database_variations;
 drop table if exists ew_database_links;
 drop table if exists ew_databases;
-drop table if exists matias_client;
+drop table if exists matias_clients;
 drop table if exists song_databases;
 drop table if exists merges;
 drop table if exists branches;
