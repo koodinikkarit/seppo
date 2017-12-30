@@ -2,14 +2,14 @@ package managers
 
 import (
 	"github.com/jinzhu/gorm"
-	"github.com/koodinikkarit/seppo/db"
+	"github.com/koodinikkarit/seppo/models"
 )
 
 func CreateAuthorByName(
 	tx *gorm.DB,
 	name string,
-) db.Author {
-	var author db.Author
+) models.Author {
+	var author models.Author
 	tx.Where("name = ?", name).
 		First(&author)
 	if author.ID > 0 {

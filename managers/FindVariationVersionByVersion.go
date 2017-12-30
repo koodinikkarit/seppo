@@ -1,11 +1,11 @@
 package managers
 
-import "github.com/koodinikkarit/seppo/db"
+import "github.com/koodinikkarit/seppo/models"
 
 func FindVariationVersionByVersion(
-	variationVersions []*db.VariationVersion,
+	variationVersions []*models.VariationVersion,
 	versionNumber uint32,
-) *db.VariationVersion {
+) *models.VariationVersion {
 	for _, variationVersion := range variationVersions {
 		if variationVersion.Version == versionNumber {
 			return variationVersion

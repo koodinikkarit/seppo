@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/koodinikkarit/seppo/db"
+	"github.com/koodinikkarit/seppo/database"
 )
 
 func main() {
@@ -13,7 +13,7 @@ func main() {
 	dbPort := os.Getenv("SEPPO_DB_PORT")
 	dbName := os.Getenv("SEPPO_DB_NAME")
 
-	db.Migrate(
+	database.Migrate(
 		dbUser,
 		dbPassword,
 		dbIP,

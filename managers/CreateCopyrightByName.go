@@ -2,14 +2,14 @@ package managers
 
 import (
 	"github.com/jinzhu/gorm"
-	"github.com/koodinikkarit/seppo/db"
+	"github.com/koodinikkarit/seppo/models"
 )
 
 func CreateCopyrightByName(
 	tx *gorm.DB,
 	name string,
-) db.Copyright {
-	var copyright db.Copyright
+) models.Copyright {
+	var copyright models.Copyright
 	tx.Where("name = ?", name).
 		First(&copyright)
 

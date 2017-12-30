@@ -2,7 +2,7 @@ package managers
 
 import (
 	"github.com/jinzhu/gorm"
-	"github.com/koodinikkarit/seppo/db"
+	"github.com/koodinikkarit/seppo/models"
 )
 
 func CreateBranchAndVariation(
@@ -11,11 +11,11 @@ func CreateBranchAndVariation(
 	name string,
 	text string,
 ) (
-	*db.Variation,
-	*db.VariationVersion,
+	*models.Variation,
+	*models.VariationVersion,
 ) {
-	newVariation := db.Variation{}
-	newVariationVersion := db.VariationVersion{
+	newVariation := models.Variation{}
+	newVariationVersion := models.VariationVersion{
 		Name:    name,
 		Text:    text,
 		Version: 1,
@@ -25,7 +25,7 @@ func CreateBranchAndVariation(
 		newVariationVersion,
 	)
 	tx.Create(&newVariation)
-	newBranch := db.Branch{
+	newBranch := models.Branch{
 		SourceVariationVersionID:      sourceVariationVersionId,
 		DestinationVariationVersionID: newVariationVersion.ID,
 	}

@@ -4,18 +4,18 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
-	"github.com/koodinikkarit/seppo/db"
+	"github.com/koodinikkarit/seppo/models"
 )
 
 func InsertLog(
-	newDb *gorm.DB,
+	db *gorm.DB,
 	logType uint32,
 	message string,
 ) {
-	log := db.Log{
+	log := models.Log{
 		LogType:     logType,
 		Message:     message,
 		MessageDate: time.Now(),
 	}
-	newDb.Create(&log)
+	db.Create(&log)
 }

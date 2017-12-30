@@ -1,16 +1,15 @@
 package generators
 
 import (
-	"github.com/koodinikkarit/seppo/db"
+	"github.com/koodinikkarit/seppo/models"
 	"github.com/koodinikkarit/seppo/seppo_service"
 )
 
-func NewEwDatabase(in *db.EwDatabase) *SeppoService.EwDatabase {
+func NewEwDatabase(in *models.EwDatabase) *SeppoService.EwDatabase {
 	newEwDatabase := SeppoService.EwDatabase{
 		Id:                             in.ID,
 		Name:                           in.Name,
 		SongDatabaseId:                 in.SongDatabaseID,
-		DatabaseKey:                    in.EwDatabaseKey,
 		VariationVersionConflictAction: uint32(in.VariationVersionConflictAction),
 	}
 
@@ -29,21 +28,21 @@ func NewEwDatabase(in *db.EwDatabase) *SeppoService.EwDatabase {
 	return &newEwDatabase
 }
 
-func NewTag(in *db.Tag) *SeppoService.Tag {
+func NewTag(in *models.Tag) *SeppoService.Tag {
 	return &SeppoService.Tag{
 		Id:   in.ID,
 		Name: in.Name,
 	}
 }
 
-func NewLanguage(in *db.Language) *SeppoService.Language {
+func NewLanguage(in *models.Language) *SeppoService.Language {
 	return &SeppoService.Language{
 		Id:   in.ID,
 		Name: in.Name,
 	}
 }
 
-func NewAuthor(in *db.Author) *SeppoService.Author {
+func NewAuthor(in *models.Author) *SeppoService.Author {
 	newAuthor := SeppoService.Author{
 		Id:   in.ID,
 		Name: in.Name,
@@ -51,7 +50,7 @@ func NewAuthor(in *db.Author) *SeppoService.Author {
 	return &newAuthor
 }
 
-func NewCopyright(in *db.Copyright) *SeppoService.Copyright {
+func NewCopyright(in *models.Copyright) *SeppoService.Copyright {
 	newCopyright := SeppoService.Copyright{
 		Id:   in.ID,
 		Name: in.Name,
@@ -59,7 +58,7 @@ func NewCopyright(in *db.Copyright) *SeppoService.Copyright {
 	return &newCopyright
 }
 
-func NewLog(in *db.Log) *SeppoService.Log {
+func NewLog(in *models.Log) *SeppoService.Log {
 	return &SeppoService.Log{
 		Id:          in.ID,
 		LogType:     uint32(in.LogType),
@@ -68,7 +67,7 @@ func NewLog(in *db.Log) *SeppoService.Log {
 	}
 }
 
-func NewSchedule(in *db.Schedule) *SeppoService.Schedule {
+func NewSchedule(in *models.Schedule) *SeppoService.Schedule {
 	newSchedule := SeppoService.Schedule{
 		Id:   in.ID,
 		Name: in.Name,
@@ -85,14 +84,14 @@ func NewSchedule(in *db.Schedule) *SeppoService.Schedule {
 	return &newSchedule
 }
 
-func NewSongDatabase(in *db.SongDatabase) *SeppoService.SongDatabase {
+func NewSongDatabase(in *models.SongDatabase) *SeppoService.SongDatabase {
 	return &SeppoService.SongDatabase{
 		Id:   in.ID,
 		Name: in.Name,
 	}
 }
 
-func NewVariation(in *db.Variation) *SeppoService.Variation {
+func NewVariation(in *models.Variation) *SeppoService.Variation {
 	newVariation := SeppoService.Variation{
 		Id: in.ID,
 	}
@@ -111,7 +110,7 @@ func NewVariation(in *db.Variation) *SeppoService.Variation {
 	return &newVariation
 }
 
-func NewVariationVersion(in *db.VariationVersion) *SeppoService.VariationVersion {
+func NewVariationVersion(in *models.VariationVersion) *SeppoService.VariationVersion {
 	newVariationVersion := SeppoService.VariationVersion{
 		Id:          in.ID,
 		VariationId: in.VariationID,

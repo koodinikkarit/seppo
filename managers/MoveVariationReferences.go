@@ -2,7 +2,7 @@ package managers
 
 import (
 	"github.com/jinzhu/gorm"
-	"github.com/koodinikkarit/seppo/db"
+	"github.com/koodinikkarit/seppo/models"
 )
 
 func MoveVariationReferences(
@@ -10,13 +10,13 @@ func MoveVariationReferences(
 	srcVariationID uint32,
 	dstVariationID uint32,
 ) {
-	tagVariations := []db.TagVariation{}
+	tagVariations := []models.TagVariation{}
 	tx.Where("variation_id = ?", srcVariationID).Find(&tagVariations)
-	var newTagVariations []db.TagVariation
+	var newTagVariations []models.TagVariation
 	for i := 0; i < len(tagVariations); i++ {
 		newTagVariations = append(
 			newTagVariations,
-			db.TagVariation{
+			models.TagVariation{
 				TagID:       tagVariations[i].TagID,
 				VariationID: dstVariationID,
 			},
@@ -27,13 +27,13 @@ func MoveVariationReferences(
 		newTagVariations,
 	)
 
-	songDatabaseVariations := []db.SongDatabaseVariation{}
+	songDatabaseVariations := []models.SongDatabaseVariation{}
 	tx.Where("variation_version_id = ?", srcVariationID).Find(&songDatabaseVariations)
-	var newSongDatabaseVariations []db.SongDatabaseVariation
+	var newSongDatabaseVariations []models.SongDatabaseVariation
 	for i := 0; i < len(songDatabaseVariations); i++ {
 		newSongDatabaseVariations = append(
 			newSongDatabaseVariations,
-			db.SongDatabaseVariation{
+			models.SongDatabaseVariation{
 				SongDatabaseID: songDatabaseVariations[i].SongDatabaseID,
 				VariationID:    dstVariationID,
 			},
@@ -44,13 +44,13 @@ func MoveVariationReferences(
 		newSongDatabaseVariations,
 	)
 
-	scheduleVariations := []db.ScheduleVariation{}
+	scheduleVariations := []models.ScheduleVariation{}
 	tx.Where("variation_version_id = ?", srcVariationID).Find(&scheduleVariations)
-	var newScheduleVariations []db.ScheduleVariation
+	var newScheduleVariations []models.ScheduleVariation
 	for i := 0; i < len(scheduleVariations); i++ {
 		newScheduleVariations = append(
 			newScheduleVariations,
-			db.ScheduleVariation{
+			models.ScheduleVariation{
 				ScheduleID:  scheduleVariations[i].ScheduleID,
 				VariationID: dstVariationID,
 				OrderNumber: scheduleVariations[i].OrderNumber,
