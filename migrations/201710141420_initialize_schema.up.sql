@@ -1,15 +1,16 @@
 create table if not exists tags (
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(50) DEFAULT "" NOT NULL,
+	name VARCHAR(255) DEFAULT "" NOT NULL,
 	created_at DATETIME,
 	updated_at DATETIME NULL,
 	deleted_at DATETIME NULL
 );
 create table if not exists languages (
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(50) DEFAULT "" NOT NULL,
+	name VARCHAR(255) DEFAULT "" NOT NULL,
 	created_at DATETIME,
-	updated_at DATETIME NULL
+	updated_at DATETIME NULL,
+	deleted_at DATETIME NULL
 );
 create table if not exists logs (
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -22,7 +23,7 @@ create table if not exists songs(
 );
 create table if not exists schedules(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(50) DEFAULT "" NOT NULL,
+	name VARCHAR(255) DEFAULT "" NOT NULL,
 	start DATETIME NULL,
 	end DATETIME NULL,
 	created_at DATETIME,
@@ -31,7 +32,7 @@ create table if not exists schedules(
 );
 create table if not exists events(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	name VARCHAR(50),
+	name VARCHAR(255),
 	start DATETIME,
 	end DATETIME,
 	created_at DATETIME,
@@ -123,9 +124,12 @@ create table if not exists song_databases (
 	updated_at DATETIME NULL,
 	deleted_at DATETIME NULL
 );
-create table if not exists matias_client (
+create table if not exists matias_clients (
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	hostname VARCHAR(255),
 	client_key VARCHAR(20),
+	accepted BOOLEAN,
+	connected BOOLEAN,
 	created_at DATETIME,
 	updated_at DATETIME NULL,
 	deleted_at DATETIME NULL	
@@ -134,8 +138,7 @@ create table if not exists ew_databases(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
 	name VARCHAR(50) DEFAULT "" NOT NULL,
 	song_database_id INT8 UNSIGNED NOT NULL,
-	ew_database_key VARCHAR(10) DEFAULT "" NOT NULL,
-	use_newest_version BOOLEAN,
+	filesystem_path VARCHAR(1024) NOT NULL,
 	matias_client_id INT8 UNSIGNED NULL,
 	remove_songs_from_ew_database BOOLEAN DEFAULT false NOT NULL,
 	remove_songs_from_song_database BOOLEAN DEFAULT false NOT NULL,
@@ -144,21 +147,7 @@ create table if not exists ew_databases(
 	updated_at DATETIME NULL,
 	deleted_at DATETIME NULL,
 	FOREIGN KEY(song_database_id) REFERENCES song_databases(id),
-	FOREIGN KEY(matias_client_id) REFERENCES matias_client(id)
-);
-create table if not exists ew_database_links(
-	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-	ew_database_id INT8 UNSIGNED NOT NULL,
-	ew_database_song_id INT8 UNSIGNED NOT NULL,
-	variation_id INT8 UNSIGNED NOT NULL,
-	version INT UNSIGNED DEFAULT 1 NOT NULL,
-	author VARCHAR(255) DEFAULT "" NOT NULL,
-	copyright VARCHAR(255) DEFAULT "" NOT NULL,
-	created_at DATETIME,
-	updated_at DATETIME,
-	FOREIGN KEY(ew_database_id) REFERENCES ew_databases(id),
-	FOREIGN KEY(variation_id) REFERENCES variations(id),
-	UNIQUE KEY ew_database_link_link_id (ew_database_id, variation_id)
+	FOREIGN KEY(matias_client_id) REFERENCES matias_clients(id)
 );
 create table if not exists song_database_variations(
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
