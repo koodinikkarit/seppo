@@ -1,38 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
+	"sync"
 
-	"github.com/koodinikkarit/seppo/db"
-	"github.com/koodinikkarit/seppo/services"
-	yaml "gopkg.in/yaml.v2"
+	"github.com/cskr/pubsub"
+	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/joho/godotenv/autoload"
+	"github.com/koodinikkarit/seppo/database"
+	"github.com/koodinikkarit/seppo/matias"
+	"github.com/koodinikkarit/seppo/service"
 )
-
-type Config struct {
-	DBUser   string `yaml:"dbUser"`
-	DBPasswd string `yaml:"dbPasswd"`
-	DBIP     string `yaml:"dbIp"`
-	DBPort   string `yaml:"dbPort"`
-	DBName   string `yaml:"dbName"`
-	Port     string `yaml:"port"`
-}
-
-func readConfig() *Config {
-	yamlFile, err := ioutil.ReadFile("config.yml")
-	if err != nil {
-		log.Printf("yamlFile.Get err   #%v ", err)
-	}
-	c := Config{}
-	err = yaml.Unmarshal(yamlFile, &c)
-	if err != nil {
-		log.Fatalf("Unmarshal: %v", err)
-	}
-
-	return &c
-}
 
 func main() {
 	var dbUser string
@@ -40,71 +19,50 @@ func main() {
 	var dbIP string
 	var dbPort string
 	var dbName string
-	var port string
+	var seppoPort string
+	var matiasPort string
 
-	if os.Getenv("SEPPO_USE_CONFIG_FILE") == "true" {
-		c := readConfig()
-		fmt.Println("use configfile ", c)
-		dbUser = c.DBUser
-		if dbUser == "" {
-			panic("Configfile dbUser is empty")
-		}
-		dbPassword = c.DBPasswd
-		if dbPassword == "" {
-			panic("Configfile dbPasswd is empty")
-		}
-		dbIP = c.DBIP
-		if dbIP == "" {
-			panic("Configfile dbIp is empty")
-		}
-		dbPort = c.DBPort
-		if dbPort == "" {
-			panic("Configfile dbPort is empty")
-		}
-		dbName = c.DBName
-		if dbName == "" {
-			panic("Configfile dbName is empty")
-		}
-		port = c.Port
-		if port == "" {
-			panic("Configfile port is empty")
-		}
-	} else {
-		dbUser = os.Getenv("SEPPO_DB_USERNAME")
-		if dbUser == "" {
-			panic("No enviroment variable dbUser")
-		}
-		dbPassword = os.Getenv("SEPPO_DB_PASSWORD")
-		if dbPassword == "" {
-			panic("No enviroment variable SEPPO_DB_PASSWORD")
-		}
-		dbIP = os.Getenv("SEPPO_DB_IP")
-		if dbIP == "" {
-			panic("No enviroment variable SEPPO_DB_IP")
-		}
-		dbPort = os.Getenv("SEPPO_DB_PORT")
-		if dbPort == "" {
-			panic("No enviroment variable SEPPO_DB_PORT")
-		}
-		dbName = os.Getenv("SEPPO_DB_NAME")
-		if dbName == "" {
-			panic("No enviroment variable  SEPPO_DB_NAME")
-		}
-		port = os.Getenv("SEPPO_PORT")
-		if port == "" {
-			panic("No enviroment variable SEPPO_PORT")
-		}
+	dbUser = os.Getenv("DB_USERNAME")
+	if dbUser == "" {
+		log.Fatalln("No enviroment variable DB_USERNAME")
 	}
+	dbPassword = os.Getenv("DB_PASSWORD")
+	if dbPassword == "" {
+		log.Fatalln("No enviroment variable DB_PASSWORD")
+	}
+	dbIP = os.Getenv("DB_IP")
+	if dbIP == "" {
+		log.Fatalln("No enviroment variable DB_IP")
+	}
+	dbPort = os.Getenv("DB_PORT")
+	if dbPort == "" {
+		log.Println("No enviroment variable DB_PORT using 3306")
+		dbPort = "3306"
+	}
+	dbName = os.Getenv("DB_NAME")
+	if dbName == "" {
+		log.Fatalln("No enviroment variable  DB_NAME")
+	}
+	seppoPort = os.Getenv("SEPPO_PORT")
+	if seppoPort == "" {
+		log.Println("No enviroment variable SEPPO_PORT using 3214")
+		seppoPort = "3214"
+	}
+	matiasPort = os.Getenv("MATIAS_PORT")
+	if matiasPort == "" {
+		log.Println("No enviroment variable MATIAS_PORT using 6755")
+		matiasPort = "6755"
+	}
+	log.Println("Creating mysql connection with parameters")
+	log.Printf("dbUser: %v\n", dbUser)
+	log.Printf("dbPassword: %v\n", dbPassword)
+	log.Printf("dbIP: %v\n", dbIP)
+	log.Printf("dbPort: %v\n", dbPort)
+	log.Printf("dbName: %v\n", dbName)
+	log.Printf("seppoPort: %v\n", seppoPort)
+	log.Printf("matiasPort: %v\n", matiasPort)
 
-	fmt.Println("Creating mysql connection with parameters")
-	fmt.Println(dbUser)
-	fmt.Println(dbPassword)
-	fmt.Println(dbIP)
-	fmt.Println(dbPort)
-	fmt.Println(dbName)
-	fmt.Println(port)
-
-	db.Migrate(
+	getDB := database.CreateGetDB(
 		dbUser,
 		dbPassword,
 		dbIP,
@@ -113,16 +71,20 @@ func main() {
 		1,
 	)
 
-	getGormDB := db.CreateGetGormDB(
-		dbUser,
-		dbPassword,
-		dbIP,
-		dbPort,
-		dbName,
-	)
+	pubSub := pubsub.New(1)
 
-	services.StartSeppoService(
-		port,
-		getGormDB,
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
+	go service.StartSeppoService(
+		getDB,
+		pubSub,
+		seppoPort,
 	)
+	wg.Add(1)
+	go matias.StartMatiasService(
+		getDB,
+		pubSub,
+		matiasPort,
+	)
+	wg.Wait()
 }
