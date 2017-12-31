@@ -5,24 +5,13 @@
 ## Environment variables
 
 ```
-SEPPO_USE_CONFIG_FILE
-SEPPO_DB_USERNAME
-SEPPO_DB_PASSWORD
-SEPPO_DB_IP
-SEPPO_DB_PORT
-SEPPO_DB_NAME
+DB_USERNAME
+DB_PASSWORD
+DB_IP
+DB_PORT
+DB_NAME
 SEPPO_PORT
-```
-
-## Config file
-
-```
-dbUsername
-dbPasswd
-dbIp
-dbPort
-dbName
-port
+MATIAS_PORT
 ```
 
 ### Database Migrations
