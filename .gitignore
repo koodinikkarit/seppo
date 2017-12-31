@@ -1,4 +1,4 @@
 debug*
 *.exe
-config.yml
 sqlboiler.toml
+.env
