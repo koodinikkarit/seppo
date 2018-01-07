@@ -126,6 +126,7 @@ create table if not exists song_databases (
 );
 create table if not exists matias_clients (
 	id INT8 UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+	name VARCHAR(255),
 	hostname VARCHAR(255),
 	client_key VARCHAR(20),
 	accepted BOOLEAN,
