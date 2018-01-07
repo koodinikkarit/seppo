@@ -1,8 +1,8 @@
 package generators
 
 import (
+	"github.com/koodinikkarit/go-clientlibs/seppo"
 	"github.com/koodinikkarit/seppo/models"
-	"github.com/koodinikkarit/seppo/seppo_service"
 )
 
 func NewEwDatabase(in *models.EwDatabase) *SeppoService.EwDatabase {
@@ -119,4 +119,15 @@ func NewVariationVersion(in *models.VariationVersion) *SeppoService.VariationVer
 		Version:     uint32(in.Version),
 	}
 	return &newVariationVersion
+}
+
+func NewMatiasClient(in *models.MatiasClient) *SeppoService.MatiasClient {
+	newMatiasClient := &SeppoService.MatiasClient{
+		Id:        in.ID,
+		HostName:  in.Hostname,
+		Key:       in.ClientKey,
+		Accepted:  in.Accepted,
+		Connected: in.Connected,
+	}
+	return newMatiasClient
 }

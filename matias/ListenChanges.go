@@ -1,7 +1,7 @@
 package matias
 
 import (
-	"github.com/koodinikkarit/seppo/matias_service"
+	"github.com/koodinikkarit/go-clientlibs/matias"
 	"github.com/koodinikkarit/seppo/models"
 )
 
@@ -38,6 +38,7 @@ func (ms *MatiasServiceServer) ListenChanges(
 	if matiasClient.ID == 0 {
 		matiasClient := models.MatiasClient{
 			ClientKey: req.Key,
+			Hostname:  req.HostName,
 		}
 		db.Create(&matiasClient)
 	}

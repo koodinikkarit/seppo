@@ -3,9 +3,9 @@ package service
 import (
 	"golang.org/x/net/context"
 
+	SeppoService "github.com/koodinikkarit/go-clientlibs/seppo"
 	"github.com/koodinikkarit/seppo/generators"
 	"github.com/koodinikkarit/seppo/models"
-	SeppoService "github.com/koodinikkarit/seppo/seppo_service"
 )
 
 func (s *SeppoServiceServer) CreateAuthor(

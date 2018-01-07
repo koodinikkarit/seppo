@@ -10,7 +10,7 @@ import (
 
 	"github.com/cskr/pubsub"
 	"github.com/jinzhu/gorm"
-	"github.com/koodinikkarit/seppo/seppo_service"
+	"github.com/koodinikkarit/go-clientlibs/seppo"
 )
 
 type SeppoServiceServer struct {

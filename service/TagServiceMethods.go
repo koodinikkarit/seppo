@@ -3,9 +3,9 @@ package service
 import (
 	"golang.org/x/net/context"
 
-	"github.com/koodinikkarit/seppo/models"
+	SeppoService "github.com/koodinikkarit/go-clientlibs/seppo"
 	"github.com/koodinikkarit/seppo/generators"
-	SeppoService "github.com/koodinikkarit/seppo/seppo_service"
+	"github.com/koodinikkarit/seppo/models"
 )
 
 func (s SeppoServiceServer) CreateTag(

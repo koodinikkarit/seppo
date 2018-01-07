@@ -4,7 +4,8 @@ import "time"
 
 type MatiasClient struct {
 	ID        uint32
-	Hostname string
+	Name      string
+	Hostname  string
 	ClientKey string
 	Accepted  bool
 	Connected bool

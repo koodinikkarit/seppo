@@ -6,7 +6,7 @@ import (
 
 	"github.com/cskr/pubsub"
 	"github.com/jinzhu/gorm"
-	"github.com/koodinikkarit/seppo/matias_service"
+	"github.com/koodinikkarit/go-clientlibs/matias"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 )
