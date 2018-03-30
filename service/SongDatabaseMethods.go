@@ -6,6 +6,7 @@ import (
 	SeppoService "github.com/koodinikkarit/go-clientlibs/seppo"
 	"github.com/koodinikkarit/seppo/generators"
 	"github.com/koodinikkarit/seppo/managers"
+	"github.com/koodinikkarit/seppo/matias"
 	"github.com/koodinikkarit/seppo/models"
 )
 
@@ -24,6 +25,10 @@ func (s *SeppoServiceServer) CreateSongDatabase(
 	}
 
 	db.Create(&newSongdatabase)
+
+	s.pubSub.Pub(matias.CreatedSongDatabaseEvent{
+		SongDatabase: newSongdatabase,
+	}, "createdSongDatabase")
 
 	res.SongDatabase = generators.NewSongDatabase(&newSongdatabase)
 
@@ -80,6 +85,10 @@ func (s *SeppoServiceServer) UpdateSongDatabase(
 
 	tx.Commit()
 
+	s.pubSub.Pub(matias.UpdateSongDatabaseEvent{
+		SongDatabase: songDatabase,
+	}, "updatedSongDatabase")
+
 	return res, nil
 }
 
@@ -104,6 +113,10 @@ func (s *SeppoServiceServer) RemoveSongDatabase(
 	res.Success = true
 	db.Delete(&songDatabase)
 
+	s.pubSub.Pub(matias.RemovedSongDatabaseEvent{
+		SongDatabaseID: in.SongDatabaseId,
+	})
+
 	return res, nil
 }
 
@@ -123,7 +136,8 @@ func (s *SeppoServiceServer) SearchSongDatabases(
 
 	if in.VariationId > 0 {
 		query = query.Joins("JOIN song_database_variations on song_database_variations.song_database_id = song_databases.id").
-			Where("song_database_variations.variation_id = ?", in.VariationId)
+			Where("song_database_variations.variation_id = ?", in.VariationId).
+			Where("song_database_variations.deleted_at is null")
 	}
 
 	query.Count(&res.MaxSongDatabases)

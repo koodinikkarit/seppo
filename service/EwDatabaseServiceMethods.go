@@ -5,6 +5,7 @@ import (
 
 	SeppoService "github.com/koodinikkarit/go-clientlibs/seppo"
 	"github.com/koodinikkarit/seppo/generators"
+	"github.com/koodinikkarit/seppo/matias"
 	"github.com/koodinikkarit/seppo/models"
 )
 
@@ -21,9 +22,15 @@ func (s *SeppoServiceServer) CreateEwDatabase(
 	ewDatabase := models.EwDatabase{
 		Name:           in.Name,
 		SongDatabaseID: in.SongDatabaseId,
+		FilesystemPath: in.FilesystemPath,
+		MatiasClientID: in.MatiasClientId,
 	}
 
 	db.Create(&ewDatabase)
+
+	s.pubSub.Pub(matias.CreatedEwDatabaseEvent{
+		EwDatabase: ewDatabase,
+	}, "createdEwDatabase")
 
 	res.EwDatabase = generators.NewEwDatabase(&ewDatabase)
 
@@ -73,6 +80,11 @@ func (s *SeppoServiceServer) UpdateEwDatabase(
 	}
 
 	tx.Save(&ewDatabase)
+
+	s.pubSub.Pub(matias.UpdatedEwDatabaseEvent{
+		EwDatabase: ewDatabase,
+	}, "updatedEwDatabase")
+
 	res.EwDatabase = generators.NewEwDatabase(&ewDatabase)
 	res.Success = true
 	tx.Commit()
@@ -101,6 +113,10 @@ func (s *SeppoServiceServer) RemoveEwDatabase(
 	db.Delete(&ewDatabase)
 	res.Success = true
 
+	s.pubSub.Pub(matias.RemovedEwDatabaseEvent{
+		EwDatabaseId: in.EwDatabaseId,
+	}, "updatedEwDatabase")
+
 	return res, nil
 }
 
@@ -118,6 +134,10 @@ func (s *SeppoServiceServer) SearchEwDatabases(
 
 	if in.SongDatabaseId > 0 {
 		query = query.Where("song_database_id = ?", in.SongDatabaseId)
+	}
+
+	if in.MatiasClientId > 0 {
+		query = query.Where("matias_client_id = ?", in.MatiasClientId)
 	}
 
 	query.Count(&res.MaxEwDatabases)

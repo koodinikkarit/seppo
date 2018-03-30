@@ -6,10 +6,12 @@ import (
 
 	"golang.org/x/net/context"
 
+	"github.com/cskr/pubsub"
 	"github.com/jinzhu/gorm"
 	SeppoService "github.com/koodinikkarit/go-clientlibs/seppo"
 	"github.com/koodinikkarit/seppo/generators"
 	"github.com/koodinikkarit/seppo/managers"
+	"github.com/koodinikkarit/seppo/matias"
 	"github.com/koodinikkarit/seppo/models"
 )
 
@@ -39,6 +41,9 @@ func (s *SeppoServiceServer) CreateVariation(
 		)
 		res.Variation = generators.NewVariation(&newVariation)
 		tx.Commit()
+		s.pubSub.Pub(matias.CreatedVariationEvent{
+			Variation: newVariation,
+		}, "createdVariation")
 		return res, nil
 	}
 
@@ -61,6 +66,9 @@ func (s *SeppoServiceServer) CreateVariation(
 		)
 		res.Variation = generators.NewVariation(newVariation)
 		tx.Commit()
+		s.pubSub.Pub(matias.CreatedVariationEvent{
+			Variation: *newVariation,
+		}, "createdVariation")
 		return res, nil
 	}
 
@@ -71,11 +79,15 @@ func (s *SeppoServiceServer) CreateVariation(
 		in.Text,
 	)
 	tx.Commit()
+	s.pubSub.Pub(matias.CreatedVariationEvent{
+		Variation: *newVariation,
+	}, "createdVariation")
 	res.Variation = generators.NewVariation(newVariation)
 	return res, nil
 }
 
 func handleVariationUpdateIds(
+	pubSub *pubsub.PubSub,
 	tx *gorm.DB,
 	in *SeppoService.UpdateVariationRequest,
 	variation *models.Variation,
@@ -102,8 +114,30 @@ func handleVariationUpdateIds(
 			Delete(&models.TagVariation{})
 	}
 	if len(in.AddSongDatabaseIds) > 0 {
+		var sameSongDatabaseVariations []models.SongDatabaseVariation
+		tx.Where("song_database_id in (?)", in.AddSongDatabaseIds).
+			Unscoped().
+			Where("variation_id = ?", in.VariationId).
+			Find(&sameSongDatabaseVariations)
+
+		tx.Table("song_database_variations").
+			Unscoped().
+			Where("song_database_id in (?)", in.AddSongDatabaseIds).
+			Where("variation_id = ?", in.VariationId).
+			Update("deleted_at", nil)
+
 		var songDatabaseVariations []models.SongDatabaseVariation
 		for _, id := range in.AddSongDatabaseIds {
+			found := false
+			for _, sameSongDatabaseVariation := range sameSongDatabaseVariations {
+				if sameSongDatabaseVariation.ID != id {
+					continue
+				}
+				found = true
+			}
+			if found == true {
+				continue
+			}
 			songDatabaseVariations = append(
 				songDatabaseVariations,
 				models.SongDatabaseVariation{
@@ -116,11 +150,24 @@ func handleVariationUpdateIds(
 			tx,
 			songDatabaseVariations,
 		)
+		for _, addSongDatabaseID := range in.AddSongDatabaseIds {
+			pubSub.Pub(matias.CreatedSongDatabaseVariationEvent{
+				SongDatabaseID: addSongDatabaseID,
+				VariationID:    in.VariationId,
+			}, "createdSongDatabaseVariation")
+		}
 	}
 	if len(in.RemoveSongDatabaseIds) > 0 {
-		tx.Where("variation_id = (?)", in.VariationId).
+		tx.Where("variation_id = ?", in.VariationId).
 			Where("song_database_id in (?)", in.RemoveSongDatabaseIds).
 			Delete(&models.SongDatabaseVariation{})
+
+		for _, removeSongDatabaseId := range in.RemoveSongDatabaseIds {
+			pubSub.Pub(matias.RemovedSongDatabaseVariationEvent{
+				SongDatabaseID: removeSongDatabaseId,
+				VariationID:    in.VariationId,
+			}, "removedSongDatabaseVariation")
+		}
 	}
 
 	variationUpdateMap := make(map[string]interface{})
@@ -159,6 +206,7 @@ func (s *SeppoServiceServer) UpdateVariation(
 
 	if in.Name == "" && in.Text == "" {
 		handleVariationUpdateIds(
+			s.pubSub,
 			tx,
 			in,
 			&variation,
@@ -189,6 +237,7 @@ func (s *SeppoServiceServer) UpdateVariation(
 		text == currentNewestVariationVersion.Text {
 
 		handleVariationUpdateIds(
+			s.pubSub,
 			tx,
 			in,
 			&variation,
@@ -218,6 +267,7 @@ func (s *SeppoServiceServer) UpdateVariation(
 		}
 		tx.Create(&newVariationVersion)
 		handleVariationUpdateIds(
+			s.pubSub,
 			tx,
 			in,
 			&variation,
@@ -265,6 +315,7 @@ func (s *SeppoServiceServer) UpdateVariation(
 	}
 	tx.Create(&newVariationVersion)
 	handleVariationUpdateIds(
+		s.pubSub,
 		tx,
 		in,
 		&variation,
@@ -272,6 +323,11 @@ func (s *SeppoServiceServer) UpdateVariation(
 	tx.Commit()
 	res.Variation = generators.NewVariation(&variation)
 	res.Success = true
+
+	s.pubSub.Pub(matias.UpdatedVariationEvent{
+		Variation: variation,
+	})
+
 	return res, nil
 }
 
@@ -296,6 +352,9 @@ func (s *SeppoServiceServer) RemoveVariation(
 		tx.Commit()
 	}
 	res.Success = false
+	s.pubSub.Pub(matias.RemovedVariationEvent{
+		VariationId: in.VariationId,
+	}, "removedVariation")
 	return res, nil
 }
 

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/koodinikkarit/seppo/matias"
 	"golang.org/x/net/context"
 
 	SeppoService "github.com/koodinikkarit/go-clientlibs/seppo"
@@ -123,8 +124,16 @@ func (s *SeppoServiceServer) UpdateMatiasClient(
 	switch in.State {
 	case SeppoService.MatiasClientAcceptedState_ACEPTED:
 		matiasClient.Accepted = true
+		s.pubSub.Pub(matias.IsClientAcceptedEvent{
+			MatiasClientID: in.MatiasClientId,
+			State:          true,
+		}, "clientAccepted")
 	case SeppoService.MatiasClientAcceptedState_DECLINED:
 		matiasClient.Accepted = false
+		s.pubSub.Pub(matias.IsClientAcceptedEvent{
+			MatiasClientID: in.MatiasClientId,
+			State:          false,
+		}, "clientAccepted")
 	}
 
 	db.Save(&matiasClient)
