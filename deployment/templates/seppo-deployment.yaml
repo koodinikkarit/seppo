@@ -12,18 +12,18 @@ spec:
     spec:
       containers:
         - name: seppo-container
-          image: "{{ .Values.seppoImage }}"
+          image: jaska/seppo
           ports:
             - containerPort: 80
           env:
             - name: MYSQL_USERNAME
-              value: "{{ .Values.mysqlUsername }}"
+              value: "asd"
             - name: MYSQL_PASSWORD
-              value: "{{ .Values.mysqlPassword }}"
+              value: "asd"
             - name: MYSQL_HOST
-              value: "{{ .Values.mysqlHost }}"
+              value: "asd"
             - name: MYSQL_DATABASE
-              value: "{{ .Values.mysqlDatabase }}"
+              value: "asd"
             - name: MATIAS_PORT
               value: "3343"
             - name: SEPPO_PORT
