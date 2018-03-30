@@ -8,22 +8,22 @@ spec:
   template:
     metadata:
       labels:
-      app: seppo
+        app: seppo
     spec:
       containers:
         - name: seppo-container
-          image: jaska/seppo
+          image: "{{ .Values.seppoImage }}"
           ports:
             - containerPort: 80
           env:
             - name: MYSQL_USERNAME
-              value: "asd"
+              value: "{{ .Values.mysqlUsername }}"
             - name: MYSQL_PASSWORD
-              value: "asd"
+              value: "{{ .Values.mysqlPassword }}"
             - name: MYSQL_HOST
-              value: "asd"
+              value: "{{ .Values.mysqlHost }}"
             - name: MYSQL_DATABASE
-              value: "asd"
+              value: "{{ .Values.mysqlDatabase }}"
             - name: MATIAS_PORT
               value: "3343"
             - name: SEPPO_PORT
