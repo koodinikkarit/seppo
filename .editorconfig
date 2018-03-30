@@ -2,10 +2,10 @@
 indent_style = tab
 indent_size = 4
 
-[.travis.yml]
+[*.yml]
 indent_style = space
 indent_size = 2
 
-[docker-compose.yml]
+[*.yaml]
 indent_style = space
 indent_size = 2
