@@ -17,13 +17,13 @@ spec:
             - containerPort: 80
           env:
             - name: MYSQL_USERNAME
-              value: {{ .Values.mysqlUsername }}
+              value: "{{ .Values.mysqlUsername }}"
             - name: MYSQL_PASSWORD
-              value: {{ .Values.mysqlPassword }}
+              value: "{{ .Values.mysqlPassword }}"
             - name: MYSQL_HOST
-              value: {{ .Values.mysqlHost }}
+              value: "{{ .Values.mysqlHost }}"
             - name: MYSQL_DATABASE
-              value: {{ .Values.mysqlDatabase }}
+              value: "{{ .Values.mysqlDatabase }}"
             - name: MATIAS_PORT
               value: "3343"
             - name: SEPPO_PORT
