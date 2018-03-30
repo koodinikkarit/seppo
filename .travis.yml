@@ -1,19 +1,16 @@
-language: go
-services:
-  - docker
-go:
-  1.8.3
-install:
-  make install
+sudo: enabled
+
+os:
+  - linux
+
+before_script:
+  - chmod +x ./linux/*.sh
+
 script:
-  - make build
-
-after_success:
+  - docker build -t $DOCKER_ID_USER/seppo:$TRAVIS_BRANCH-$TRAVIS_COMMIT .
   - docker login -u $DOCKER_ID_USER -p $DOCKER_USER_PASSWORD
-  - export TAG=${TRAVIS_TAG:-latest}
-  - docker build -t $DOCKER_ID_USER/seppo .
-  - docker tag $DOCKER_ID_USER/seppo $DOCKER_ID_USER/seppo:$TAG
   - docker push $DOCKER_ID_USER/seppo
-
-notifications:
-  webhooks: http://salainen_kontti_updater.ths.tunk.org/
+  - ./linux/install_dependencies.sh
+  - ./linux/setup_kubectl.sh
+  - ./linux/install_tiller.sh
+  - ./linux/helm_upgrade.sh

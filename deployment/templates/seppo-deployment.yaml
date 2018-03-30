@@ -1,0 +1,30 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: seppo
+  labels:
+    app: seppo
+spec:
+  template:
+    metadata:
+      labels:
+        app: seppo
+    spec:
+      containers:
+        - name: seppo-container
+          image: "{{ .Values.seppoImage }}"
+          ports:
+            - containerPort: 80
+          env:
+            - name: MYSQL_USERNAME
+              value: {{ .Values.mysqlUsername }}
+            - name: MYSQL_PASSWORD
+              value: {{ .Values.mysqlPassword }}
+            - name: MYSQL_HOST
+              value: {{ .Values.mysqlHost }}
+            - name: MYSQL_DATABASE
+              value: {{ .Values.mysqlDatabase }}
+            - name: SEPPO_PORT
+              value: "80"
+			- name: MATIAS_PORT
+			  value: "3343"
