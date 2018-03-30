@@ -24,7 +24,5 @@ spec:
               value: {{ .Values.mysqlHost }}
             - name: MYSQL_DATABASE
               value: {{ .Values.mysqlDatabase }}
-            - name: SEPPO_PORT
-              value: "80"
 			      - name: MATIAS_PORT
 			        value: "3343"
