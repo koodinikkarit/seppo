@@ -8,7 +8,7 @@ spec:
   template:
     metadata:
       labels:
-        app: seppo
+      app: seppo
     spec:
       containers:
         - name: seppo-container
