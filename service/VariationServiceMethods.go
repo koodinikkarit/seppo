@@ -424,7 +424,8 @@ func (s *SeppoServiceServer) SearchVariations(
 	}
 
 	if in.SongDatabaseId > 0 {
-		query = query.Joins("left join song_database_variations on song_database_variations.variation_id = variations.id").
+		query = query.Joins("inner join song_database_variations on song_database_variations.variation_id = variations.id").
+			Where("song_database_variations.deleted_at is null").
 			Where("song_database_variations.song_database_id = ?", in.SongDatabaseId)
 	}
 
@@ -442,8 +443,9 @@ func (s *SeppoServiceServer) SearchVariations(
 	}
 
 	if in.SongDatabaseFilterId > 0 {
-		query = query.Joins("song_database_variations sdv2 on sdv2.variation_id = variations.id").
-			Not("sdv2.song_database_id = ?", in.SongDatabaseId)
+		query = query.Joins("left join song_database_variations sdv2 on sdv2.variation_id = variations.id").
+			Where("sdv2.deleted_at is null").
+			Where("sdv2.song_database_id != ?", in.SongDatabaseFilterId).Or("sdv2.id is null")
 	}
 
 	query.Count(&res.MaxVariations)
