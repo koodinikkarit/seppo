@@ -180,6 +180,10 @@ func handleVariationUpdateIds(
 		variationUpdateMap["language_id"] = in.LanguageId
 	}
 
+	if in.AuthorId > 0 {
+		variationUpdateMap["author_id"] = in.AuthorId
+	}
+
 	if len(variationUpdateMap) > 0 {
 		tx.Model(variation).Updates(variationUpdateMap)
 	}
@@ -403,6 +407,8 @@ func (s *SeppoServiceServer) SearchVariations(
 	*SeppoService.SearchVariationsResponse,
 	error,
 ) {
+	fmt.Println("input", in)
+
 	res := &SeppoService.SearchVariationsResponse{}
 	db := s.getDB()
 
@@ -436,6 +442,11 @@ func (s *SeppoServiceServer) SearchVariations(
 
 	if in.LanguageId > 0 {
 		query = query.Where("variations.language_id = ?", in.LanguageId)
+	}
+
+	if in.AuthorId > 0 {
+		fmt.Println("authorid filter", in.AuthorId)
+		query = query.Where("variations.author_id = ?", in.AuthorId)
 	}
 
 	if len(in.SkipVariationIds) > 0 {
